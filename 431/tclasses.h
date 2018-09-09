@@ -15,10 +15,14 @@ public:
 	void set(size_t, std::vector<T>);
 	T get(size_t, size_t);
 	T get(size_t, size_t) const;
+	size_t get_col() const;
+	size_t get_row() const;
+	std::vector<std::vector<T>> get_matrix() const;
 	std::vector<T> get_row(size_t);
 	void resize(size_t, size_t);
 	void recreate(size_t, size_t);
 	void transpose();
+	Matrix& operator= (const Matrix &right);
 	template <typename T2>
 	friend const Matrix<T2> operator+(const Matrix<T2>&, const Matrix<T2>&);
 	template <typename T2>

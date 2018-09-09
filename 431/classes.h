@@ -4,24 +4,26 @@
 #include <GL/glu.h>
 #include <math.h>
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <stdio.h>
 #include "tclasses.h"
 
 class Point {
 private:
-	std::vector<GLfloat> cord; // cordinats
+	GLfloat cord[3]; // cordinats
 public:
 	Point();
 	Point(GLfloat, GLfloat);
-	Point(std::vector<GLfloat> cord);
+	Point(GLfloat, GLfloat, GLfloat);
+	Point(GLfloat cord[3]);
 	void set(GLfloat, GLfloat);
 	void set(GLfloat, GLfloat, GLfloat);
-	void set(std::vector<GLfloat> cord);
+	void set(GLfloat cord[3]);
 	GLfloat get_x();
 	GLfloat get_y();
 	GLfloat get_z();
-	std::vector<GLfloat> get_cords() const;
+	GLfloat * get_cords() const;
 	void vertex();
 	void put_on_line(const Point& a, const Point& b, GLfloat t);
 	void calculate_third (Point, Point, GLfloat, GLfloat, int);
@@ -29,11 +31,13 @@ public:
 	friend bool operator==(const Point& left, const Point& right);
 	friend bool operator!=(const Point& left, const Point& right);
 	friend Point operator+(const Point& left, const Point& right);
+	friend Point& operator+=(Point& left, const Point& right);
 };
 
 bool operator==(const Point& left, const Point& right);
 bool operator!=(const Point& left, const Point& right);
 Point operator+(const Point& left, const Point& right);
+Point& operator+=(Point& left, const Point& right);
 
 class Canvas {
 private:
@@ -47,8 +51,10 @@ private:
 	// the current window
 	GLint window_width, window_height;
 public:
-	Canvas(GLint width, GLint height, char * window_title);
+	Canvas();
 	// constructor
+	void init(int argc, char * argv[], GLint width, GLint height,
+		char * window_title);
 	void resize(GLint width, GLint height);
 	void set_viewport(GLint l, GLint r, GLint b, GLint  t);
 	void set_window(GLfloat l, GLfloat r, GLfloat b, GLfloat t);
@@ -73,19 +79,50 @@ public:
 	void forward(GLfloat dist, int is_visible);
 };
 
-class PointArray : public Matrix<GLfloat> {
-private:
-	std::vector<GLfloat> path;
-	Point CP;
+class PointArray {
+protected:
+	std::vector<Point> arr;
 public:
 	PointArray();
 	PointArray(size_t rows);
 	void clear();
 	void push(const Point& p);
-	void set_path(std::vector<GLfloat> pth);
-	void set_path(std::string pth);
-	std::vector<GLfloat> get_path();
-	void generate_from_path();
-	void q_bezier(Point p1, Point p2, Point p3);
+	void push(GLfloat cords[3]);
+	void move_to(Point p);
+	void render();
+};
+
+class Basis : public PointArray {
+public:
+	Basis();
+};
+
+class Path : public PointArray {
+private:
+	Point CP;
+	std::string commands;
+public:
+	Path();
+	Path(std::string pth);
+	void set(std::string pth);
+	void push_command(char com, Point p1);
+	void push_command(char com, Point p1, Point p2);
+	void push_command(char com, Point p1, Point p2, Point p3);
+	void generate(PointArray& dest);
+	void q_bezier(PointArray& dest, Point p1, Point p2, Point p3);
+};
+
+class Object {
+private:
+	Path path_orig, path;
+	PointArray points_orig, points;
+	Basis basis;
+	Point pos;
+public:
+	Object();
+	Object(std::string pth);
+	Object(Path pth);
+	void set(std::string pth);
+	void set(Path pth);
 	void render();
 };

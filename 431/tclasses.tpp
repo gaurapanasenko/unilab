@@ -37,6 +37,15 @@ T Matrix<T>::get(size_t i, size_t j) const {
 }
 
 template <typename T>
+size_t Matrix<T>::get_col() const { return col; }
+
+template <typename T>
+size_t Matrix<T>::get_row() const { return row; }
+
+template <typename T>
+std::vector<std::vector<T>> Matrix<T>::get_matrix() const { return matrix; }
+
+template <typename T>
 std::vector<T> Matrix<T>::get_row(size_t i) {
 	if (i >= row) return std::vector<T>(0);
 	return matrix[i];
@@ -70,6 +79,13 @@ void Matrix<T>::transpose() {
 			vec[j][i] = get(i,j);
 	tmp = row; row = col; col = tmp;
 	matrix = vec;
+}
+
+template <typename T>
+Matrix<T>& Matrix<T>::operator= (const Matrix<T> &right) {
+	matrix = right.matrix;
+	row = right.row; col = right.col;
+	return *this;
 }
 
 template <typename T>
