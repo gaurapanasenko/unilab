@@ -20,6 +20,9 @@ public:
 	void set(GLfloat, GLfloat);
 	void set(GLfloat, GLfloat, GLfloat);
 	void set(GLfloat cord[3]);
+	void set_x(GLfloat x);
+	void set_y(GLfloat y);
+	void set_z(GLfloat z);
 	GLfloat get_x();
 	GLfloat get_y();
 	GLfloat get_z();
@@ -32,12 +35,14 @@ public:
 	friend bool operator!=(const Point& left, const Point& right);
 	friend Point operator+(const Point& left, const Point& right);
 	friend Point& operator+=(Point& left, const Point& right);
+	friend const GLfloat operator*(const Point&, const Point&);
 };
 
 bool operator==(const Point& left, const Point& right);
 bool operator!=(const Point& left, const Point& right);
 Point operator+(const Point& left, const Point& right);
 Point& operator+=(Point& left, const Point& right);
+const GLfloat operator*(const Point&, const Point&);
 
 class Canvas {
 private:
@@ -88,13 +93,22 @@ public:
 	void clear();
 	void push(const Point& p);
 	void push(GLfloat cords[3]);
+	void set(size_t i, const Point& p);
+	std::vector<Point> get_arr() const;
 	void move_to(Point p);
 	void render();
+	friend const PointArray operator*(const PointArray&, const PointArray&);
+	PointArray& operator=(const PointArray& right);
 };
+
+const PointArray operator*(const PointArray&, const PointArray&);
 
 class Basis : public PointArray {
 public:
 	Basis();
+	void rotate_to(GLfloat angle);
+	void rotate_rel(GLfloat angle);
+	Basis& operator=(const PointArray& right);
 };
 
 class Path : public PointArray {
@@ -124,5 +138,9 @@ public:
 	Object(Path pth);
 	void set(std::string pth);
 	void set(Path pth);
+	void move_to(Point p);
+	void move_rel(Point p);
+	void rotate_to(GLfloat angle);
+	void rotate_rel(GLfloat angle);
 	void render();
 };

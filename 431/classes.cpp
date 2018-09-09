@@ -17,6 +17,12 @@ void Point::set(GLfloat x, GLfloat y, GLfloat z)
 
 void Point::set(GLfloat cords[3]) {memcpy(cord, cords, sizeof(cord));}
 
+void Point::set_x(GLfloat x) { cord[0] = x; }
+
+void Point::set_y(GLfloat y) { cord[1] = y; }
+
+void Point::set_z(GLfloat z) { cord[2] = z; }
+
 GLfloat Point::get_x() {return cord[0];}
 
 GLfloat Point::get_y() {return cord[1];}
@@ -88,6 +94,13 @@ Point& operator+=(Point& left, const Point& right) {
 	for (int i = 0; i < 3; i++)
 		left.cord[i] += right.cord[i];
 	return left;
+}
+
+const GLfloat operator*(const Point& left, const Point& right) {
+	GLfloat x = 0;
+	for (int i = 0; i < 3; i++)
+		x += left.cord[i] * right.cord[i];
+	return x;
 }
 
 Canvas::Canvas() : CP(), viewport(), window() {
@@ -205,6 +218,10 @@ void PointArray::push(GLfloat cords[3]) {
 	arr.push_back(p);
 }
 
+void PointArray::set(size_t i, const Point& p) { arr[i] = p; }
+
+std::vector<Point> PointArray::get_arr() const { return arr; }
+
 void PointArray::move_to(Point p) {
 	for (int i = 0; i < arr.size(); i++)
 		arr[i] += p;
@@ -215,12 +232,46 @@ void PointArray::render() {
 		for (int i = 0; i < arr.size(); i++)
 			glVertex2f(arr[i].get_x(), arr[i].get_y());
 	glEnd();
+	glFlush();
+}
+
+PointArray& PointArray::operator=(const PointArray& right) {
+	arr = right.arr;
+	return *this;
 }
 
 Basis::Basis() : PointArray(0) {
 	push(Point(1, 0, 0));
 	push(Point(0, 1, 0));
 	push(Point(0, 0, 1));
+}
+
+void Basis::rotate_rel(GLfloat angle) {
+	PointArray pa, th = *this;
+	GLfloat a = angle * M_PI / 180;
+	pa.push(Point(cos(a), -sin(a), 0));
+	pa.push(Point(sin(a), cos(a), 0));
+	pa.push(Point(0, 0, 1));
+	*this = pa * th;
+}
+
+Basis& Basis::operator=(const PointArray& right) {
+	arr = right.get_arr();
+	return *this;
+}
+
+const PointArray operator*(const PointArray& left, const PointArray& right) {
+	if (left.arr.size() != 3) return right;
+	PointArray pa(right.arr.size());
+	Point p;
+	GLfloat c[3] = {0,0,0};
+	for (int i = 0; i < right.arr.size(); i++) {
+		for (int j = 0; j < 3; j++) {
+			c[j] = left.arr[j] * right.arr[i];
+		}
+		p.set(c); pa.set(i,p);
+	}
+	return pa;
 }
 
 Path::Path() : PointArray(0), CP(0, 0) {}
@@ -277,7 +328,7 @@ void Path::push_command(char com, Point p1) {
 	int len = strlen(all_com);
 	for (int i = 0; i < len; i++)
 		if (com == all_com[i]) {
-			printf("%c %g %g\n", com, p1.get_x(), p1.get_y());
+			//~ printf("%c %g %g\n", com, p1.get_x(), p1.get_y());
 			push(p1);
 			commands += com;
 			return;
@@ -289,8 +340,8 @@ void Path::push_command(char com, Point p1, Point p2) {
 	int len = strlen(all_com);
 	for (int i = 0; i < len; i++)
 		if (com == all_com[i]) {
-			printf("%c %g %g %g %g\n", com, p1.get_x(), p1.get_y(),
-				p2.get_x(), p2.get_y());
+			//~ printf("%c %g %g %g %g\n", com, p1.get_x(), p1.get_y(),
+				//~ p2.get_x(), p2.get_y());
 			push(p1);push(p2);
 			commands += com;
 			return;
@@ -376,8 +427,17 @@ void Object::set(std::string pth) {path_orig.set(pth);}
 
 void Object::set(Path pth) {path_orig = pth;}
 
+void Object::move_to(Point p) {pos = p;}
+
+void Object::move_rel(Point p) {pos = pos + p;}
+
+//~ void Object::rotate_to(GLfloat angle) {basis.rotate_to(angle);}
+
+void Object::rotate_rel(GLfloat angle) {basis.rotate_rel(angle);}
+
 void Object::render() {
 	path_orig.generate(points_orig);
-	//~ points = basis * points_orig;
-	points_orig.render();
+	points = basis * points_orig;
+	points.move_to(pos);
+	points.render();
 }
