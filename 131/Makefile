@@ -1,5 +1,5 @@
 OBJ = main.o args.o
-DEPS = args.h
+DEPS = args.h functions.h
 LIBS =
 CFLAGS =
 CC = g++
