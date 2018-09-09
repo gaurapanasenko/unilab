@@ -12,20 +12,24 @@ private:
 	char **argv;
 	char state;
 	float buf;
-	std::vector<float> arr;
+	std::vector<std::vector<float>> arr;
+	std::string commands;
+	int cur, stlen;
 	char * states;
 public:
 	Args(int argc_in, char **argv_in);
 	~Args();
 	void handle();
 	void set_state(char st);
-	void end_state();
-	void fold_an_array();
-	void least();
-	void greatest();
-	void arithmetic_mean();
-	void append_to_items();
-	void multiply();
+	void get_new_command(char * ch, std::vector<float>& array);
+	int count_commands();
 };
+
+float fold_an_array(std::vector<float> arr);
+float least(std::vector<float> arr);
+float greatest(std::vector<float> arr);
+float arithmetic_mean(std::vector<float> arr);
+std::vector<float> append_to_items(std::vector<float> arr);
+float multiply(std::vector<float> arr);
 
 #endif

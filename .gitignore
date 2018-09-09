@@ -1,6 +1,7 @@
 /221/a.out
 /921/
 /431/bin/
+/322/datagen
 *.o
 main
 *.h.gch
