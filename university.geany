@@ -28,21 +28,20 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=7
-FILE_NAME_0=1636;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fmain.cpp;0;4
-FILE_NAME_1=400;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fargs.cpp;0;4
-FILE_NAME_2=458;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fargs.h;0;4
-FILE_NAME_3=43;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2FMakefile;0;4
-FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.h;0;4
-FILE_NAME_5=861;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Ftclasses.h;0;4
-FILE_NAME_6=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.cpp;0;4
-FILE_NAME_7=1754;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Ffunctions.tpp;0;4
-FILE_NAME_8=104;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Ffunctions.h;0;4
+current_page=2
+FILE_NAME_0=514;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fmain.cpp;0;4
+FILE_NAME_1=235;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2FMakefile;0;4
+FILE_NAME_2=1117;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.cpp;0;4
+FILE_NAME_3=673;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.h;0;4
+FILE_NAME_4=115;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2FMakefile;0;4
+FILE_NAME_5=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.cpp;0;4
+FILE_NAME_6=1492;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.h;0;4
+FILE_NAME_7=6101;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2Fc%2B%2B%2F8.2.1%2Fbits%2Fvector.tcc;0;4
 
 [VTE]
-last_dir=/home/egor/projects/university/131
+last_dir=/home/egor/projects/university/132
 
 [build-menu]
 EX_00_LB=_Execute
-EX_00_CM=make && "./%e" -h
+EX_00_CM=make && LD_LIBRARY_PATH=. "./%e" -h
 EX_00_WD=
