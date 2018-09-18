@@ -29,7 +29,8 @@ public:
 	GLfloat * get_cords() const;
 	void vertex();
 	void put_on_line(const Point& a, const Point& b, GLfloat t);
-	void calculate_third (Point, Point, GLfloat, GLfloat, int);
+	void calculate_third(Point, Point, GLfloat, GLfloat, int);
+	GLfloat distance(Point& p);
 	Point& operator=(const Point&);
 	friend bool operator==(const Point& left, const Point& right);
 	friend bool operator!=(const Point& left, const Point& right);

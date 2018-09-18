@@ -63,6 +63,11 @@ void Point::calculate_third (Point pa, Point pb, GLfloat lac, GLfloat lbc,
 	set(x0 + pa.get_x(), y0 + pa.get_y());
 }
 
+GLfloat Point::distance(Point& a) {
+	return sqrt(pow(cord[0]-a.get_x(),2)+pow(cord[1]-a.get_y(),2)
+		+pow(cord[2]-a.get_z(),2));
+}
+
 Point& Point::operator=(const Point& right) {
 	if (this == &right) {
 		return *this;
@@ -244,6 +249,16 @@ Basis::Basis() : PointArray(0) {
 	push(Point(1, 0, 0));
 	push(Point(0, 1, 0));
 	push(Point(0, 0, 1));
+}
+
+void Basis::rotate_to(GLfloat angle) {
+	Point zero;
+	zero.set(0,0,0);
+	printf("%f\n",arr[0].distance(zero));
+	arr[0].set(arr[0].distance(zero),0,0);
+	arr[1].set(0,arr[1].distance(zero),0);
+	arr[2].set(0,0,arr[2].distance(zero));
+	rotate_rel(angle);
 }
 
 void Basis::rotate_rel(GLfloat angle) {
@@ -431,7 +446,7 @@ void Object::move_to(Point p) {pos = p;}
 
 void Object::move_rel(Point p) {pos = pos + p;}
 
-//~ void Object::rotate_to(GLfloat angle) {basis.rotate_to(angle);}
+void Object::rotate_to(GLfloat angle) {basis.rotate_to(angle);}
 
 void Object::rotate_rel(GLfloat angle) {basis.rotate_rel(angle);}
 
