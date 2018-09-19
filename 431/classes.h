@@ -9,41 +9,34 @@
 #include <stdio.h>
 #include "tclasses.h"
 
+namespace Classes {
+
 class Point {
 private:
 	GLfloat cord[3]; // cordinats
 public:
 	Point();
-	Point(GLfloat, GLfloat);
-	Point(GLfloat, GLfloat, GLfloat);
+	Point(GLfloat x, GLfloat y);
+	Point(GLfloat x, GLfloat y, GLfloat z);
 	Point(GLfloat cord[3]);
-	void set(GLfloat, GLfloat);
-	void set(GLfloat, GLfloat, GLfloat);
-	void set(GLfloat cord[3]);
-	void set_x(GLfloat x);
-	void set_y(GLfloat y);
-	void set_z(GLfloat z);
-	GLfloat get_x();
-	GLfloat get_y();
-	GLfloat get_z();
 	GLfloat * get_cords() const;
 	void vertex();
 	void put_on_line(const Point& a, const Point& b, GLfloat t);
-	void calculate_third(Point, Point, GLfloat, GLfloat, int);
-	GLfloat distance(Point& p);
-	Point& operator=(const Point&);
+	void calculate_third (const Point pa, const Point pb,
+		GLfloat lac, GLfloat lbc, int direction);
+	GLfloat distance(const Point& p);
+	Point& operator=(const Point& right);
+	Point& operator=(const GLfloat right[3]);
+	GLfloat& operator[](const int index);
+	const GLfloat& operator[](const int index) const;
+	Point& operator()(GLfloat x, GLfloat y);
+	Point& operator()(GLfloat x, GLfloat y, GLfloat z);
 	friend bool operator==(const Point& left, const Point& right);
 	friend bool operator!=(const Point& left, const Point& right);
 	friend Point operator+(const Point& left, const Point& right);
 	friend Point& operator+=(Point& left, const Point& right);
 	friend const GLfloat operator*(const Point&, const Point&);
 };
-
-bool operator==(const Point& left, const Point& right);
-bool operator!=(const Point& left, const Point& right);
-Point operator+(const Point& left, const Point& right);
-Point& operator+=(Point& left, const Point& right);
-const GLfloat operator*(const Point&, const Point&);
 
 class Canvas {
 private:
@@ -74,15 +67,15 @@ public:
 	void clear_screen();
 	void set_background_color(GLfloat r, GLfloat g, GLfloat b);
 	void set_color(GLfloat r, GLfloat g, GLfloat b);
-	void line_to(GLfloat x, GLfloat y);
-	void line_to(Point p);
-	void move_to(GLfloat x, GLfloat y);
-	void move_to(Point p);
-	void line_rel(GLfloat x, GLfloat y);
-	void move_rel(GLfloat x, GLfloat y);
-	void turn(GLfloat angl);
-	void turn_to(GLfloat angl);
-	void forward(GLfloat dist, int is_visible);
+	//~ void line_to(GLfloat x, GLfloat y);
+	//~ void line_to(Point p);
+	//~ void move_to(GLfloat x, GLfloat y);
+	//~ void move_to(Point p);
+	//~ void line_rel(GLfloat x, GLfloat y);
+	//~ void move_rel(GLfloat x, GLfloat y);
+	//~ void turn(GLfloat angl);
+	//~ void turn_to(GLfloat angl);
+	//~ void forward(GLfloat dist, int is_visible);
 };
 
 class PointArray {
@@ -92,17 +85,16 @@ public:
 	PointArray();
 	PointArray(size_t rows);
 	void clear();
-	void push(const Point& p);
-	void push(GLfloat cords[3]);
-	void set(size_t i, const Point& p);
-	std::vector<Point> get_arr() const;
-	void move_to(Point p);
+	const std::vector<Point>& get_arr() const;
+	void move_to(const Point& p);
 	void render();
-	friend const PointArray operator*(const PointArray&, const PointArray&);
+	Point& operator[](const int index);
+	const Point& operator[](const int index) const;
 	PointArray& operator=(const PointArray& right);
+	PointArray& operator<<(const Point& right);
+	PointArray& operator<<(GLfloat cords[3]);
+	friend const PointArray operator*(const PointArray&, const PointArray&);
 };
-
-const PointArray operator*(const PointArray&, const PointArray&);
 
 class Basis : public PointArray {
 public:
@@ -118,13 +110,19 @@ private:
 	std::string commands;
 public:
 	Path();
-	Path(std::string pth);
-	void set(std::string pth);
-	void push_command(char com, Point p1);
-	void push_command(char com, Point p1, Point p2);
-	void push_command(char com, Point p1, Point p2, Point p3);
+	Path(const Path& pth);
+	Path(const std::string& pth);
+	void clear();
+	bool empty();
+	void push_command(char com, const Point& p1);
+	void push_command(char com, const Point& p1, const Point& p2);
+	void push_command(char com, const Point& p1, const Point& p2,
+			const Point& p3);
 	void generate(PointArray& dest);
-	void q_bezier(PointArray& dest, Point p1, Point p2, Point p3);
+	void q_bezier(PointArray& dest, const Point& p1, const Point& p2,
+		const Point& p3);
+	//~ Path& operator=(const Path& right);
+	//~ Path& operator=(const std::string& right);
 };
 
 class Object {
@@ -135,13 +133,17 @@ private:
 	Point pos;
 public:
 	Object();
-	Object(std::string pth);
-	Object(Path pth);
-	void set(std::string pth);
-	void set(Path pth);
-	void move_to(Point p);
-	void move_rel(Point p);
+	//~ Object(const std::string& pth);
+	Object(const Path& pth);
+	void move_to(const Point& p);
+	void move_rel(const Point& p);
 	void rotate_to(GLfloat angle);
 	void rotate_rel(GLfloat angle);
 	void render();
+	//~ Object& operator=(const std::string& right);
+	Object& operator=(const Path& right);
 };
+
+void parse_string(std::vector<Object>& arr, const std::string& str);
+
+}

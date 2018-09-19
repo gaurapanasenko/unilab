@@ -28,7 +28,7 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=3
+current_page=2
 FILE_NAME_0=552;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fmain.cpp;0;4
 FILE_NAME_1=262;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2FMakefile;0;4
 FILE_NAME_2=1840;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.cpp;0;4

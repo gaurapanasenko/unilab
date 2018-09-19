@@ -1,33 +1,14 @@
 #include "classes.h"
 
+namespace Classes {
+
 Point::Point() {memset(cord, 0, 3*sizeof(float));}
 
-Point::Point(GLfloat x, GLfloat y) { cord[0] = x; cord[1] = y; cord[2] = 0; }
+Point::Point(GLfloat x, GLfloat y) { (*this)(x,y); }
 
-Point::Point(GLfloat x, GLfloat y, GLfloat z) {
-	cord[0] = x; cord[1] = y; cord[2] = z;
-}
+Point::Point(GLfloat x, GLfloat y, GLfloat z) { (*this)(x,y,z); }
 
-Point::Point(GLfloat cords[3]) {memcpy(cord, cords, sizeof(cord));}
-
-void Point::set(GLfloat x, GLfloat y) {cord[0] = x; cord[1] = y;}
-
-void Point::set(GLfloat x, GLfloat y, GLfloat z)
-	{cord[0] = x; cord[1] = y; cord[2] = z;}
-
-void Point::set(GLfloat cords[3]) {memcpy(cord, cords, sizeof(cord));}
-
-void Point::set_x(GLfloat x) { cord[0] = x; }
-
-void Point::set_y(GLfloat y) { cord[1] = y; }
-
-void Point::set_z(GLfloat z) { cord[2] = z; }
-
-GLfloat Point::get_x() {return cord[0];}
-
-GLfloat Point::get_y() {return cord[1];}
-
-GLfloat Point::get_z() {return cord[2];}
+Point::Point(GLfloat cords[3]) {*this = cords;}
 
 GLfloat * Point::get_cords() const {return (GLfloat *) cord;}
 
@@ -37,18 +18,18 @@ void Point::put_on_line(const Point& a, const Point& b, GLfloat t) {
 	GLfloat * ac = a.get_cords(), * bc = b.get_cords(), cords[3] = {0, 0, 0};
 	for (int i = 0; i < 3; i++)
 		cords[i] = (bc[i] - ac[i]) * t + ac[i];
-	set(cords);
+	*this = cords;
 }
 
 // pa - point A, pb - point B, lac - AC length, lbc - BC length
-void Point::calculate_third (Point pa, Point pb, GLfloat lac, GLfloat lbc,
-		int direction) {
-	if (pa.get_z() || pb.get_z()) return;
+void Point::calculate_third (const Point pa, const Point pb,
+		GLfloat lac, GLfloat lbc, int direction) {
+	if (pa[3] || pb[3]) return;
 	if (direction < 1 && direction > 2) return;
 	GLdouble a, b, c, x0, y0, x2, y2;
 	// http://e-maxx.ru/algo/circles_intersection
-	x2 = pb.get_x() - pa.get_x();
-	y2 = pb.get_y() - pa.get_y();
+	x2 = pb[0] - pa[0];
+	y2 = pb[1] - pa[1];
 	a = -2 * x2; b = -2 * y2; c = x2*x2 + y2*y2 + lac*lac - lbc*lbc;
 	// http://e-maxx.ru/algo/circle_line_intersection
 	x0 = -a*c/(a*a+b*b); y0 = -b*c/(a*a+b*b);
@@ -60,21 +41,34 @@ void Point::calculate_third (Point pa, Point pb, GLfloat lac, GLfloat lbc,
 		if (direction == 1) {x0 += b * mult; y0 -= a * mult;}
 		else {x0 -= b * mult; y0 += a * mult;}
 	}
-	set(x0 + pa.get_x(), y0 + pa.get_y());
+	(*this)(x0 + pa[0], y0 + pa[0]);
 }
 
-GLfloat Point::distance(Point& a) {
-	return sqrt(pow(cord[0]-a.get_x(),2)+pow(cord[1]-a.get_y(),2)
-		+pow(cord[2]-a.get_z(),2));
+GLfloat Point::distance(const Point& a) {
+	return sqrt(pow(cord[0]-a[0],2)+pow(cord[1]-a[1],2)
+		+pow(cord[2]-a[2],2));
 }
 
 Point& Point::operator=(const Point& right) {
-	if (this == &right) {
-		return *this;
-	}
+	if (this == &right) {return *this;}
 	memcpy(cord, right.cord, sizeof(cord));
 	return *this;
 }
+
+Point& Point::operator=(const GLfloat right[3]) {
+	memcpy(cord, right, sizeof(cord));
+	return *this;
+}
+
+GLfloat& Point::operator[](const int index) {return cord[index];}
+
+const GLfloat& Point::operator[](const int index) const {return cord[index];}
+
+Point& Point::operator()(GLfloat x, GLfloat y)
+	{cord[0] = x; cord[1] = y; return *this;}
+
+Point& Point::operator()(GLfloat x, GLfloat y, GLfloat z)
+	{cord[0] = x; cord[1] = y; cord[2] = z; return *this;}
 
 bool operator==(const Point& left, const Point& right) {
 	for (int i = 0; i < 3; i++)
@@ -171,42 +165,42 @@ void Canvas::set_color(GLfloat r, GLfloat g, GLfloat b) {
 	glColor3f(0.0f, 0.0f, 0.0f);
 }
 
-void Canvas::line_to(GLfloat x, GLfloat y) {
-	glBegin(GL_LINES);
-		glVertex2f(CP.get_x(), CP.get_y());
-		glVertex2f(x, y);
-	glEnd();
-	// draw the line
-	CP.set(x, y);
-	// update the CP
-	glFlush();
-}
-void Canvas::line_to(Point p) {line_to(p.get_x(), p.get_y());}
+//~ void Canvas::line_to(GLfloat x, GLfloat y) {
+	//~ glBegin(GL_LINES);
+		//~ glVertex2f(CP[0], CP[1]);
+		//~ glVertex2f(x, y);
+	//~ glEnd();
+	//~ // draw the line
+	//~ CP.set(x, y);
+	//~ // update the CP
+	//~ glFlush();
+//~ }
+//~ void Canvas::line_to(Point p) {line_to(p[0], p[1]);}
 
-void Canvas::move_to(GLfloat x, GLfloat y) {CP.set(x, y);}
-void Canvas::move_to(Point p) {CP = p;}
+//~ void Canvas::move_to(GLfloat x, GLfloat y) {CP.set(x, y);}
+//~ void Canvas::move_to(Point p) {CP = p;}
 
-void Canvas::line_rel(GLfloat x, GLfloat y) {
-	line_to(CP.get_x() + x, CP.get_y() + y);
-}
+//~ void Canvas::line_rel(GLfloat x, GLfloat y) {
+	//~ line_to(CP[0] + x, CP[1] + y);
+//~ }
 
-void Canvas::move_rel(GLfloat x, GLfloat y) {
-	move_to(CP.get_x() + x, CP.get_y() + y);
-}
+//~ void Canvas::move_rel(GLfloat x, GLfloat y) {
+	//~ move_to(CP[0] + x, CP[1] + y);
+//~ }
 
-void Canvas::turn(GLfloat angle) {CD += angle;}
-void Canvas::turn_to(GLfloat angle) {CD = angle;}
+//~ void Canvas::turn(GLfloat angle) {CD += angle;}
+//~ void Canvas::turn_to(GLfloat angle) {CD = angle;}
 
 
-void Canvas::forward(GLfloat dist, int is_visible) {
-	GLfloat x, y;
-	const GLfloat RadPerDeg = M_PI / 180;
-	// radians per degree
-	x = CP.get_x() + dist * cos(RadPerDeg * CD);
-	y = CP.get_y() + dist * sin(RadPerDeg * CD);
-	if (is_visible) line_to(x, y);
-	else move_to(x, y);
-}
+//~ void Canvas::forward(GLfloat dist, int is_visible) {
+	//~ GLfloat x, y;
+	//~ const GLfloat RadPerDeg = M_PI / 180;
+	//~ // radians per degree
+	//~ x = CP[0] + dist * cos(RadPerDeg * CD);
+	//~ y = CP[1] + dist * sin(RadPerDeg * CD);
+	//~ if (is_visible) line_to(x, y);
+	//~ else move_to(x, y);
+//~ }
 
 PointArray::PointArray() : arr(0) {}
 
@@ -214,161 +208,124 @@ PointArray::PointArray(size_t rows) : arr(rows) {}
 
 void PointArray::clear() {arr.clear();}
 
-void PointArray::push(const Point& p) {
-	arr.push_back(p);
-}
+const std::vector<Point>& PointArray::get_arr() const { return arr; }
 
-void PointArray::push(GLfloat cords[3]) {
-	Point p(cords);
-	arr.push_back(p);
-}
-
-void PointArray::set(size_t i, const Point& p) { arr[i] = p; }
-
-std::vector<Point> PointArray::get_arr() const { return arr; }
-
-void PointArray::move_to(Point p) {
-	for (int i = 0; i < arr.size(); i++)
+void PointArray::move_to(const Point& p) {
+	for (size_t i = 0; i < arr.size(); i++)
 		arr[i] += p;
 }
 
 void PointArray::render() {
 	glBegin(GL_LINE_STRIP);
-		for (int i = 0; i < arr.size(); i++)
-			glVertex2f(arr[i].get_x(), arr[i].get_y());
+		for (size_t i = 0; i < arr.size(); i++)
+			glVertex2f(arr[i][0], arr[i][1]);
 	glEnd();
 	glFlush();
 }
 
+Point& PointArray::operator[](const int index) {return arr[index];}
+
+const Point& PointArray::operator[](const int index) const {return arr[index];}
+
 PointArray& PointArray::operator=(const PointArray& right) {
+	if (this == &right) {return *this;}
 	arr = right.arr;
 	return *this;
 }
 
+PointArray& PointArray::operator<<(const Point& right) {
+	arr.push_back(right); return *this;
+}
+
+PointArray& PointArray::operator<<(GLfloat cords[3]) {
+	arr.push_back(Point(cords)); return *this;
+}
+
+const PointArray operator*(const PointArray& left, const PointArray& right) {
+	if (left.arr.size() != 3) return right;
+	PointArray pa(right.arr.size());
+	GLfloat c[3] = {0,0,0};
+	for (int i = 0; i < right.arr.size(); i++) {
+		for (int j = 0; j < 3; j++) {
+			c[j] = left.arr[j] * right.arr[i];
+		}
+		pa[i] = c;
+	}
+	return pa;
+}
+
 Basis::Basis() : PointArray(0) {
-	push(Point(1, 0, 0));
-	push(Point(0, 1, 0));
-	push(Point(0, 0, 1));
+	*this << Point(1, 0, 0);
+	*this << Point(0, 1, 0);
+	*this << Point(0, 0, 1);
 }
 
 void Basis::rotate_to(GLfloat angle) {
 	Point zero;
-	zero.set(0,0,0);
-	printf("%f\n",arr[0].distance(zero));
-	arr[0].set(arr[0].distance(zero),0,0);
-	arr[1].set(0,arr[1].distance(zero),0);
-	arr[2].set(0,0,arr[2].distance(zero));
+	zero(0,0,0);
+	arr[0](arr[0].distance(zero),0,0);
+	arr[1](0,arr[1].distance(zero),0);
+	arr[2](0,0,arr[2].distance(zero));
 	rotate_rel(angle);
 }
 
 void Basis::rotate_rel(GLfloat angle) {
 	PointArray pa, th = *this;
 	GLfloat a = angle * M_PI / 180;
-	pa.push(Point(cos(a), -sin(a), 0));
-	pa.push(Point(sin(a), cos(a), 0));
-	pa.push(Point(0, 0, 1));
+	pa << Point(cos(a), -sin(a), 0);
+	pa << Point(sin(a), cos(a), 0);
+	pa << Point(0, 0, 1);
 	*this = pa * th;
 }
 
 Basis& Basis::operator=(const PointArray& right) {
-	arr = right.get_arr();
-	return *this;
-}
-
-const PointArray operator*(const PointArray& left, const PointArray& right) {
-	if (left.arr.size() != 3) return right;
-	PointArray pa(right.arr.size());
-	Point p;
-	GLfloat c[3] = {0,0,0};
-	for (int i = 0; i < right.arr.size(); i++) {
-		for (int j = 0; j < 3; j++) {
-			c[j] = left.arr[j] * right.arr[i];
-		}
-		p.set(c); pa.set(i,p);
-	}
-	return pa;
+	if (this == &right) {return *this;}
+	arr = right.get_arr(); return *this;
 }
 
 Path::Path() : PointArray(0), CP(0, 0) {}
 
-Path::Path(std::string pth) : PointArray(0), CP(0, 0) {set(pth);}
+Path::Path(const Path& right) : PointArray(0), CP(0, 0) {*this = right;}
 
-void Path::set(std::string pth) {
-	clear();
-	commands = (char*)"";
-	std::stringstream ss;
-	ss << pth;
-	std::string temp;
-	GLfloat fl; char ch;
-	int c = 0;
-	clear();
-	GLfloat c1[3]={0,0,0},c2[3]={0,0,0},c3[3]={0,0,0};
-	Point p1, p2, p3;
-	while (!ss.eof()) {
-		ss >> temp;
-		if (std::stringstream(temp) >> fl) {
-			if ((c/2)%3 == 0) c1[c%2] = fl;
-			else if ((c/2)%3 == 1) c2[c%2] = fl;
-			else c3[c%2] = fl;
-			c++;
-			if ((ch == 'V' || ch == 'v' || ch == 'H' || ch == 'h') && c == 1) {
-				if (ch == 'V' || ch == 'v') {
-					c1[1] = c1[0]; c1[0] = 0;
-				} else c1[1] = 0;
-				p1.set(c1);
-				push_command(ch, p1);
-				c = 0;
-			} else if ((ch == 'M' || ch == 'm' || ch == 'L') && c == 2) {
-				if (ch == 'V' || ch == 'v') {
-					c1[1] = c1[0]; c1[0] = 0;
-				}
-				p1.set(c1);
-				push_command(ch, p1);
-				c = 0;
-			} else if ((ch == 'Q' || ch == 'q') && c == 4) {
-				p1.set(c1);p2.set(c2);
-				push_command(ch, p1, p2);
-				c = 0;
-			}
-		} else if (std::stringstream(temp) >> ch) {
-			if (ch == 'Z') break;
-			c = 0;
-		}
-		temp = "";
-	}
+//~ Path::Path(const std::string& pth) : PointArray(0), CP(0, 0) {*this = pth;}
+
+void Path::clear() {
+	PointArray::clear(); CP(0, 0, 0); commands.clear();
 }
 
-void Path::push_command(char com, Point p1) {
+bool Path::empty() {return arr.size() == 0 && commands.size() == 0;}
+
+void Path::push_command(char com, const Point& p1) {
 	char * all_com = (char *)"MmLVvHh";
 	int len = strlen(all_com);
 	for (int i = 0; i < len; i++)
 		if (com == all_com[i]) {
-			//~ printf("%c %g %g\n", com, p1.get_x(), p1.get_y());
-			push(p1);
+			//~ printf("%c %f %f\n",com,p1[0],p1[1]);
+			*this << p1;
 			commands += com;
 			return;
 		}
 }
 
-void Path::push_command(char com, Point p1, Point p2) {
+void Path::push_command(char com, const Point& p1, const Point& p2) {
 	char * all_com = (char *)"Qq";
 	int len = strlen(all_com);
 	for (int i = 0; i < len; i++)
 		if (com == all_com[i]) {
-			//~ printf("%c %g %g %g %g\n", com, p1.get_x(), p1.get_y(),
-				//~ p2.get_x(), p2.get_y());
-			push(p1);push(p2);
+			//~ printf("%c %f %f %f %f\n",com,p1[0],p1[1],p2[0],p2[1]);
+			*this << p1; *this << p2;
 			commands += com;
 			return;
 		}
 }
 
-void Path::push_command(char com, Point p1, Point p2, Point p3) {
+void Path::push_command(char com, const Point& p1, const Point& p2,
+		const Point& p3) {
 	char * all_com = (char *)"Cc";
 	int len = strlen(all_com);
 	for (int i = 0; i < len; i++)
 		if (com == all_com[i]) {
-			push(p1);push(p2);push(p3);
+			*this << p1; *this << p2; *this << p3;
 			commands += com;
 			return;
 		}
@@ -380,9 +337,9 @@ void Path::generate(PointArray& dest) {
 	int x = 0;
 	for(int i = 0; i < commands.size(); i++) {
 		switch ((char)commands[i]) {
-			case 'M': CP = arr[x]; dest.push(CP); x++; break;
-			case 'm': CP = CP + arr[x]; dest.push(CP); x++; break;
-			case 'L': CP = arr[x]; dest.push(CP); x++; break;
+			case 'M': CP = arr[x]; dest << CP; x++; break;
+			case 'm': CP = CP + arr[x]; dest << CP; x++; break;
+			case 'L': CP = arr[x]; dest << CP; x++; break;
 			case 'Q':
 				p1 = arr[x]; p2 = arr[x+1];
 				q_bezier(dest, CP, p1, p2);
@@ -395,56 +352,108 @@ void Path::generate(PointArray& dest) {
 				CP = p2; x+=2;
 				break;
 			case 'h':
-				CP.set(CP.get_x() + arr[x].get_x(), CP.get_y());
-				dest.push(CP);
+				CP(CP[0] + arr[x][0], CP[1]);
+				dest << CP;
 				x++; i+=1;
 				break;
 			case 'H':
-				CP.set(arr[x].get_x(), CP.get_y());
-				dest.push(CP);
+				CP(arr[x][0], CP[1]);
+				dest << CP;
 				x++;
 				break;
 			case 'v':
-				CP.set(CP.get_x(), CP.get_y() + arr[x].get_y());
-				dest.push(CP);
+				CP(CP[0], CP[1] + arr[x][1]);
+				dest << CP;
 				x++;
 				break;
 			case 'V':
-				CP.set(CP.get_x(), arr[x].get_y());
-				dest.push(CP);
+				CP(CP[0], arr[x][1]);
+				dest << CP;
 				x++;
 				break;
 		}
 	}
-	dest.push(CP);
+	dest << CP;
 }
 
-void Path::q_bezier(PointArray& dest, Point p1, Point p2, Point p3) {
+void Path::q_bezier(PointArray& dest, const Point& p1, const Point& p2,
+		const Point& p3) {
 	Point b1, b2, b3;
 	for (GLfloat t = 0; t < 1; t+=0.1) {
 		b1.put_on_line(p1, p2, t);
 		b2.put_on_line(p2, p3, t);
 		b3.put_on_line(b1, b2, t);
-		dest.push(b3);
+		dest << b3;
 	}
 }
+
+//~ Path& Path::operator=(const Path& right) {
+	//~ if (this == &right) {return *this;}
+	//~ arr = right.arr;
+	//~ CP = right.CP;
+	//~ commands = right.commands;
+	//~ printf("%s f\n",commands.c_str());
+	//~ return *this;
+//~ }
+
+//~ Path& Path::operator=(const std::string& right) {
+	//~ clear();
+	//~ commands = (char*)"";
+	//~ std::stringstream ss;
+	//~ ss << right;
+	//~ std::string temp;
+	//~ GLfloat fl; char ch;
+	//~ int c = 0;
+	//~ clear();
+	//~ GLfloat c1[3]={0,0,0},c2[3]={0,0,0},c3[3]={0,0,0};
+	//~ Point p1, p2, p3;
+	//~ while (!ss.eof()) {
+		//~ ss >> temp;
+		//~ if (std::stringstream(temp) >> fl) {
+			//~ if ((c/2)%3 == 0) c1[c%2] = fl;
+			//~ else if ((c/2)%3 == 1) c2[c%2] = fl;
+			//~ else c3[c%2] = fl;
+			//~ c++;
+			//~ if ((ch == 'V' || ch == 'v' || ch == 'H' || ch == 'h') && c == 1) {
+				//~ if (ch == 'V' || ch == 'v') {
+					//~ c1[1] = c1[0]; c1[0] = 0;
+				//~ } else c1[1] = 0;
+				//~ p1 = c1;
+				//~ push_command(ch, p1);
+				//~ c = 0;
+			//~ } else if ((ch == 'M' || ch == 'm' || ch == 'L') && c == 2) {
+				//~ if (ch == 'V' || ch == 'v') {
+					//~ c1[1] = c1[0]; c1[0] = 0;
+				//~ }
+				//~ p1 = c1;
+				//~ push_command(ch, p1);
+				//~ c = 0;
+			//~ } else if ((ch == 'Q' || ch == 'q') && c == 4) {
+				//~ p1 = c1; p2 = c2;
+				//~ push_command(ch, p1, p2);
+				//~ c = 0;
+			//~ }
+		//~ } else if (std::stringstream(temp) >> ch) {
+			//~ if (ch == 'Z') break;
+			//~ c = 0;
+		//~ }
+		//~ temp = "";
+	//~ }
+	//~ return *this;
+//~ }
 
 Object::Object() : path_orig(), path(), points_orig(), points(),
 	basis(), pos() {}
 
-Object::Object(std::string pth) : path_orig(pth), path(), points_orig(),
+//~ Object::Object(const std::string& pth) : path_orig(pth), path(), points_orig(),
+	//~ points(), basis(), pos() {}
+
+Object::Object(const Path& pth) : path_orig(pth), path(), points_orig(),
 	points(), basis(), pos() {}
 
-Object::Object(Path pth) : path(), points_orig(),
-	points(), basis(), pos() {path_orig = pth;}
+void Object::move_to(const Point& p) {pos = p;}
 
-void Object::set(std::string pth) {path_orig.set(pth);}
-
-void Object::set(Path pth) {path_orig = pth;}
-
-void Object::move_to(Point p) {pos = p;}
-
-void Object::move_rel(Point p) {pos = pos + p;}
+void Object::move_rel(const Point& p) {pos = pos + p;}
 
 void Object::rotate_to(GLfloat angle) {basis.rotate_to(angle);}
 
@@ -455,4 +464,56 @@ void Object::render() {
 	points = basis * points_orig;
 	points.move_to(pos);
 	points.render();
+}
+
+//~ Object& Object::operator=(const std::string& right)
+	//~ {path_orig = right; return *this;}
+
+Object& Object::operator=(const Path& right) {path_orig = right; return *this;}
+
+void parse_string(std::vector<Object>& arr, const std::string& str) {
+	arr.clear();
+	std::stringstream ss;
+	ss << str;
+	std::string temp;
+	GLfloat fl; char ch = 0;
+	int c = 0;
+	//~ GLfloat c1[3]={0,0,0},c2[3]={0,0,0},c3[3]={0,0,0};
+	Point p1, p2, p3;
+	Path pth;
+	while (!ss.eof()) {
+		ss >> temp;
+		if (std::stringstream(temp) >> fl) {
+			if ((c/2)%3 == 0) p1[c%2] = fl;
+			else if ((c/2)%3 == 1) p2[c%2] = fl;
+			else p3[c%2] = fl;
+			c++;
+			if ((ch == 'V' || ch == 'v' || ch == 'H' || ch == 'h') && c == 1) {
+				if (ch == 'V' || ch == 'v') {
+					p1[1] = p1[0]; p1[0] = 0;
+				} else p1[1] = 0;
+				pth.push_command(ch, p1);
+				c = 0;
+			} else if ((ch == 'M' || ch == 'm' || ch == 'L') && c == 2) {
+				if (ch == 'V' || ch == 'v') {
+					p1[1] = p1[0]; p1[0] = 0;
+				}
+				pth.push_command(ch, p1);
+				c = 0;
+			} else if ((ch == 'Q' || ch == 'q') && c == 4) {
+				pth.push_command(ch, p1, p2);
+				c = 0;
+			}
+		} else if (std::stringstream(temp) >> ch) {
+			if (ch == 'Z') {
+				arr.push_back(Object(pth));
+				pth.clear();
+			}
+			c = 0;
+		}
+		temp = "";
+	}
+	if (!pth.empty()) arr.push_back(Object(pth));
+}
+
 }
