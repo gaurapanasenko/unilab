@@ -20,8 +20,8 @@ void display(void) {
 	cvs.clear_screen();
 	// clear the screen
 	cvs.set_window(-50, 800, -50, 800);
-	//~ arr[0].rotate_to(45);
-	//~ arr[0].move_to(Point(-100, 325));
+	arr[0].rotate_to(45);
+	//~ arr[0].move_to(Classes::Point(-100, 325));
 	arr[0].render();
 	//~ exit(0);
 	// send all output to display

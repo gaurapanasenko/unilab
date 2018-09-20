@@ -283,11 +283,48 @@ Basis& Basis::operator=(const PointArray& right) {
 	arr = right.get_arr(); return *this;
 }
 
-Path::Path() : PointArray(0), CP(0, 0) {}
 
-Path::Path(const Path& right) : PointArray(0), CP(0, 0) {*this = right;}
+Viewbox::Viewbox() : PointArray() {}
+
+Viewbox::Viewbox(Point p1, Point p2) : PointArray() {(*this)(p1,p2);}
+
+void Viewbox::generate_points() {
+	clear();
+	for (int i = 0; i < 2; i++)
+		for (int j = 0; j < 2; j++)
+			for (int k = 0; k < 2; k++)
+				*this << Point(p[i][0], p[j][1], p[k][2]);
+}
+
+GLfloat Viewbox::min(int cord) {
+	if (arr.size() == 0) return 0;
+	GLfloat min = arr[0][cord];
+	for (size_t i = 1; i < arr.size(); i++)
+		if (min > arr[i][cord]) min = arr[i][cord];
+	return min;
+}
+
+GLfloat Viewbox::max(int cord) {
+	if (arr.size() == 0) return 0;
+	GLfloat max = arr[0][cord];
+	for (size_t i = 1; i < arr.size(); i++)
+		if (max < arr[i][cord]) max = arr[i][cord];
+	return max;
+}
+
+Viewbox& Viewbox::operator()(Point p1, Point p2) {
+	p[0] = p1; p[1] = p2;
+	generate_points();
+	return *this;
+}
+
+Path::Path() : PointArray(0), CP(0, 0), box() {}
+
+Path::Path(const Path& right) : PointArray(0), CP(0, 0), box() {*this = right;}
 
 //~ Path::Path(const std::string& pth) : PointArray(0), CP(0, 0) {*this = pth;}
+
+Viewbox& Path::get_box() {return box;}
 
 void Path::clear() {
 	PointArray::clear(); CP(0, 0, 0); commands.clear();
@@ -502,6 +539,9 @@ void parse_string(std::vector<Object>& arr, const std::string& str) {
 				c = 0;
 			} else if ((ch == 'Q' || ch == 'q') && c == 4) {
 				pth.push_command(ch, p1, p2);
+				c = 0;
+			} else if (ch == 'P' && c == 4) {
+				pth.get_box()(p1, p2);
 				c = 0;
 			}
 		} else if (std::stringstream(temp) >> ch) {

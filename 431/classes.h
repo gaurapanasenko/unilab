@@ -104,14 +104,28 @@ public:
 	Basis& operator=(const PointArray& right);
 };
 
+class Viewbox : public PointArray {
+private:
+	Point p[2];
+public:
+	Viewbox();
+	Viewbox(Point p1, Point p2);
+	void generate_points();
+	GLfloat min(int cord);
+	GLfloat max(int cord);
+	Viewbox& operator()(Point p1, Point p2);
+};
+
 class Path : public PointArray {
 private:
 	Point CP;
 	std::string commands;
+	Viewbox box;
 public:
 	Path();
 	Path(const Path& pth);
-	Path(const std::string& pth);
+	//~ Path(const std::string& pth);
+	Viewbox& get_box();
 	void clear();
 	bool empty();
 	void push_command(char com, const Point& p1);
