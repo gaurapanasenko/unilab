@@ -4,12 +4,11 @@ DEPS = tclasses.h tclasses.tpp classes.h
 LIBS = -lglut -lGL -lGLU
 OBJ = main.o classes.o
 
-
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 main: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ -g $(CFLAGS) $(LIBS)
 
 .PHONY: clean
 

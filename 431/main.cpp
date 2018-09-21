@@ -12,15 +12,14 @@ using namespace std;
 Classes::Canvas cvs;
 // global canvas object
 
-Classes::Object l1;
 vector<Classes::Object> arr;
 
 //<<<<<<<<<<<<<<< display >>>>>>>>>>>>>>>
 void display(void) {
 	cvs.clear_screen();
 	// clear the screen
-	cvs.set_window(-50, 800, -50, 800);
-	arr[0].rotate_to(45);
+	cvs.set_window(-425, 425, -425, 425);
+	arr[0].rotate_to(90);
 	//~ arr[0].move_to(Classes::Point(-100, 325));
 	arr[0].render();
 	//~ exit(0);

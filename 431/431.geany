@@ -29,10 +29,10 @@ long_line_column=80
 
 [files]
 current_page=0
-FILE_NAME_0=440;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fmain.cpp;0;4
-FILE_NAME_1=8;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2FMakefile;0;4
-FILE_NAME_2=3547;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.cpp;0;4
-FILE_NAME_3=4114;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.h;0;4
+FILE_NAME_0=420;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fmain.cpp;0;4
+FILE_NAME_1=192;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2FMakefile;0;4
+FILE_NAME_2=14250;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.cpp;0;4
+FILE_NAME_3=4764;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.h;0;4
 FILE_NAME_4=2941;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Ftclasses.tpp;0;4
 FILE_NAME_5=1066;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Ftclasses.h;0;4
 FILE_NAME_6=4155;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fgl.h;0;4

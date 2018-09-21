@@ -84,16 +84,24 @@ protected:
 public:
 	PointArray();
 	PointArray(size_t rows);
+	PointArray(const PointArray& right);
+	PointArray(const std::vector<Point>& right);
 	void clear();
 	const std::vector<Point>& get_arr() const;
 	void move_to(const Point& p);
+	GLfloat min(int cord);
+	GLfloat max(int cord);
 	void render();
 	Point& operator[](const int index);
 	const Point& operator[](const int index) const;
 	PointArray& operator=(const PointArray& right);
+	PointArray& operator=(const std::vector<Point>& right);
 	PointArray& operator<<(const Point& right);
 	PointArray& operator<<(GLfloat cords[3]);
-	friend const PointArray operator*(const PointArray&, const PointArray&);
+	const PointArray operator*(const PointArray& right);
+	const PointArray operator*(const PointArray& right) const;
+	const Point operator*(const Point& right);
+	const Point operator*(const Point& right) const;
 };
 
 class Basis : public PointArray {
@@ -104,30 +112,27 @@ public:
 	Basis& operator=(const PointArray& right);
 };
 
-class Viewbox : public PointArray {
-private:
-	Point p[2];
-public:
-	Viewbox();
-	Viewbox(Point p1, Point p2);
-	void generate_points();
-	GLfloat min(int cord);
-	GLfloat max(int cord);
-	Viewbox& operator()(Point p1, Point p2);
-};
+//~ class Viewbox : public PointArray {
+//~ private:
+	//~ Point p[2];
+//~ public:
+	//~ Viewbox();
+	//~ Viewbox(Point p1, Point p2);
+	//~ void generate_points();
+	//~ Viewbox& operator()(const Point& p1, const Point& p2);
+	//~ Viewbox operator=(const Viewbox& right);
+//~ };
 
 class Path : public PointArray {
 private:
 	Point CP;
 	std::string commands;
-	Viewbox box;
 public:
 	Path();
 	Path(const Path& pth);
-	//~ Path(const std::string& pth);
-	Viewbox& get_box();
 	void clear();
 	bool empty();
+	void move_to(const Point& p);
 	void push_command(char com, const Point& p1);
 	void push_command(char com, const Point& p1, const Point& p2);
 	void push_command(char com, const Point& p1, const Point& p2,
@@ -135,9 +140,23 @@ public:
 	void generate(PointArray& dest);
 	void q_bezier(PointArray& dest, const Point& p1, const Point& p2,
 		const Point& p3);
-	//~ Path& operator=(const Path& right);
-	//~ Path& operator=(const std::string& right);
+	friend const Path operator*(const PointArray&, const Path&);
 };
+
+//~ class PathBox {
+//~ private:
+	//~ Path path;
+	//~ Viewbox box;
+//~ public:
+	//~ PathBox();
+	//~ PathBox(const Path& pth, const Viewbox& b);
+	//~ void move_to(const Point& p);
+	//~ Path& get_path();
+	//~ const Path& get_path() const;
+	//~ Viewbox& get_box();
+	//~ const Viewbox& get_box() const;
+	//~ friend const PathBox operator*(const PointArray&, const PathBox&);
+//~ };
 
 class Object {
 private:
@@ -147,15 +166,12 @@ private:
 	Point pos;
 public:
 	Object();
-	//~ Object(const std::string& pth);
 	Object(const Path& pth);
 	void move_to(const Point& p);
 	void move_rel(const Point& p);
 	void rotate_to(GLfloat angle);
 	void rotate_rel(GLfloat angle);
 	void render();
-	//~ Object& operator=(const std::string& right);
-	Object& operator=(const Path& right);
 };
 
 void parse_string(std::vector<Object>& arr, const std::string& str);

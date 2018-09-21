@@ -206,6 +206,10 @@ PointArray::PointArray() : arr(0) {}
 
 PointArray::PointArray(size_t rows) : arr(rows) {}
 
+PointArray::PointArray(const PointArray& right) {*this = right;}
+
+PointArray::PointArray(const std::vector<Point>& right) {*this = right;}
+
 void PointArray::clear() {arr.clear();}
 
 const std::vector<Point>& PointArray::get_arr() const { return arr; }
@@ -213,6 +217,22 @@ const std::vector<Point>& PointArray::get_arr() const { return arr; }
 void PointArray::move_to(const Point& p) {
 	for (size_t i = 0; i < arr.size(); i++)
 		arr[i] += p;
+}
+
+GLfloat PointArray::min(int cord) {
+	if (arr.size() == 0) return 0;
+	GLfloat min = arr[0][cord];
+	for (size_t i = 1; i < arr.size(); i++)
+		if (min > arr[i][cord]) min = arr[i][cord];
+	return min;
+}
+
+GLfloat PointArray::max(int cord) {
+	if (arr.size() == 0) return 0;
+	GLfloat max = arr[0][cord];
+	for (size_t i = 1; i < arr.size(); i++)
+		if (max < arr[i][cord]) max = arr[i][cord];
+	return max;
 }
 
 void PointArray::render() {
@@ -233,6 +253,11 @@ PointArray& PointArray::operator=(const PointArray& right) {
 	return *this;
 }
 
+PointArray& PointArray::operator=(const std::vector<Point>& right) {
+	arr = right;
+	return *this;
+}
+
 PointArray& PointArray::operator<<(const Point& right) {
 	arr.push_back(right); return *this;
 }
@@ -241,17 +266,26 @@ PointArray& PointArray::operator<<(GLfloat cords[3]) {
 	arr.push_back(Point(cords)); return *this;
 }
 
-const PointArray operator*(const PointArray& left, const PointArray& right) {
-	if (left.arr.size() != 3) return right;
+const PointArray PointArray::operator*(const PointArray& right) {
+	return static_cast<const PointArray&>(*this).operator*(right);
+}
+
+const PointArray PointArray::operator*(const PointArray& right) const {
+	if (arr.size() != 3) return right;
 	PointArray pa(right.arr.size());
-	GLfloat c[3] = {0,0,0};
-	for (int i = 0; i < right.arr.size(); i++) {
-		for (int j = 0; j < 3; j++) {
-			c[j] = left.arr[j] * right.arr[i];
-		}
-		pa[i] = c;
-	}
+	for (size_t i = 0; i < right.arr.size(); i++)
+		pa[i] = (*this) * right.arr[i];
 	return pa;
+}
+
+const Point PointArray::operator*(const Point& right) {
+	if (arr.size() != 3) return right;
+	return Point(arr[0]*right,arr[1]*right,arr[2]*right);
+}
+
+const Point PointArray::operator*(const Point& right) const {
+	if (arr.size() != 3) return right;
+	return Point(arr[0]*right,arr[1]*right,arr[2]*right);
 }
 
 Basis::Basis() : PointArray(0) {
@@ -284,53 +318,58 @@ Basis& Basis::operator=(const PointArray& right) {
 }
 
 
-Viewbox::Viewbox() : PointArray() {}
+//~ Viewbox::Viewbox() : PointArray() {p[0](0,0,0); p[1](0,0,0);}
 
-Viewbox::Viewbox(Point p1, Point p2) : PointArray() {(*this)(p1,p2);}
+//~ Viewbox::Viewbox(Point p1, Point p2) : PointArray() {(*this)(p1,p2);}
 
-void Viewbox::generate_points() {
-	clear();
-	for (int i = 0; i < 2; i++)
-		for (int j = 0; j < 2; j++)
-			for (int k = 0; k < 2; k++)
-				*this << Point(p[i][0], p[j][1], p[k][2]);
-}
+//~ void Viewbox::generate_points() {
+	//~ clear();
+	//~ for (int i = 0; i < 2; i++)
+		//~ for (int j = 0; j < 2; j++)
+			//~ for (int k = 0; k < 2; k++)
+				//~ *this << Point(p[i][0], p[j][1], p[k][2]);
+//~ }
 
-GLfloat Viewbox::min(int cord) {
-	if (arr.size() == 0) return 0;
-	GLfloat min = arr[0][cord];
-	for (size_t i = 1; i < arr.size(); i++)
-		if (min > arr[i][cord]) min = arr[i][cord];
-	return min;
-}
+//~ Viewbox& Viewbox::operator()(const Point& p1, const Point& p2) {
+	//~ p[0] = p1; p[1] = p2;
+	//~ generate_points();
+	//~ return *this;
+//~ }
 
-GLfloat Viewbox::max(int cord) {
-	if (arr.size() == 0) return 0;
-	GLfloat max = arr[0][cord];
-	for (size_t i = 1; i < arr.size(); i++)
-		if (max < arr[i][cord]) max = arr[i][cord];
-	return max;
-}
+//~ Viewbox Viewbox::operator=(const Viewbox& right) {
+	//~ Viewbox v;
+	//~ v.arr = right.arr;
+	//~ v.p[0] = right.p[0];
+	//~ v.p[1] = right.p[1];
+	//~ return v;
+//~ }
 
-Viewbox& Viewbox::operator()(Point p1, Point p2) {
-	p[0] = p1; p[1] = p2;
-	generate_points();
-	return *this;
-}
+Path::Path() : PointArray(0), CP(0, 0) {}
 
-Path::Path() : PointArray(0), CP(0, 0), box() {}
-
-Path::Path(const Path& right) : PointArray(0), CP(0, 0), box() {*this = right;}
-
-//~ Path::Path(const std::string& pth) : PointArray(0), CP(0, 0) {*this = pth;}
-
-Viewbox& Path::get_box() {return box;}
+Path::Path(const Path& right) : PointArray(0), CP(0, 0) {*this = right;}
 
 void Path::clear() {
 	PointArray::clear(); CP(0, 0, 0); commands.clear();
 }
 
 bool Path::empty() {return arr.size() == 0 && commands.size() == 0;}
+
+void Path::move_to(const Point& p) {
+	int x = 0;
+	for(int i = 0; i < commands.size(); i++) {
+		switch ((char)commands[i]) {
+			case 'M': arr[x] += p; x++; break;
+			case 'm': x++; break;
+			case 'L': arr[x] += p; x++; break;
+			case 'Q': arr[x] += p; arr[x+1] += p; x+=2; break;
+			case 'q': x+=2; break;
+			case 'h': x++; break;
+			case 'H': arr[x] += p; x++; break;
+			case 'v': x++; break;
+			case 'V': arr[x] += p; x++; break;
+		}
+	}
+}
 
 void Path::push_command(char com, const Point& p1) {
 	char * all_com = (char *)"MmLVvHh";
@@ -391,7 +430,7 @@ void Path::generate(PointArray& dest) {
 			case 'h':
 				CP(CP[0] + arr[x][0], CP[1]);
 				dest << CP;
-				x++; i+=1;
+				x++;
 				break;
 			case 'H':
 				CP(arr[x][0], CP[1]);
@@ -423,15 +462,6 @@ void Path::q_bezier(PointArray& dest, const Point& p1, const Point& p2,
 		dest << b3;
 	}
 }
-
-//~ Path& Path::operator=(const Path& right) {
-	//~ if (this == &right) {return *this;}
-	//~ arr = right.arr;
-	//~ CP = right.CP;
-	//~ commands = right.commands;
-	//~ printf("%s f\n",commands.c_str());
-	//~ return *this;
-//~ }
 
 //~ Path& Path::operator=(const std::string& right) {
 	//~ clear();
@@ -479,14 +509,44 @@ void Path::q_bezier(PointArray& dest, const Point& p1, const Point& p2,
 	//~ return *this;
 //~ }
 
+const Path operator*(const PointArray& left, const Path& right) {
+	Path p;
+	PointArray pa;
+	pa = left.operator*(right);
+	p.arr = pa.get_arr();
+	p.commands = right.commands;
+	return p;
+}
+
+//~ PathBox::PathBox() : path(), box() {}
+
+//~ PathBox::PathBox(const Path& pth, const Viewbox& b) : path(pth), box(b) {}
+
+//~ void PathBox::move_to(const Point& p) {
+	//~ path.move_to(p);
+	//~ box.move_to(p);
+//~ }
+
+//~ Path& PathBox::get_path() {return path;}
+
+//~ const Path& PathBox::get_path() const {return path;}
+
+//~ Viewbox& PathBox::get_box() {return box;}
+
+//~ const Viewbox& PathBox::get_box() const {return box;}
+
+//~ const PathBox operator*(const PointArray& left, const PathBox& right) {
+	//~ PathBox p;
+	//~ p.get_path() = left * right.get_path();
+	//~ p.get_box() = left * right.get_box();
+	//~ return p;
+//~ }
+
 Object::Object() : path_orig(), path(), points_orig(), points(),
 	basis(), pos() {}
 
-//~ Object::Object(const std::string& pth) : path_orig(pth), path(), points_orig(),
-	//~ points(), basis(), pos() {}
-
-Object::Object(const Path& pth) : path_orig(pth), path(), points_orig(),
-	points(), basis(), pos() {}
+Object::Object(const Path& pth) : path_orig(pth), path(),
+	points_orig(), points(), basis(), pos() {}
 
 void Object::move_to(const Point& p) {pos = p;}
 
@@ -498,15 +558,18 @@ void Object::rotate_rel(GLfloat angle) {basis.rotate_rel(angle);}
 
 void Object::render() {
 	path_orig.generate(points_orig);
+	Point center((points_orig.min(0) - points_orig.max(0)) / 2
+				- points_orig.min(0),
+			(points_orig.min(1) - points_orig.max(1)) / 2 - points_orig.min(1),
+			(points_orig.min(2) - points_orig.max(2)) / 2 - points_orig.min(2));
+	points_orig.move_to(center);
 	points = basis * points_orig;
 	points.move_to(pos);
 	points.render();
 }
 
-//~ Object& Object::operator=(const std::string& right)
+//~ Object& Object::operator=(const Path& right)
 	//~ {path_orig = right; return *this;}
-
-Object& Object::operator=(const Path& right) {path_orig = right; return *this;}
 
 void parse_string(std::vector<Object>& arr, const std::string& str) {
 	arr.clear();
@@ -515,7 +578,6 @@ void parse_string(std::vector<Object>& arr, const std::string& str) {
 	std::string temp;
 	GLfloat fl; char ch = 0;
 	int c = 0;
-	//~ GLfloat c1[3]={0,0,0},c2[3]={0,0,0},c3[3]={0,0,0};
 	Point p1, p2, p3;
 	Path pth;
 	while (!ss.eof()) {
@@ -539,9 +601,6 @@ void parse_string(std::vector<Object>& arr, const std::string& str) {
 				c = 0;
 			} else if ((ch == 'Q' || ch == 'q') && c == 4) {
 				pth.push_command(ch, p1, p2);
-				c = 0;
-			} else if (ch == 'P' && c == 4) {
-				pth.get_box()(p1, p2);
 				c = 0;
 			}
 		} else if (std::stringstream(temp) >> ch) {
