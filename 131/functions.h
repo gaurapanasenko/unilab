@@ -1,35 +1,27 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
-#include <vector>
+#define NUM_SIZE 8
+#include "stdio.h"
+#include "stdlib.h"
 
-void show_array(std::vector<std::vector<float>> arr);
+void ign_other(FILE * input);
 
-template <typename T>
-T fold_an_array(std::vector<T> arr);
+int get_number(FILE * input, int * number);
 
-template <typename T>
-T least(std::vector<T> arr);
+int menu (FILE * input, FILE * output, char * message, int count);
 
-template <typename T>
-T greatest(std::vector<T> arr);
+int rnd(int min, int max);
 
-template <typename T>
-T arithmetic_mean(std::vector<T> arr);
+int * generate_array(int n, int min, int max);
 
-template <typename T>
-std::vector<T> append_to_items(std::vector<T> arr);
+void print_array(FILE * input, int * a, int n);
 
-template <typename T>
-T multiply(std::vector<T> arr);
+int summarize(int * a, int n);
 
-template <typename T>
-std::vector<T> super_function(std::vector<T> arr);
+void multiply_elem(int x, int * a, int n);
 
-template <typename T>
-std::vector<std::vector<T>> separate_numbers(std::vector<T> arr);
+void split(int * a, int n, int *  b, int *bn, int *  c, int * cn);
 
-template <typename T>
-std::vector<T> add_arrays(std::vector<std::vector<T>> arr);
+int * summarize_arrays(int * a, int * b, int n);
 
-#include "functions.tpp"
 #endif

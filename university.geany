@@ -28,18 +28,21 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=2
-FILE_NAME_0=552;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fmain.cpp;0;4
-FILE_NAME_1=262;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2FMakefile;0;4
-FILE_NAME_2=1840;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.cpp;0;4
-FILE_NAME_3=383;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.h;0;4
-FILE_NAME_4=115;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2FMakefile;0;4
-FILE_NAME_5=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.cpp;0;4
-FILE_NAME_6=1492;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.h;0;4
-FILE_NAME_7=6101;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2Fc%2B%2B%2F8.2.1%2Fbits%2Fvector.tcc;0;4
+current_page=10
+FILE_NAME_0=1503;C;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fmain.c;0;4
+FILE_NAME_1=538;C;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Ffunctions.c;0;4
+FILE_NAME_2=58;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Ffunctions.h;0;4
+FILE_NAME_3=65;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2FMakefile;0;4
+FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fhard%2Fargs.cpp;0;4
+FILE_NAME_5=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fhard%2Fargs.h;0;4
+FILE_NAME_6=744;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fhard%2Ffunctions.h;0;4
+FILE_NAME_7=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fhard%2Ffunctions.tpp;0;4
+FILE_NAME_8=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2Fhard%2Fmain.cpp;0;4
+FILE_NAME_9=2383;C;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F123%2Ffunctions.c;0;4
+FILE_NAME_10=1;Markdown;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2FReadme.md;0;4
 
 [VTE]
-last_dir=/home/egor/projects/university/132
+last_dir=/home/egor/projects/university/131
 
 [build-menu]
 EX_00_LB=_Execute

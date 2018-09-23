@@ -1,9 +1,9 @@
-OBJ = main.o functions.o
-DEPS = functions.h
+OBJ = main.o args.o
+DEPS = args.h functions.h
 LIBS =
-CFLAGS = -Wall
-CC = gcc
-EXTENSION = .c
+CFLAGS =
+CC = g++
+EXTENSION = .cpp
 
 %.o: %$(EXTENSION) $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
