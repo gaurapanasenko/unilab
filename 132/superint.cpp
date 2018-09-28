@@ -139,7 +139,7 @@ char SuperInt::compare(const SuperInt& right) const {
 char SuperInt::compare_module(const SuperInt& right) const {
 	if (a.size() > right.a.size()) return 1;
 	else if (a.size() < right.a.size()) return -1;
-	for (size_t i = 0; i < a.size(); i++) {
+	for (size_t i = a.size() - 1; i > 0; i--) {
 		if (a[i] > right.a[i]) return 1;
 		else if (a[i] < right.a[i]) return -1;
 	}

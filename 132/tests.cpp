@@ -68,6 +68,56 @@ int test(int id) {
 		cout << "  Получили: " << num2 << endl;
 		return test_status(ss.str() == str);
 	} else if (id == x++) {
+		string str1 = "547509411375863014";
+		string str2 = "547509411375863014";
+		cout << "Тест " << id << ": Сравнение одинаковых чисел.\n"
+			 << "  " << str1 << " == " << str2 << endl;
+		SuperInt num1(str1), num2(str2);
+		return test_status(num1 == num2);
+	} else if (id == x++) {
+		string str1 = "547509411375863014";
+		string str2 = "-547509411375863014";
+		cout << "Тест " << id << ": Сравнение одинаковых по модулю чисел.\n"
+			 << "  " << str1 << " > " << str2 << endl;
+		SuperInt num1(str1), num2(str2);
+		test_status(num1 > num2);
+		return true;
+	} else if (id == x++) {
+		string str1 = "547509411375863014";
+		string str2 = "47509411375863014";
+		cout << "Тест " << id << ": Сравнение разных чисел.\n"
+			 << "  " << str1 << " > " << str2 << endl;
+		SuperInt num1(str1), num2(str2);
+		return test_status(num1 > num2);
+	} else if (id == x++) {
+		string str1 = "547509411375863014";
+		string str2 = "54750941137586301";
+		cout << "Тест " << id << ": Сравнение разных чисел.\n"
+			 << "  " << str1 << " > " << str2 << endl;
+		SuperInt num1(str1), num2(str2);
+		return test_status(num1 > num2);
+	} else if (id == x++) {
+		string str1 = "-547509411375863014";
+		string str2 = "54750941137586301";
+		cout << "Тест " << id << ": Сравнение разных чисел.\n"
+			 << "  " << str1 << " < " << str2 << endl;
+		SuperInt num1(str1), num2(str2);
+		return test_status(num1 < num2);
+	} else if (id == x++) {
+		string str1 = "547509411375863014";
+		string str2 = "24440630276";
+		cout << "Тест " << id << ": Сравнение разных чисел.\n"
+			 << "  " << str1 << " > " << str2 << endl;
+		SuperInt num1(str1), num2(str2);
+		return test_status(num1 > num2);
+	} else if (id == x++) {
+		string str1 = "547509411375863014";
+		string str2 = "1";
+		cout << "Тест " << id << ": Сравнение разных чисел.\n"
+			 << "  " << str1 << " > " << str2 << endl;
+		SuperInt num1(str1), num2(str2);
+		return test_status(num1 > num2);
+	} else if (id == x++) {
 		string str1 = "12345";
 		string str2 = "23456";
 		string str3 = "35801";
@@ -153,42 +203,6 @@ int test(int id) {
 		cout << "  Получили: " << num3 << endl;
 		ss << num3;
 		return test_status(ss.str() == str3);
-	} else if (id == x++) {
-		string str1 = "547509411375863014";
-		string str2 = "547509411375863014";
-		cout << "Тест " << id << ": Сравнение одинаковых чисел.\n"
-			 << "  " << str1 << " == " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
-		return test_status(num1 == num2);
-	} else if (id == x++) {
-		string str1 = "547509411375863014";
-		string str2 = "-547509411375863014";
-		cout << "Тест " << id << ": Сравнение одинаковых по модулю чисел.\n"
-			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
-		test_status(num1 > num2);
-		return true;
-	} else if (id == x++) {
-		string str1 = "547509411375863014";
-		string str2 = "47509411375863014";
-		cout << "Тест " << id << ": Сравнение разных чисел.\n"
-			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
-		return test_status(num1 > num2);
-	} else if (id == x++) {
-		string str1 = "547509411375863014";
-		string str2 = "54750941137586301";
-		cout << "Тест " << id << ": Сравнение разных чисел.\n"
-			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
-		return test_status(num1 > num2);
-	} else if (id == x++) {
-		string str1 = "-547509411375863014";
-		string str2 = "54750941137586301";
-		cout << "Тест " << id << ": Сравнение разных чисел.\n"
-			 << "  " << str1 << " < " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
-		return test_status(num1 < num2);
 	}
 	return 0;
 }
