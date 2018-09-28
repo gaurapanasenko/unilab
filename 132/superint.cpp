@@ -1,7 +1,9 @@
 #include "superint.h"
 
+using namespace std;
+
 SuperInt::SuperInt() {
-	a.resize(1,0);
+	a.resize(1,0); sign = 1;
 }
 
 SuperInt::SuperInt(const SuperInt& right) {
@@ -10,12 +12,12 @@ SuperInt::SuperInt(const SuperInt& right) {
 
 SuperInt::SuperInt(const std::vector<int>& x) { a = x; }
 
-SuperInt::SuperInt(const std::string& str) {
-	parse_string(str);
-}
+SuperInt::SuperInt(const std::string& str) { *this = str; }
+
+SuperInt::SuperInt(const char * str) { *this = str; }
 
 SuperInt& SuperInt::operator=(const SuperInt& right) {
-	a = std::vector<int>(right.a);
+	a = right.a; sign = right.sign;
 	return *this;
 }
 
@@ -27,34 +29,46 @@ SuperInt& SuperInt::operator=(const std::string& right) {
 	return *this;
 }
 
+SuperInt& SuperInt::operator=(const char * right) {
+	parse_string(string(right));
+	return *this;
+}
+
+SuperInt& SuperInt::operator()(const SuperInt& right) {
+	*this = right;
+	return *this;
+}
+
 SuperInt operator+(const SuperInt& left, const SuperInt& right) {
-	std::vector<int> out = left.a;
-	int carry = 0;
-	for (size_t i = 0; i < std::max(out.size(), right.a.size()) || carry; i++) {
-		if (i == out.size())
-			out.push_back(0);
-		out[i] += carry + (i < right.a.size() ? right.a[i] : 0);
-		carry = out[i] >= SUPERINT_CELL_MAX;
-		if (carry) out[i] -= SUPERINT_CELL_MAX;
-	}
-	return SuperInt(out);
+	SuperInt num;
+	if (left.sign == 1 && right.sign == 1)
+		num(left).summation(right.a);
+	else if (left.sign == -1 && right.sign == 1
+			&& left.compare_module(right) == 1)
+		num(left).subtraction(right.a);
+	else if (left.sign == -1 && right.sign == 1
+			&& left.compare_module(right) == -1)
+		num(right).subtraction(left.a);
+	else if (left.sign == 1 && right.sign == -1
+			&& left.compare_module(right) == 1)
+		num(left).subtraction(right.a);
+	else if (left.sign == 1 && right.sign == -1
+			&& left.compare_module(right) == -1)
+		num(right).subtraction(left.a);
+	else if (left.sign == -1 && right.sign == -1)
+		num(left).summation(right.a);
+	//~ std::cout << (int)left.compare_module(right) << endl;
+	return num;
 }
 
 SuperInt operator-(const SuperInt& left, const SuperInt& right) {
-	std::vector<int> out;
-	const std::vector<int> * in;
-	bool x = left < right;
-	if (x) { out = right.a; in = &left.a; }
-	else { out = left.a; in = &right.a; }
-	int carry = 0;
-	for (size_t i = 0; i < in->size() || carry; i++) {
-		out[i] -= carry + (i < in->size() ? in->at(i) : 0);
-		carry = out[i] < 0;
-		if (carry) out[i] += SUPERINT_CELL_MAX;
-	}
-	while (out.size() > 1 && out.back() == 0) out.pop_back();
-	if (x && !out.empty()) out.back() *= -1;
-	return SuperInt(out);
+	return left + SuperInt("-1") * right;
+	//~ std::vector<int> out;
+	//~ const std::vector<int> * in;
+	//~ bool x = left < right;
+	//~ if (x) { out = right.a; in = &left.a; }
+	//~ else { out = left.a; in = &right.a; }
+	//~ return SuperInt(out);
 }
 
 SuperInt operator*(const SuperInt& left, const SuperInt& right) {
@@ -102,6 +116,7 @@ bool operator >=(const SuperInt& left, const SuperInt& right) {
 }
 
 std::ostream &operator<<(std::ostream &output, const SuperInt &right) {
+	if (right.sign == -1) output << '-';
 	output << (right.a.empty() ? 0 : right.a.back());
 	for (int i = right.a.size() - 2; i >= 0; i--)
 		output << std::setfill('0') << std::setw(9) << right.a[i];
@@ -115,15 +130,13 @@ std::istream &operator>>(std::istream  &input, SuperInt &right) {
 	return input;
 }
 
-void SuperInt::parse_string(const std::string& str) {
-	a.clear();
-	for (int i = (int)str.length(); i > 0; i -= 9)
-		if (i < 9) a.push_back(atoi(str.substr(0, i).c_str()));
-		else a.push_back(atoi(str.substr(i - 9, 9).c_str()));
-	while (a.size() > 1 && a.back() == 0) a.pop_back();
+char SuperInt::compare(const SuperInt& right) const {
+	if (sign == 1 && right.sign == -1) return 1;
+	else if (sign == -1 && right.sign == 1) return -1;
+	return compare_module(right) * sign;
 }
 
-char SuperInt::compare(const SuperInt& right) const {
+char SuperInt::compare_module(const SuperInt& right) const {
 	if (a.size() > right.a.size()) return 1;
 	else if (a.size() < right.a.size()) return -1;
 	for (size_t i = 0; i < a.size(); i++) {
@@ -131,4 +144,45 @@ char SuperInt::compare(const SuperInt& right) const {
 		else if (a[i] < right.a[i]) return -1;
 	}
 	return 0;
+}
+
+bool SuperInt::parse_string(const std::string& str) {
+	if (!validate(str)) return false;
+	a.clear();
+	if (str[0] == '-') sign = -1; else sign = 1;
+	int x;
+	if (sign == 1) x = 0; else x = 1;
+	for (int i = (int)str.length(); i > x; i -= 9) {
+		if (i < 9) a.push_back(atoi(str.substr(x, i - x).c_str()));
+		else a.push_back(atoi(str.substr(i - 9, 9).c_str()));
+	}
+	while (a.size() > 1 && a.back() == 0) a.pop_back();
+	return true;
+}
+
+bool SuperInt::validate(const std::string& str) {
+	for (size_t i = 0; i < str.size(); i++)
+		if ((i != 0 || str[i] != '-') && (str[i] < '0' || str[i] > '9'))
+			return false;
+	return true;
+}
+
+void SuperInt::summation(const std::vector<int>& b) {
+	int carry = 0;
+	for (size_t i = 0; i < std::max(a.size(), b.size()) || carry; i++) {
+		if (i == a.size())
+			a.push_back(0);
+		a[i] += carry + (i < b.size() ? b[i] : 0);
+		carry = a[i] >= SUPERINT_CELL_MAX;
+		if (carry) a[i] -= SUPERINT_CELL_MAX;
+	}
+}
+void SuperInt::subtraction(const std::vector<int>& b) {
+	int carry = 0;
+	for (size_t i = 0; i < b.size() || carry; i++) {
+		a[i] -= carry + (i < b.size() ? b[i] : 0);
+		carry = a[i] < 0;
+		if (carry) a[i] += SUPERINT_CELL_MAX;
+	}
+	while (a.size() > 1 && a.back() == 0) a.pop_back();
 }

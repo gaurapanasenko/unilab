@@ -160,8 +160,8 @@ public:
 
 class Object {
 private:
-	Path path_orig, path;
-	PointArray points_orig, points;
+	Path path;
+	PointArray points_orig, points, points_triag;
 	Basis basis;
 	Point pos;
 public:
@@ -171,9 +171,12 @@ public:
 	void move_rel(const Point& p);
 	void rotate_to(GLfloat angle);
 	void rotate_rel(GLfloat angle);
+	void generate();
 	void render();
 };
 
 void parse_string(std::vector<Object>& arr, const std::string& str);
+
+int vector_product(Point p1, Point p2, Point p3);
 
 }

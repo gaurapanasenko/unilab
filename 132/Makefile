@@ -10,8 +10,11 @@ main.o: main.cpp
 superint.o: superint.cpp superint.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-main: main.o libsuperint.so
-	$(CC) -o $@ $@.o $(CFLAGS) $(LIBS) -L. -lsuperint
+tests.o: tests.cpp tests.h superint.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+main: main.o tests.o libsuperint.so
+	$(CC) -o $@ $@.o tests.o $(CFLAGS) $(LIBS) -L. -lsuperint
 
 libsuperint.so: superint.o
 	$(CC) -o $@ -shared $^ $(CFLAGS) $(LIBS)

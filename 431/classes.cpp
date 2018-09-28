@@ -12,7 +12,7 @@ Point::Point(GLfloat cords[3]) {*this = cords;}
 
 GLfloat * Point::get_cords() const {return (GLfloat *) cord;}
 
-void Point::vertex() {glVertex3f(cord[0], cord[1], cord[2]);}
+void Point::vertex() {glVertex3fv(cord);}
 
 void Point::put_on_line(const Point& a, const Point& b, GLfloat t) {
 	GLfloat * ac = a.get_cords(), * bc = b.get_cords(), cords[3] = {0, 0, 0};
@@ -238,7 +238,16 @@ GLfloat PointArray::max(int cord) {
 void PointArray::render() {
 	glBegin(GL_LINE_STRIP);
 		for (size_t i = 0; i < arr.size(); i++)
-			glVertex2f(arr[i][0], arr[i][1]);
+			glVertex2fv(arr[i].get_cords());
+	glEnd();
+	glPointSize(10);
+	glBegin(GL_POINTS);
+		for (size_t i = 0; i < arr.size(); i++)
+			glVertex2fv(arr[i].get_cords());
+	glEnd();
+	glBegin(GL_POLYGON);
+		for (size_t i = 0; i < arr.size(); i++)
+			glVertex2fv(arr[i].get_cords());
 	glEnd();
 	glFlush();
 }
@@ -455,7 +464,7 @@ void Path::generate(PointArray& dest) {
 void Path::q_bezier(PointArray& dest, const Point& p1, const Point& p2,
 		const Point& p3) {
 	Point b1, b2, b3;
-	for (GLfloat t = 0; t < 1; t+=0.1) {
+	for (GLfloat t = 0; t < 1; t+=1) {
 		b1.put_on_line(p1, p2, t);
 		b2.put_on_line(p2, p3, t);
 		b3.put_on_line(b1, b2, t);
@@ -542,11 +551,11 @@ const Path operator*(const PointArray& left, const Path& right) {
 	//~ return p;
 //~ }
 
-Object::Object() : path_orig(), path(), points_orig(), points(),
+Object::Object() : path(), points_orig(), points(), points_triag(),
 	basis(), pos() {}
 
-Object::Object(const Path& pth) : path_orig(pth), path(),
-	points_orig(), points(), basis(), pos() {}
+Object::Object(const Path& pth) : path(pth),
+	points_orig(), points(), points_triag(), basis(), pos() {generate();}
 
 void Object::move_to(const Point& p) {pos = p;}
 
@@ -556,13 +565,16 @@ void Object::rotate_to(GLfloat angle) {basis.rotate_to(angle);}
 
 void Object::rotate_rel(GLfloat angle) {basis.rotate_rel(angle);}
 
-void Object::render() {
-	path_orig.generate(points_orig);
+void Object::generate() {
+	path.generate(points_orig);
 	Point center((points_orig.min(0) - points_orig.max(0)) / 2
 				- points_orig.min(0),
 			(points_orig.min(1) - points_orig.max(1)) / 2 - points_orig.min(1),
 			(points_orig.min(2) - points_orig.max(2)) / 2 - points_orig.min(2));
 	points_orig.move_to(center);
+}
+
+void Object::render() {
 	points = basis * points_orig;
 	points.move_to(pos);
 	points.render();
@@ -613,6 +625,11 @@ void parse_string(std::vector<Object>& arr, const std::string& str) {
 		temp = "";
 	}
 	if (!pth.empty()) arr.push_back(Object(pth));
+}
+
+int vector_product(Point p1, Point p2, Point p3) {
+	//~ return (a.x*b.y - a.x*c.y - b.x*a.y + b.x*c.y + c.x*a.y - c.x*b.y );
+	return 0;
 }
 
 }
