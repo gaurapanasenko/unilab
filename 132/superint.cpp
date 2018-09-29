@@ -10,7 +10,7 @@ SuperInt::SuperInt(const SuperInt& right) {
 	*this = right;
 }
 
-SuperInt::SuperInt(const std::vector<int>& x) { a = x; }
+//SuperInt::SuperInt(const std::vector<int>& x) { a = x; }
 
 SuperInt::SuperInt(const std::string& str) { *this = str; }
 
@@ -21,8 +21,8 @@ SuperInt& SuperInt::operator=(const SuperInt& right) {
 	return *this;
 }
 
-SuperInt& SuperInt::operator=(const std::vector<int>& right)
-	{ a = right; return *this; }
+//SuperInt& SuperInt::operator=(const std::vector<int>& right)
+	//{ a = right; return *this; }
 
 SuperInt& SuperInt::operator=(const std::string& right) {
 	parse_string(right);
@@ -39,53 +39,38 @@ SuperInt& SuperInt::operator()(const SuperInt& right) {
 	return *this;
 }
 
+const string SuperInt::get_string() {
+	stringstream ss;
+	ss << *this;
+	return ss.str();
+}
+
 SuperInt operator+(const SuperInt& left, const SuperInt& right) {
-	SuperInt num;
-	if (left.sign == 1 && right.sign == 1)
-		num(left).summation(right.a);
-	else if (left.sign == -1 && right.sign == 1
-			&& left.compare_module(right) == 1)
-		num(left).subtraction(right.a);
-	else if (left.sign == -1 && right.sign == 1
-			&& left.compare_module(right) == -1)
-		num(right).subtraction(left.a);
-	else if (left.sign == 1 && right.sign == -1
-			&& left.compare_module(right) == 1)
-		num(left).subtraction(right.a);
-	else if (left.sign == 1 && right.sign == -1
-			&& left.compare_module(right) == -1)
-		num(right).subtraction(left.a);
-	else if (left.sign == -1 && right.sign == -1)
-		num(left).summation(right.a);
-	//~ std::cout << (int)left.compare_module(right) << endl;
-	return num;
+	return left.operator_sum_sub(1, right);
 }
 
 SuperInt operator-(const SuperInt& left, const SuperInt& right) {
-	return left + SuperInt("-1") * right;
-	//~ std::vector<int> out;
-	//~ const std::vector<int> * in;
-	//~ bool x = left < right;
-	//~ if (x) { out = right.a; in = &left.a; }
-	//~ else { out = left.a; in = &right.a; }
-	//~ return SuperInt(out);
+	return left.operator_sum_sub(-1, right);
 }
 
 SuperInt operator*(const SuperInt& left, const SuperInt& right) {
+	SuperInt num;
+	num.sign = left.sign * right.sign;
 	const std::vector<int> * a = &left.a, * b = &right.a;
+	std::vector<int> * c = &num.a;
 	long long base = SUPERINT_CELL_MAX;
-	std::vector<int> c(a->size() + b->size(), 0);
+	c->resize(a->size() + b->size(), 0);
 	long long cur;
 	for (size_t i = 0; i < a->size(); i++)
 		for (int j = 0, carry = 0; j < (int)b->size() || carry; j++) {
-			cur = c[i+j] + a->at(i) * 1ll * (j < (int)b->size() ? b->at(j) : 0)
-				+ carry;
-			c[i+j] = int (cur % base);
+			cur = c->at(i+j) + a->at(i) * 1ll
+				* (j < (int)b->size() ? b->at(j) : 0) + carry;
+			c->at(i+j) = int (cur % base);
 			carry = int (cur / base);
 		}
-	while (c.size() > 1 && c.back() == 0)
-		c.pop_back();
-	return SuperInt(c);
+	while (c->size() > 1 && c->back() == 0)
+		c->pop_back();
+	return num;
 }
 
 bool operator  <(const SuperInt& left, const SuperInt& right) {
@@ -139,7 +124,7 @@ char SuperInt::compare(const SuperInt& right) const {
 char SuperInt::compare_module(const SuperInt& right) const {
 	if (a.size() > right.a.size()) return 1;
 	else if (a.size() < right.a.size()) return -1;
-	for (size_t i = a.size() - 1; i > 0; i--) {
+	for (int i = (int)a.size() - 1; i >= 0; i--) {
 		if (a[i] > right.a[i]) return 1;
 		else if (a[i] < right.a[i]) return -1;
 	}
@@ -165,6 +150,16 @@ bool SuperInt::validate(const std::string& str) {
 		if ((i != 0 || str[i] != '-') && (str[i] < '0' || str[i] > '9'))
 			return false;
 	return true;
+}
+
+SuperInt SuperInt::operator_sum_sub(char s, const SuperInt& right) const {
+	SuperInt num;
+	if (sign * right.sign * s == 1)
+		num(*this).summation(right.a);
+	else if (compare_module(right) == -1)
+		num(right).subtraction(a);
+	else num(*this).subtraction(right.a);
+	return num;
 }
 
 void SuperInt::summation(const std::vector<int>& b) {

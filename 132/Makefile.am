@@ -35,11 +35,11 @@ libsuperint_la_LDFLAGS = -module \
 	-shared 
 
 bin_PROGRAMS =  \
-	132
+	main
 
-132_SOURCES =  \
+main_SOURCES =  \
 	main.cpp \
 	tests.cpp \
 	tests.h
 
-132_LDADD = libsuperint.la 
+main_LDADD = libsuperint.la 

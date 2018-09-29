@@ -20,14 +20,15 @@ private:
 public:
 	SuperInt();
 	SuperInt(const SuperInt& x);
-	SuperInt(const std::vector<int>& x);
+	//SuperInt(const std::vector<int>& x);
 	SuperInt(const std::string& str);
 	SuperInt(const char * str);
 	SuperInt& operator=(const SuperInt& right);
-	SuperInt& operator=(const std::vector<int>& right);
+	//SuperInt& operator=(const std::vector<int>& right);
 	SuperInt& operator=(const std::string& right);
 	SuperInt& operator=(const char * str);
 	SuperInt& operator()(const SuperInt& right);
+	const string get_string();
 	friend SuperInt operator+(const SuperInt& left, const SuperInt& right);
 	friend SuperInt operator-(const SuperInt& left, const SuperInt& right);
 	friend SuperInt operator*(const SuperInt& left, const SuperInt& right);
@@ -44,6 +45,7 @@ private:
 	char compare_module(const SuperInt& right) const;
 	bool parse_string(const std::string& str);
 	bool validate(const std::string& str);
+	SuperInt operator_sum_sub(char s, const SuperInt& right) const;
 	void summation(const std::vector<int>& b);
 	void subtraction(const std::vector<int>& b);
 };
