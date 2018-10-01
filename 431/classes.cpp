@@ -201,10 +201,9 @@ int PointArray::max(int cord) {
 }
 
 void PointArray::render() {
-	glColor3f(0.8, 0.8, 0.8);
+	//glColor3f(0.8, 0.8, 0.8);
+
 	glLineWidth(10);
-	glPointSize(20);
-	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_LINE_SMOOTH);
@@ -219,7 +218,8 @@ void PointArray::render() {
 	glBlendFunc(GL_NONE, GL_NONE);
 	glDisable(GL_LINE_SMOOTH);
 
-	/*glEnable(GL_BLEND);
+	/*glPointSize(20);
+	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_POINT_SMOOTH);
 	glHint (GL_POINT_SMOOTH_HINT, GL_NICEST);
@@ -235,7 +235,7 @@ void PointArray::render() {
 }
 
 void PointArray::render_triangles() {
-	glColor3f(0.2, 0.9, 0.2);
+	//glColor3f(0.2, 0.9, 0.2);
 	for (size_t i = 0; i < arr.size(); i+=3) {
 		glBegin(GL_POLYGON);
 			for (size_t j = 0; j < 3; j++)
@@ -529,16 +529,18 @@ void Object::render() {
 	PointArray pa;
 	pa = basis * points_triag;
 	pa.move_to(pos);
+	fc.set_color();
 	pa.render_triangles();
 	pa = basis * points_orig;
 	pa.move_to(pos);
+	bc.set_color();
 	pa.render();
 }
 
 std::istream &operator>>(std::istream& input, std::vector<Object>& arr) {
 	std::string temp;
 	char ch = 0, x = 0;
-	std::string com = "VvHhMmLlQqZ";
+	std::string com = "VvHhMmLlQqBFZ";
 	int c = 0;
 	Point p[3];
 	Color bc(0.5, 0.5, 0.5), fc(1, 1, 1);

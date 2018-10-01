@@ -28,21 +28,15 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=2
-FILE_NAME_0=420;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fmain.cpp;0;4
-FILE_NAME_1=192;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2FMakefile;0;4
-FILE_NAME_2=6815;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.cpp;0;4
-FILE_NAME_3=5053;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.h;0;4
-FILE_NAME_4=2941;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Ftclasses.tpp;0;4
-FILE_NAME_5=1066;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Ftclasses.h;0;4
-FILE_NAME_6=4155;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fgl.h;0;4
-FILE_NAME_7=0;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fglut.h;0;4
-FILE_NAME_8=89470;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fgl_mangle.h;0;4
-FILE_NAME_9=4683;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Ffreeglut_std.h;0;4
-FILE_NAME_10=14669;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fglu.h;0;4
-FILE_NAME_11=421;C++;0;EWINDOWS-1251;1;1;1;%2Fhome%2Fegor%2FDownloads%2Ftriangulation%2FTriangulationCl.h;0;4
-FILE_NAME_12=0;C++;0;EWINDOWS-1251;1;1;1;%2Fhome%2Fegor%2FDownloads%2Ftriangulation%2Ftriangles.cpp;0;4
-FILE_NAME_13=0;C++;0;EWINDOWS-1251;1;1;1;%2Fhome%2Fegor%2FDownloads%2Ftriangulation%2FConLIST.H;0;4
+current_page=0
+FILE_NAME_0=1724;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fmain.cpp;0;4
+FILE_NAME_1=6815;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.cpp;0;4
+FILE_NAME_2=4884;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F431%2Fclasses.h;0;4
+FILE_NAME_3=4155;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fgl.h;0;4
+FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fglut.h;0;4
+FILE_NAME_5=89470;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fgl_mangle.h;0;4
+FILE_NAME_6=4683;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Ffreeglut_std.h;0;4
+FILE_NAME_7=14669;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2FGL%2Fglu.h;0;4
 
 [VTE]
 last_dir=/home/egor/projects/university/431
