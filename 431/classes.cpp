@@ -2,7 +2,7 @@
 
 namespace Classes {
 
-Point::Point() {memset(cord, 0, 3*sizeof(float));}
+Point::Point() {memset(cord, 0, 3*sizeof(GLfloat));}
 
 Point::Point(GLfloat x, GLfloat y) { (*this)(x,y); }
 
@@ -21,7 +21,7 @@ void Point::put_on_line(const Point& a, const Point& b, GLfloat t) {
 	*this = cords;
 }
 
-// pa - point A, pb - point B, lac - AC length, lbc - BC length
+/*// pa - point A, pb - point B, lac - AC length, lbc - BC length
 void Point::calculate_third (const Point pa, const Point pb,
 		GLfloat lac, GLfloat lbc, int direction) {
 	if (pa[3] || pb[3]) return;
@@ -47,7 +47,7 @@ void Point::calculate_third (const Point pa, const Point pb,
 GLfloat Point::distance(const Point& a) {
 	return sqrt(pow(cord[0]-a[0],2)+pow(cord[1]-a[1],2)
 		+pow(cord[2]-a[2],2));
-}
+}*/
 
 Point& Point::operator=(const Point& right) {
 	if (this == &right) {return *this;}
@@ -65,7 +65,7 @@ GLfloat& Point::operator[](const int index) {return cord[index];}
 const GLfloat& Point::operator[](const int index) const {return cord[index];}
 
 Point& Point::operator()(GLfloat x, GLfloat y)
-	{cord[0] = x; cord[1] = y; return *this;}
+	{cord[0] = x; cord[1] = y; cord[2] = 0; return *this;}
 
 Point& Point::operator()(GLfloat x, GLfloat y, GLfloat z)
 	{cord[0] = x; cord[1] = y; cord[2] = z; return *this;}
@@ -83,10 +83,15 @@ bool operator!=(const Point& left, const Point& right) {
 }
 
 Point operator+(const Point& left, const Point& right) {
-	GLfloat v[3] = {0, 0, 0};
-	for (int i = 0; i < 3; i++)
-		v[i] = left.cord[i] + right.cord[i];
-	return Point(v);
+	Point p(left);
+	for (int i = 0; i < 3; i++) p[i] += right.cord[i];
+	return p;
+}
+
+Point operator-(const Point& left, const Point& right) {
+	Point p(left);
+	for (int i = 0; i < 3; i++) p[i] -= right.cord[i];
+	return p;
 }
 
 Point& operator+=(Point& left, const Point& right) {
@@ -102,105 +107,65 @@ const GLfloat operator*(const Point& left, const Point& right) {
 	return x;
 }
 
-Canvas::Canvas() : CP(), viewport(), window() {
+
+Color::Color() {memset(rgb, 0, 3*sizeof(GLfloat));}
+
+Color::Color(const Color& c) {*this = c;}
+
+Color::Color(GLfloat r, GLfloat g, GLfloat b) {(*this)(r,g,b);}
+
+Color::Color(const GLfloat in_rgb[3]) { *this = in_rgb; }
+
+Color& Color::operator=(const Color& right) {
+	*this = right.rgb;
+	return *this;
 }
 
-void Canvas::init(int argc, char * argv[], GLint width, GLint height,
-		char * window_title) {
-	glutInit(&argc, argv);
-	// initialize the toolkit
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-	// set display mode
-	glutInitWindowSize(width, height);
-	// set window size
-	glutInitWindowPosition(100, 100);
-	// set window position
-	glutCreateWindow(window_title);
-	// open the screen window
-	set_window(-width/2, width/2, -height/2, height/2);
-	// default world window
-	resize(width, height);
+Color& Color::operator=(const GLfloat right[3]) {
+	memcpy(rgb, right, sizeof(rgb));
+	return *this;
 }
 
-void Canvas::resize(GLint width, GLint height) {
-	GLfloat R = get_window_aspect_ratio();
-	GLint diff = abs(width - height) / 2;
-	if (R > width/height) set_viewport(0, width, diff, width + diff);
-	else set_viewport(diff, height + diff, 0, height);
-	window_width = width;
-	window_height = height;
+Color& Color::operator()(GLfloat r, GLfloat g, GLfloat b) {
+	rgb[0] = r; rgb[1] = g; rgb[2] = b;
+	return *this;
+
+}
+GLfloat& Color::operator[](const int index) { return rgb[index]; }
+
+void Color::set_color() {glColor3fv(rgb);}
+
+Canvas::Canvas() {
+	height = 0; width = 0;
+	for (int i = 0; i < 4; i++) ortho[i] = 0;
 }
 
-void Canvas::set_viewport(GLint l, GLint r, GLint b, GLint t) {
-	glViewport(l, b, r-l, t-b);
-	viewport.set(l, r, b, t);
+void Canvas::set_ortho(GLfloat l, GLfloat r, GLfloat b, GLfloat t) {
+	ortho[0] = l; ortho[1] = r; ortho[2] = b; ortho[3] = t;
+	resize();
 }
 
-void Canvas::set_window(GLfloat l, GLfloat r, GLfloat b, GLfloat t) {
+void Canvas::set_window_size(GLint w, GLint h) {
+	width = w; height = h; resize();
+}
+
+void Canvas::resize() {
+	GLfloat r1 = (ortho[1] - ortho[0]) / (ortho[3] - ortho[2]),
+			r2 = width * 1.0 / height,
+			o[4] = {ortho[0], ortho[1], ortho[2], ortho[3]};
+	if (r1 < r2) {
+		o[0] = o[2] * r2; o[1] = o[3] * r2;
+	} else  {
+		o[2] = o[0] / r2; o[3] = o[1] / r2;
+	}
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(l, r, b, t);
-	window.set(l, r, b, t);
+	gluOrtho2D(o[0], o[1], o[2], o[3]);
+	//GLint diff = abs(width - height) / 2;
+	//if (r > r2) glViewport(0, diff, width, width);
+	//else glViewport(diff, 0, height, height);
+	glViewport(0, 0, width, height);
 }
-
-Rect<GLint> Canvas::get_viewport() {return viewport;}
-
-Rect<GLfloat> Canvas::get_window() {return window;}
-
-GLfloat Canvas::get_width() {return window_width;}
-GLfloat Canvas::get_height() {return window_height;}
-
-GLfloat Canvas::get_window_aspect_ratio() {
-	return ((GLfloat)(window.get_right()-window.get_left()))/
-			(window.get_top()-window.get_bottom());
-}
-
-void Canvas::clear_screen() {glClear(GL_COLOR_BUFFER_BIT);}
-
-void Canvas::set_background_color(GLfloat r, GLfloat g, GLfloat b) {
-	glClearColor(r, g, b, 0);
-}
-
-void Canvas::set_color(GLfloat r, GLfloat g, GLfloat b) {
-	glColor3f(0.0f, 0.0f, 0.0f);
-}
-
-//~ void Canvas::line_to(GLfloat x, GLfloat y) {
-	//~ glBegin(GL_LINES);
-		//~ glVertex2f(CP[0], CP[1]);
-		//~ glVertex2f(x, y);
-	//~ glEnd();
-	//~ // draw the line
-	//~ CP.set(x, y);
-	//~ // update the CP
-	//~ glFlush();
-//~ }
-//~ void Canvas::line_to(Point p) {line_to(p[0], p[1]);}
-
-//~ void Canvas::move_to(GLfloat x, GLfloat y) {CP.set(x, y);}
-//~ void Canvas::move_to(Point p) {CP = p;}
-
-//~ void Canvas::line_rel(GLfloat x, GLfloat y) {
-	//~ line_to(CP[0] + x, CP[1] + y);
-//~ }
-
-//~ void Canvas::move_rel(GLfloat x, GLfloat y) {
-	//~ move_to(CP[0] + x, CP[1] + y);
-//~ }
-
-//~ void Canvas::turn(GLfloat angle) {CD += angle;}
-//~ void Canvas::turn_to(GLfloat angle) {CD = angle;}
-
-
-//~ void Canvas::forward(GLfloat dist, int is_visible) {
-	//~ GLfloat x, y;
-	//~ const GLfloat RadPerDeg = M_PI / 180;
-	//~ // radians per degree
-	//~ x = CP[0] + dist * cos(RadPerDeg * CD);
-	//~ y = CP[1] + dist * sin(RadPerDeg * CD);
-	//~ if (is_visible) line_to(x, y);
-	//~ else move_to(x, y);
-//~ }
 
 PointArray::PointArray() : arr(0) {}
 
@@ -219,37 +184,66 @@ void PointArray::move_to(const Point& p) {
 		arr[i] += p;
 }
 
-GLfloat PointArray::min(int cord) {
+int PointArray::min(int cord) {
 	if (arr.size() == 0) return 0;
-	GLfloat min = arr[0][cord];
+	int min = 0;
 	for (size_t i = 1; i < arr.size(); i++)
-		if (min > arr[i][cord]) min = arr[i][cord];
+		if (arr[min][cord] > arr[i][cord]) min = i;
 	return min;
 }
 
-GLfloat PointArray::max(int cord) {
+int PointArray::max(int cord) {
 	if (arr.size() == 0) return 0;
-	GLfloat max = arr[0][cord];
+	int max = 0;
 	for (size_t i = 1; i < arr.size(); i++)
-		if (max < arr[i][cord]) max = arr[i][cord];
+		if (arr[max][cord] < arr[i][cord]) max = i;
 	return max;
 }
 
 void PointArray::render() {
-	glBegin(GL_LINE_STRIP);
-		for (size_t i = 0; i < arr.size(); i++)
-			glVertex2fv(arr[i].get_cords());
+	glColor3f(0.8, 0.8, 0.8);
+	glLineWidth(10);
+	glPointSize(20);
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_LINE_SMOOTH);
+	glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glBegin(GL_LINE_LOOP);
+		glVertex2fv(arr[0].get_cords());
+		for (size_t i = 1; i < arr.size(); i++)
+			if (arr[i] != arr[i-1])
+				glVertex2fv(arr[i].get_cords());
 	glEnd();
-	glPointSize(10);
+	glDisable(GL_BLEND);
+	glBlendFunc(GL_NONE, GL_NONE);
+	glDisable(GL_LINE_SMOOTH);
+
+	/*glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_POINT_SMOOTH);
+	glHint (GL_POINT_SMOOTH_HINT, GL_NICEST);
 	glBegin(GL_POINTS);
 		for (size_t i = 0; i < arr.size(); i++)
 			glVertex2fv(arr[i].get_cords());
 	glEnd();
-	glBegin(GL_POLYGON);
-		for (size_t i = 0; i < arr.size(); i++)
-			glVertex2fv(arr[i].get_cords());
-	glEnd();
-	glFlush();
+	glDisable(GL_BLEND);
+	glBlendFunc(GL_NONE, GL_NONE);
+	glDisable(GL_POINT_SMOOTH);*/
+
+	//glutSwapBuffers();
+}
+
+void PointArray::render_triangles() {
+	glColor3f(0.2, 0.9, 0.2);
+	for (size_t i = 0; i < arr.size(); i+=3) {
+		glBegin(GL_POLYGON);
+			for (size_t j = 0; j < 3; j++)
+				arr[i + j].vertex();
+		glEnd();
+		//glutSwapBuffers();
+		//usleep(1000);
+	}
 }
 
 Point& PointArray::operator[](const int index) {return arr[index];}
@@ -268,11 +262,12 @@ PointArray& PointArray::operator=(const std::vector<Point>& right) {
 }
 
 PointArray& PointArray::operator<<(const Point& right) {
-	arr.push_back(right); return *this;
+	arr.push_back(right);
+	return *this;
 }
 
 PointArray& PointArray::operator<<(GLfloat cords[3]) {
-	arr.push_back(Point(cords)); return *this;
+	*this << Point(cords); return *this;
 }
 
 const PointArray PointArray::operator*(const PointArray& right) {
@@ -297,22 +292,31 @@ const Point PointArray::operator*(const Point& right) const {
 	return Point(arr[0]*right,arr[1]*right,arr[2]*right);
 }
 
-Basis::Basis() : PointArray(0) {
+Basis::Basis() : PointArray(0) { CA = 0; CZ = 1; reset(); }
+
+void Basis::rotate_to(GLfloat angle) { CA = angle; reset(); }
+
+void Basis::rotate_rel(GLfloat angle) { CA += angle; rotate(angle); }
+
+void Basis::zoom_to(GLfloat x) { CZ = x; reset(); }
+
+void Basis::zoom_rel(GLfloat x) { CZ *= x; zoom(x); }
+
+Basis& Basis::operator=(const PointArray& right) {
+	if (this == &right) {return *this;}
+	arr = right.get_arr(); return *this;
+}
+
+void Basis::reset() {
+	clear();
 	*this << Point(1, 0, 0);
 	*this << Point(0, 1, 0);
 	*this << Point(0, 0, 1);
+	rotate(CA);
+	zoom(CZ);
 }
 
-void Basis::rotate_to(GLfloat angle) {
-	Point zero;
-	zero(0,0,0);
-	arr[0](arr[0].distance(zero),0,0);
-	arr[1](0,arr[1].distance(zero),0);
-	arr[2](0,0,arr[2].distance(zero));
-	rotate_rel(angle);
-}
-
-void Basis::rotate_rel(GLfloat angle) {
+void Basis::rotate(GLfloat angle) {
 	PointArray pa, th = *this;
 	GLfloat a = angle * M_PI / 180;
 	pa << Point(cos(a), -sin(a), 0);
@@ -321,51 +325,26 @@ void Basis::rotate_rel(GLfloat angle) {
 	*this = pa * th;
 }
 
-Basis& Basis::operator=(const PointArray& right) {
-	if (this == &right) {return *this;}
-	arr = right.get_arr(); return *this;
+void Basis::zoom(GLfloat x) {
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			arr[i][j] *= x;
 }
 
+Path::Path() : PointArray(0), CP(0, 0), commands("") {}
 
-//~ Viewbox::Viewbox() : PointArray() {p[0](0,0,0); p[1](0,0,0);}
-
-//~ Viewbox::Viewbox(Point p1, Point p2) : PointArray() {(*this)(p1,p2);}
-
-//~ void Viewbox::generate_points() {
-	//~ clear();
-	//~ for (int i = 0; i < 2; i++)
-		//~ for (int j = 0; j < 2; j++)
-			//~ for (int k = 0; k < 2; k++)
-				//~ *this << Point(p[i][0], p[j][1], p[k][2]);
-//~ }
-
-//~ Viewbox& Viewbox::operator()(const Point& p1, const Point& p2) {
-	//~ p[0] = p1; p[1] = p2;
-	//~ generate_points();
-	//~ return *this;
-//~ }
-
-//~ Viewbox Viewbox::operator=(const Viewbox& right) {
-	//~ Viewbox v;
-	//~ v.arr = right.arr;
-	//~ v.p[0] = right.p[0];
-	//~ v.p[1] = right.p[1];
-	//~ return v;
-//~ }
-
-Path::Path() : PointArray(0), CP(0, 0) {}
-
-Path::Path(const Path& right) : PointArray(0), CP(0, 0) {*this = right;}
+Path::Path(const Path& right) : PointArray(0), CP(0, 0), commands("")
+	{*this = right;}
 
 void Path::clear() {
-	PointArray::clear(); CP(0, 0, 0); commands.clear();
+	arr.clear(); CP(0, 0, 0); commands.clear();
 }
 
 bool Path::empty() {return arr.size() == 0 && commands.size() == 0;}
 
-void Path::move_to(const Point& p) {
+/*void Path::move_to(const Point& p) {
 	int x = 0;
-	for(int i = 0; i < commands.size(); i++) {
+	for(size_t i = 0; i < commands.size(); i++) {
 		switch ((char)commands[i]) {
 			case 'M': arr[x] += p; x++; break;
 			case 'm': x++; break;
@@ -378,14 +357,13 @@ void Path::move_to(const Point& p) {
 			case 'V': arr[x] += p; x++; break;
 		}
 	}
-}
+}*/
 
 void Path::push_command(char com, const Point& p1) {
-	char * all_com = (char *)"MmLVvHh";
+	char * all_com = (char *)"MmLlVvHh";
 	int len = strlen(all_com);
 	for (int i = 0; i < len; i++)
 		if (com == all_com[i]) {
-			//~ printf("%c %f %f\n",com,p1[0],p1[1]);
 			*this << p1;
 			commands += com;
 			return;
@@ -397,7 +375,6 @@ void Path::push_command(char com, const Point& p1, const Point& p2) {
 	int len = strlen(all_com);
 	for (int i = 0; i < len; i++)
 		if (com == all_com[i]) {
-			//~ printf("%c %f %f %f %f\n",com,p1[0],p1[1],p2[0],p2[1]);
 			*this << p1; *this << p2;
 			commands += com;
 			return;
@@ -420,11 +397,12 @@ void Path::generate(PointArray& dest) {
 	dest.clear();
 	Point p1, p2, p3;
 	int x = 0;
-	for(int i = 0; i < commands.size(); i++) {
+	for(size_t i = 0; i < commands.size(); i++) {
 		switch ((char)commands[i]) {
 			case 'M': CP = arr[x]; dest << CP; x++; break;
 			case 'm': CP = CP + arr[x]; dest << CP; x++; break;
 			case 'L': CP = arr[x]; dest << CP; x++; break;
+			case 'l': CP = CP + arr[x]; dest << CP; x++; break;
 			case 'Q':
 				p1 = arr[x]; p2 = arr[x+1];
 				q_bezier(dest, CP, p1, p2);
@@ -447,12 +425,12 @@ void Path::generate(PointArray& dest) {
 				x++;
 				break;
 			case 'v':
-				CP(CP[0], CP[1] + arr[x][1]);
+				CP(CP[0], CP[1] + arr[x][0]);
 				dest << CP;
 				x++;
 				break;
 			case 'V':
-				CP(CP[0], arr[x][1]);
+				CP(CP[0], arr[x][0]);
 				dest << CP;
 				x++;
 				break;
@@ -464,59 +442,13 @@ void Path::generate(PointArray& dest) {
 void Path::q_bezier(PointArray& dest, const Point& p1, const Point& p2,
 		const Point& p3) {
 	Point b1, b2, b3;
-	for (GLfloat t = 0; t < 1; t+=1) {
+	for (GLfloat t = 0; t < 1; t+=0.1) {
 		b1.put_on_line(p1, p2, t);
 		b2.put_on_line(p2, p3, t);
 		b3.put_on_line(b1, b2, t);
 		dest << b3;
 	}
 }
-
-//~ Path& Path::operator=(const std::string& right) {
-	//~ clear();
-	//~ commands = (char*)"";
-	//~ std::stringstream ss;
-	//~ ss << right;
-	//~ std::string temp;
-	//~ GLfloat fl; char ch;
-	//~ int c = 0;
-	//~ clear();
-	//~ GLfloat c1[3]={0,0,0},c2[3]={0,0,0},c3[3]={0,0,0};
-	//~ Point p1, p2, p3;
-	//~ while (!ss.eof()) {
-		//~ ss >> temp;
-		//~ if (std::stringstream(temp) >> fl) {
-			//~ if ((c/2)%3 == 0) c1[c%2] = fl;
-			//~ else if ((c/2)%3 == 1) c2[c%2] = fl;
-			//~ else c3[c%2] = fl;
-			//~ c++;
-			//~ if ((ch == 'V' || ch == 'v' || ch == 'H' || ch == 'h') && c == 1) {
-				//~ if (ch == 'V' || ch == 'v') {
-					//~ c1[1] = c1[0]; c1[0] = 0;
-				//~ } else c1[1] = 0;
-				//~ p1 = c1;
-				//~ push_command(ch, p1);
-				//~ c = 0;
-			//~ } else if ((ch == 'M' || ch == 'm' || ch == 'L') && c == 2) {
-				//~ if (ch == 'V' || ch == 'v') {
-					//~ c1[1] = c1[0]; c1[0] = 0;
-				//~ }
-				//~ p1 = c1;
-				//~ push_command(ch, p1);
-				//~ c = 0;
-			//~ } else if ((ch == 'Q' || ch == 'q') && c == 4) {
-				//~ p1 = c1; p2 = c2;
-				//~ push_command(ch, p1, p2);
-				//~ c = 0;
-			//~ }
-		//~ } else if (std::stringstream(temp) >> ch) {
-			//~ if (ch == 'Z') break;
-			//~ c = 0;
-		//~ }
-		//~ temp = "";
-	//~ }
-	//~ return *this;
-//~ }
 
 const Path operator*(const PointArray& left, const Path& right) {
 	Path p;
@@ -527,39 +459,16 @@ const Path operator*(const PointArray& left, const Path& right) {
 	return p;
 }
 
-//~ PathBox::PathBox() : path(), box() {}
-
-//~ PathBox::PathBox(const Path& pth, const Viewbox& b) : path(pth), box(b) {}
-
-//~ void PathBox::move_to(const Point& p) {
-	//~ path.move_to(p);
-	//~ box.move_to(p);
-//~ }
-
-//~ Path& PathBox::get_path() {return path;}
-
-//~ const Path& PathBox::get_path() const {return path;}
-
-//~ Viewbox& PathBox::get_box() {return box;}
-
-//~ const Viewbox& PathBox::get_box() const {return box;}
-
-//~ const PathBox operator*(const PointArray& left, const PathBox& right) {
-	//~ PathBox p;
-	//~ p.get_path() = left * right.get_path();
-	//~ p.get_box() = left * right.get_box();
-	//~ return p;
-//~ }
-
-Object::Object() : path(), points_orig(), points(), points_triag(),
+Object::Object() : bc(), fc(), path(), points_orig(), points(), points_triag(),
 	basis(), pos() {}
 
-Object::Object(const Path& pth) : path(pth),
-	points_orig(), points(), points_triag(), basis(), pos() {generate();}
+Object::Object(const Path& pth, const Color& b, const Color& f) : bc(b), fc(f),
+		path(pth), points_orig(), points(), points_triag(), basis(), pos() 
+	{generate();}
 
 void Object::move_to(const Point& p) {pos = p;}
 
-void Object::move_rel(const Point& p) {pos = pos + p;}
+void Object::move_rel(const Point& p) {pos += p;}
 
 void Object::rotate_to(GLfloat angle) {basis.rotate_to(angle);}
 
@@ -567,69 +476,159 @@ void Object::rotate_rel(GLfloat angle) {basis.rotate_rel(angle);}
 
 void Object::generate() {
 	path.generate(points_orig);
-	Point center((points_orig.min(0) - points_orig.max(0)) / 2
-				- points_orig.min(0),
-			(points_orig.min(1) - points_orig.max(1)) / 2 - points_orig.min(1),
-			(points_orig.min(2) - points_orig.max(2)) / 2 - points_orig.min(2));
+	int min_x = points_orig.min(0), min_y = points_orig.min(1),
+		min_z = points_orig.min(2), max_x = points_orig.max(0),
+		max_y = points_orig.max(1), max_z = points_orig.max(1);
+	Point center((points_orig[min_x][0] - points_orig[max_x][0]) / 2
+				 - points_orig[min_x][0],
+			(points_orig[min_y][1] - points_orig[max_y][1]) / 2
+				 - points_orig[min_y][1],
+			(points_orig[min_z][2] - points_orig[max_z][2]) / 2
+				 - points_orig[min_z][2]);
 	points_orig.move_to(center);
+	triangulate(points_orig, points_triag);
+}
+
+void Object::triangulate(const PointArray& in_pa, PointArray& out_pa) {
+	std::list<Point> d1;
+	std::copy(in_pa.get_arr().begin(),
+	      	  in_pa.get_arr().end(), std::back_inserter(d1));
+	std::list<Point>::iterator it_prev, it = d1.begin(), it_next, i;
+	bool x;
+	int tl = 0, tr = 0, turn;
+	GLfloat svp;
+	tl = 0; tr = 0;
+	for (i = d1.begin(); i != d1.end(); i++) {
+		svp = semi_vector_product(*prev_uniq(d1, i), *i, *next_uniq(d1, i));
+		if (svp > 0) tr++;
+		else if (svp < 0) tl++;
+	}
+	if (tr > tl) turn = 1; else turn = -1;
+	while (d1.size() > 3) {
+		it_prev = prev_uniq(d1, it); it_next = next_uniq(d1, it);
+		if (semi_vector_product(*it_prev, *it, *it_next) * turn >= 0) {
+			x = false;
+			for (i = d1.begin(); i != d1.end() && !x; i++)
+				if (is_d_in_abc(*it_prev, *it, *it_next, *i)) x = true;
+			if (!x) {
+				out_pa << *it_prev;
+				out_pa << *it;
+				out_pa << *it_next;
+				d1.erase(it);
+			}
+		}
+		it = it_next;
+	}
+	it_prev = prev_uniq(d1, it); it_next = next_uniq(d1, it);
+	out_pa << *it_prev;
+	out_pa << *it;
+	out_pa << *it_next;
 }
 
 void Object::render() {
-	points = basis * points_orig;
-	points.move_to(pos);
-	points.render();
+	PointArray pa;
+	pa = basis * points_triag;
+	pa.move_to(pos);
+	pa.render_triangles();
+	pa = basis * points_orig;
+	pa.move_to(pos);
+	pa.render();
 }
 
-//~ Object& Object::operator=(const Path& right)
-	//~ {path_orig = right; return *this;}
-
-void parse_string(std::vector<Object>& arr, const std::string& str) {
-	arr.clear();
-	std::stringstream ss;
-	ss << str;
+std::istream &operator>>(std::istream& input, std::vector<Object>& arr) {
 	std::string temp;
-	GLfloat fl; char ch = 0;
+	char ch = 0, x = 0;
+	std::string com = "VvHhMmLlQqZ";
 	int c = 0;
-	Point p1, p2, p3;
+	Point p[3];
+	Color bc(0.5, 0.5, 0.5), fc(1, 1, 1);
+	GLfloat * fl[6];
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 2; j++)
+			fl[2 * i + j] = &p[i][j]; 
 	Path pth;
-	while (!ss.eof()) {
-		ss >> temp;
-		if (std::stringstream(temp) >> fl) {
-			if ((c/2)%3 == 0) p1[c%2] = fl;
-			else if ((c/2)%3 == 1) p2[c%2] = fl;
-			else p3[c%2] = fl;
-			c++;
-			if ((ch == 'V' || ch == 'v' || ch == 'H' || ch == 'h') && c == 1) {
-				if (ch == 'V' || ch == 'v') {
-					p1[1] = p1[0]; p1[0] = 0;
-				} else p1[1] = 0;
-				pth.push_command(ch, p1);
-				c = 0;
-			} else if ((ch == 'M' || ch == 'm' || ch == 'L') && c == 2) {
-				if (ch == 'V' || ch == 'v') {
-					p1[1] = p1[0]; p1[0] = 0;
-				}
-				pth.push_command(ch, p1);
-				c = 0;
-			} else if ((ch == 'Q' || ch == 'q') && c == 4) {
-				pth.push_command(ch, p1, p2);
-				c = 0;
-			}
-		} else if (std::stringstream(temp) >> ch) {
-			if (ch == 'Z') {
-				arr.push_back(Object(pth));
-				pth.clear();
-			}
-			c = 0;
+	while (!input.eof()) {
+		input >> temp;
+		x = 0;
+		for (size_t i = 0; i < com.size() && !x; i++)
+			if (temp[0] == com[i]) x = 1;
+		if (x) ch = temp[0];
+			
+		p[0](0,0,0); p[1](0,0,0); p[2](0,0,0);
+		if (ch == 'V' || ch == 'v' || ch == 'H' || ch == 'h') c = 1;
+		else if (ch == 'M' || ch == 'm' || ch == 'L' || ch == 'l') c = 2;
+		else if (ch == 'B' || ch == 'F') c = 3;
+		else if (ch == 'Q' || ch == 'q') c = 4;
+		else if (ch == 'Z') {
+			arr.push_back(Object(pth, bc, fc));
+			pth.clear();
+			continue;
+		} else c = 0;
+		if (x) input >> temp;
+		for (int i = 0; i < c; i++) {
+			if (i > 0) input >> temp;
+			*(fl[i]) = atof(temp.c_str());
 		}
+		if (ch == 'B') {
+			bc[0] = *(fl[0]); bc[1] = *(fl[1]); bc[2] = *(fl[2]);
+		} else if (ch == 'F') {
+			fc[0] = *(fl[0]); fc[1] = *(fl[1]); fc[2] = *(fl[2]);
+		} else if (c == 1 || c == 2) pth.push_command(ch, p[0]);
+		else if (c == 3 || c == 4) pth.push_command(ch, p[0], p[1]);
+		else if (c == 5 || c == 6) pth.push_command(ch, p[0], p[1], p[2]);
 		temp = "";
 	}
-	if (!pth.empty()) arr.push_back(Object(pth));
+	if (!pth.empty()) arr.push_back(Object(pth, bc, fc));
+	return input;
 }
 
-int vector_product(Point p1, Point p2, Point p3) {
-	//~ return (a.x*b.y - a.x*c.y - b.x*a.y + b.x*c.y + c.x*a.y - c.x*b.y );
-	return 0;
+GLfloat scalar_product(const Point& a, const Point& b, const Point& c) {
+	return (a - b) * (c - b);
+}
+
+GLfloat semi_vector_product(const Point& a, const Point& b, const Point& c) {
+	Point ab = b - a, bc = c - b;
+	return ab[0] * bc[1] - ab[1] * bc[0];
+}
+
+GLfloat is_d_in_abc(const Point& a, const Point& b, const Point& c,
+                       const Point& d) {
+	if (a == d || b == d || c == d || a == b || a == c || b == c) return false;
+	GLfloat u = (a[0] - d[0]) * (b[1] - a[1]) - (b[1] - a[1]) * (a[1] - d[1]),
+			v = (b[0] - d[0]) * (c[1] - b[1]) - (c[0] - b[0]) * (b[1] - d[1]),
+			w = (c[0] - d[0]) * (a[1] - c[1]) - (a[0] - c[0]) * (c[1] - d[1]);
+	if (u * v > 0 && v * w > 0) return true;
+	else return false;
+}
+
+
+std::list<Point>::iterator prev_uniq(std::list<Point>& list,
+                                     const std::list<Point>::iterator& item) {
+	std::list<Point>::iterator i = prev(list, item);
+	while(*i == *item) i = prev(list, i);
+	return i;
+}
+
+std::list<Point>::iterator next_uniq(std::list<Point>& list,
+                                     const std::list<Point>::iterator& item) {
+	std::list<Point>::iterator i = next(list, item);
+	while(*i == *item) i = next(list, i);
+	return i;
+}
+
+std::list<Point>::iterator prev(std::list<Point>& list,
+                            	const std::list<Point>::iterator& item) {
+	std::list<Point>::iterator out = item;
+	if (out == list.begin()) out = list.end();
+	--out;
+	return out;
+}
+
+std::list<Point>::iterator next(std::list<Point>& list,
+                            	const std::list<Point>::iterator& item) {
+	std::list<Point>::iterator out = item; out++;
+	if (out == list.end()) out = list.begin();
+	return out;
 }
 
 }

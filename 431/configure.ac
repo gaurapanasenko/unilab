@@ -18,11 +18,13 @@ AC_PROG_CXX
 
 
 
-LT_INIT
 
 
 
 
+
+PKG_CHECK_MODULES(GL,glu
+gl)
 
 AC_OUTPUT([
 Makefile

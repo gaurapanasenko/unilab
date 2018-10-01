@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <iomanip>
 #include <algorithm>
+#include <sstream>
 
 #define SUPERINT_CELL_MAX 1000000000
 
@@ -49,5 +50,17 @@ private:
 	void summation(const std::vector<int>& b);
 	void subtraction(const std::vector<int>& b);
 };
+
+
+SuperInt operator+(const SuperInt& left, const SuperInt& right);
+SuperInt operator-(const SuperInt& left, const SuperInt& right);
+SuperInt operator*(const SuperInt& left, const SuperInt& right);
+bool operator  <(const SuperInt& left, const SuperInt& right);
+bool operator  >(const SuperInt& left, const SuperInt& right);
+bool operator ==(const SuperInt& left, const SuperInt& right);
+bool operator <=(const SuperInt& left, const SuperInt& right);
+bool operator >=(const SuperInt& left, const SuperInt& right);
+std::ostream &operator<<(std::ostream &output,const SuperInt &right);
+std::istream &operator>>(std::istream  &input, SuperInt &right);
 
 #endif

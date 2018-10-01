@@ -7,8 +7,8 @@
 #include <cstring>
 #include <sstream>
 #include <stdio.h>
-#include "tclasses.h"
-
+#include <list>
+#include <unistd.h>
 namespace Classes {
 
 class Point {
@@ -34,48 +34,35 @@ public:
 	friend bool operator==(const Point& left, const Point& right);
 	friend bool operator!=(const Point& left, const Point& right);
 	friend Point operator+(const Point& left, const Point& right);
+	friend Point operator-(const Point& left, const Point& right);
 	friend Point& operator+=(Point& left, const Point& right);
 	friend const GLfloat operator*(const Point&, const Point&);
 };
 
+class Color {
+private:
+	GLfloat rgb[3];
+public:
+	Color();
+	Color(const Color& c);
+	Color(GLfloat r, GLfloat g, GLfloat b);
+	Color(const GLfloat in_rgb[3]);
+	Color& operator=(const Color& right);
+	Color& operator=(const GLfloat right[3]);
+	Color& operator()(GLfloat r, GLfloat g, GLfloat b);
+	GLfloat& operator[](const int index);
+	void set_color();
+};
+
 class Canvas {
 private:
-	Point CP;
-	// current position in the world
-	GLfloat CD;
-	// current degree in the world
-	Rect<GLint> viewport;
-	// the current viewport
-	Rect<GLfloat> window;
-	// the current window
-	GLint window_width, window_height;
+	GLint width, height;
+	GLfloat ortho[4];
 public:
 	Canvas();
-	// constructor
-	void init(int argc, char * argv[], GLint width, GLint height,
-		char * window_title);
-	void resize(GLint width, GLint height);
-	void set_viewport(GLint l, GLint r, GLint b, GLint  t);
-	void set_window(GLfloat l, GLfloat r, GLfloat b, GLfloat t);
-	Rect<GLint> get_viewport();
-	// divulge the viewport data
-	Rect<GLfloat> get_window();
-	// divulge the window data
-	GLfloat get_width();
-	GLfloat get_height();
-	GLfloat get_window_aspect_ratio();
-	void clear_screen();
-	void set_background_color(GLfloat r, GLfloat g, GLfloat b);
-	void set_color(GLfloat r, GLfloat g, GLfloat b);
-	//~ void line_to(GLfloat x, GLfloat y);
-	//~ void line_to(Point p);
-	//~ void move_to(GLfloat x, GLfloat y);
-	//~ void move_to(Point p);
-	//~ void line_rel(GLfloat x, GLfloat y);
-	//~ void move_rel(GLfloat x, GLfloat y);
-	//~ void turn(GLfloat angl);
-	//~ void turn_to(GLfloat angl);
-	//~ void forward(GLfloat dist, int is_visible);
+	void set_ortho(GLfloat l, GLfloat r, GLfloat b, GLfloat t);
+	void set_window_size(GLint w, GLint h);
+	void resize();
 };
 
 class PointArray {
@@ -89,9 +76,10 @@ public:
 	void clear();
 	const std::vector<Point>& get_arr() const;
 	void move_to(const Point& p);
-	GLfloat min(int cord);
-	GLfloat max(int cord);
+	int min(int cord);
+	int max(int cord);
 	void render();
+	void render_triangles();
 	Point& operator[](const int index);
 	const Point& operator[](const int index) const;
 	PointArray& operator=(const PointArray& right);
@@ -105,23 +93,20 @@ public:
 };
 
 class Basis : public PointArray {
+private:
+	GLfloat CA, CZ;
 public:
 	Basis();
 	void rotate_to(GLfloat angle);
 	void rotate_rel(GLfloat angle);
+	void zoom_to(GLfloat x);
+	void zoom_rel(GLfloat x);
 	Basis& operator=(const PointArray& right);
+private:
+	void reset();
+	void rotate(GLfloat angle);
+	void zoom(GLfloat x);
 };
-
-//~ class Viewbox : public PointArray {
-//~ private:
-	//~ Point p[2];
-//~ public:
-	//~ Viewbox();
-	//~ Viewbox(Point p1, Point p2);
-	//~ void generate_points();
-	//~ Viewbox& operator()(const Point& p1, const Point& p2);
-	//~ Viewbox operator=(const Viewbox& right);
-//~ };
 
 class Path : public PointArray {
 private:
@@ -132,7 +117,7 @@ public:
 	Path(const Path& pth);
 	void clear();
 	bool empty();
-	void move_to(const Point& p);
+	//void move_to(const Point& p);
 	void push_command(char com, const Point& p1);
 	void push_command(char com, const Point& p1, const Point& p2);
 	void push_command(char com, const Point& p1, const Point& p2,
@@ -143,40 +128,44 @@ public:
 	friend const Path operator*(const PointArray&, const Path&);
 };
 
-//~ class PathBox {
-//~ private:
-	//~ Path path;
-	//~ Viewbox box;
-//~ public:
-	//~ PathBox();
-	//~ PathBox(const Path& pth, const Viewbox& b);
-	//~ void move_to(const Point& p);
-	//~ Path& get_path();
-	//~ const Path& get_path() const;
-	//~ Viewbox& get_box();
-	//~ const Viewbox& get_box() const;
-	//~ friend const PathBox operator*(const PointArray&, const PathBox&);
-//~ };
-
 class Object {
 private:
+	Color bc, fc;
 	Path path;
 	PointArray points_orig, points, points_triag;
 	Basis basis;
 	Point pos;
 public:
 	Object();
-	Object(const Path& pth);
+	Object(const Path& pth, const Color& b, const Color& f);
 	void move_to(const Point& p);
 	void move_rel(const Point& p);
 	void rotate_to(GLfloat angle);
 	void rotate_rel(GLfloat angle);
 	void generate();
+	void triangulate(const PointArray& in_pa, PointArray& out_pas);
 	void render();
 };
 
-void parse_string(std::vector<Object>& arr, const std::string& str);
+std::istream &operator>>(std::istream& input, std::vector<Object>& arr);
 
-int vector_product(Point p1, Point p2, Point p3);
+GLfloat scalar_product(const Point& p1, const Point& p2, const Point& p3);
+
+GLfloat semi_vector_product(const Point& a, const Point& b, const Point& c);
+
+GLfloat is_d_in_abc(const Point& a, const Point& b, const Point& c,
+                       const Point& d);
+
+std::list<Point>::iterator prev_uniq(std::list<Point>& list,
+                                     const std::list<Point>::iterator& item);
+
+std::list<Point>::iterator next_uniq(std::list<Point>& list,
+                                     const std::list<Point>::iterator& item);
+
+std::list<Point>::iterator prev(std::list<Point>& list,
+                            	const std::list<Point>::iterator& item);
+
+std::list<Point>::iterator next(std::list<Point>& list,
+                            	const std::list<Point>::iterator& item);
 
 }

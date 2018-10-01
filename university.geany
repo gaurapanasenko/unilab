@@ -28,14 +28,14 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=1
-FILE_NAME_0=129;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fmain.cpp;0;4
-FILE_NAME_1=1538;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.cpp;0;4
+current_page=6
+FILE_NAME_0=97;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fmain.cpp;0;4
+FILE_NAME_1=220;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.cpp;0;4
 FILE_NAME_2=401;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.h;0;4
-FILE_NAME_3=59;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2FMakefile;0;4
-FILE_NAME_4=188;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Ftests.h;0;4
-FILE_NAME_5=8155;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Ftests.cpp;0;4
-FILE_NAME_6=0;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2FMakefile;0;4
+FILE_NAME_3=188;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Ftests.h;0;4
+FILE_NAME_4=339;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Ftests.cpp;0;4
+FILE_NAME_5=0;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2FMakefile;0;4
+FILE_NAME_6=0;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2FMakefile.am;0;4
 
 [VTE]
 last_dir=/home/egor/projects/university/132
@@ -44,3 +44,11 @@ last_dir=/home/egor/projects/university/132
 EX_00_LB=_Execute
 EX_00_CM=make && LD_LIBRARY_PATH=. "./main"
 EX_00_WD=
+
+[prjorg]
+source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;
+header_patterns=*.h;*.H;*.hpp;*.hxx;*.h++;*.hh;
+ignored_dirs_patterns=.*;CVS;
+ignored_file_patterns=*.o;*.obj;*.a;*.lib;*.so;*.dll;*.lo;*.la;*.class;*.jar;*.pyc;*.mo;*.gmo;
+generate_tag_prefs=0
+external_dirs=
