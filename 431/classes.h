@@ -130,7 +130,7 @@ public:
 
 class Object {
 private:
-	Color bc, fc;
+	Color bc, fc, fc_orig;
 	Path path;
 	PointArray points_orig, points, points_triag;
 	Basis basis;
@@ -142,6 +142,8 @@ public:
 	void move_rel(const Point& p);
 	void rotate_to(GLfloat angle);
 	void rotate_rel(GLfloat angle);
+	void fill(const Color& c);
+	void refill();
 	void generate();
 	void triangulate(const PointArray& in_pa, PointArray& out_pas);
 	void render();

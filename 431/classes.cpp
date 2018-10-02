@@ -161,9 +161,6 @@ void Canvas::resize() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(o[0], o[1], o[2], o[3]);
-	//GLint diff = abs(width - height) / 2;
-	//if (r > r2) glViewport(0, diff, width, width);
-	//else glViewport(diff, 0, height, height);
 	glViewport(0, 0, width, height);
 }
 
@@ -201,8 +198,6 @@ int PointArray::max(int cord) {
 }
 
 void PointArray::render() {
-	//glColor3f(0.8, 0.8, 0.8);
-
 	glLineWidth(10);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -217,32 +212,14 @@ void PointArray::render() {
 	glDisable(GL_BLEND);
 	glBlendFunc(GL_NONE, GL_NONE);
 	glDisable(GL_LINE_SMOOTH);
-
-	/*glPointSize(20);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_POINT_SMOOTH);
-	glHint (GL_POINT_SMOOTH_HINT, GL_NICEST);
-	glBegin(GL_POINTS);
-		for (size_t i = 0; i < arr.size(); i++)
-			glVertex2fv(arr[i].get_cords());
-	glEnd();
-	glDisable(GL_BLEND);
-	glBlendFunc(GL_NONE, GL_NONE);
-	glDisable(GL_POINT_SMOOTH);*/
-
-	//glutSwapBuffers();
 }
 
 void PointArray::render_triangles() {
-	//glColor3f(0.2, 0.9, 0.2);
 	for (size_t i = 0; i < arr.size(); i+=3) {
 		glBegin(GL_POLYGON);
 			for (size_t j = 0; j < 3; j++)
 				arr[i + j].vertex();
 		glEnd();
-		//glutSwapBuffers();
-		//usleep(1000);
 	}
 }
 
@@ -341,23 +318,6 @@ void Path::clear() {
 }
 
 bool Path::empty() {return arr.size() == 0 && commands.size() == 0;}
-
-/*void Path::move_to(const Point& p) {
-	int x = 0;
-	for(size_t i = 0; i < commands.size(); i++) {
-		switch ((char)commands[i]) {
-			case 'M': arr[x] += p; x++; break;
-			case 'm': x++; break;
-			case 'L': arr[x] += p; x++; break;
-			case 'Q': arr[x] += p; arr[x+1] += p; x+=2; break;
-			case 'q': x+=2; break;
-			case 'h': x++; break;
-			case 'H': arr[x] += p; x++; break;
-			case 'v': x++; break;
-			case 'V': arr[x] += p; x++; break;
-		}
-	}
-}*/
 
 void Path::push_command(char com, const Point& p1) {
 	char * all_com = (char *)"MmLlVvHh";
@@ -463,7 +423,8 @@ Object::Object() : bc(), fc(), path(), points_orig(), points(), points_triag(),
 	basis(), pos() {}
 
 Object::Object(const Path& pth, const Color& b, const Color& f) : bc(b), fc(f),
-		path(pth), points_orig(), points(), points_triag(), basis(), pos() 
+		fc_orig(f), path(pth), points_orig(), points(), points_triag(),
+		basis(), pos() 
 	{generate();}
 
 void Object::move_to(const Point& p) {pos = p;}
@@ -473,6 +434,10 @@ void Object::move_rel(const Point& p) {pos += p;}
 void Object::rotate_to(GLfloat angle) {basis.rotate_to(angle);}
 
 void Object::rotate_rel(GLfloat angle) {basis.rotate_rel(angle);}
+
+void Object::fill(const Color& c) { fc = c; }
+
+void Object::refill() { fc = fc_orig; }
 
 void Object::generate() {
 	path.generate(points_orig);

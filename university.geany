@@ -28,17 +28,11 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=6
-FILE_NAME_0=97;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fmain.cpp;0;4
-FILE_NAME_1=220;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.cpp;0;4
-FILE_NAME_2=401;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsuperint.h;0;4
-FILE_NAME_3=188;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Ftests.h;0;4
-FILE_NAME_4=339;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Ftests.cpp;0;4
-FILE_NAME_5=0;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F131%2FMakefile;0;4
-FILE_NAME_6=0;Make;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2FMakefile.am;0;4
+current_page=0
+FILE_NAME_0=547;C++;0;EUTF-8;1;1;1;%2Ftmp%2Fmain.cpp;0;4
 
 [VTE]
-last_dir=/home/egor/projects/university/132
+last_dir=/tmp
 
 [build-menu]
 EX_00_LB=_Execute

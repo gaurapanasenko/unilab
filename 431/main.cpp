@@ -2,17 +2,17 @@
 /*
  * main.cpp
  * Copyright (C) 2018 Egor Panasenko <gaura.panasenko@gmail.com>
- * 
+ *
  * foobar-cpp is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * foobar-cpp is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -32,15 +32,19 @@ Classes::Canvas cvs;
 // global canvas object
 
 vector<Classes::Object> arr;
-int active = -1;
+int active = -1, ani1 = 0, ani2 = 0;
+GLfloat ang = 0;
 
 //<<<<<<<<<<<<<<< display >>>>>>>>>>>>>>>
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// clear the screen
 	cvs.set_ortho(-425*1.25, 425*1.25, -425*1.25, 425*1.25);
+	glPushMatrix();
+	glRotatef(ang, 0, 0, 1);
 	if (arr.size() > 0) arr[0].render();
 	if (arr.size() > 1) arr[1].render();
+	glPopMatrix();
 	glutSwapBuffers();
 	//~ exit(0);
 	// send all output to display
@@ -61,7 +65,7 @@ void keyboard(unsigned char theKey, GLint mouse_x, GLint mouse_y) {
 			break;
 		case 'w':
 			if (active == -1)
-				for (int i = 0; i < arr.size(); i++)
+				for (size_t i = 0; i < arr.size(); i++)
 					arr[i].move_rel(Classes::Point(0, 50));
 			else arr[active].move_rel(Classes::Point(0, 50));
 			break;
@@ -99,8 +103,74 @@ void keyboard(unsigned char theKey, GLint mouse_x, GLint mouse_y) {
 			active++;
 			if ((int)arr.size() == active) active = -1;
 			break;
+		case 'z':
+			arr[0].fill(Classes::Color(rand()%256*1.0/256,
+			                           rand()%256*1.0/256,
+			                           rand()%256*1.0/256));
+			break;
+		case 'x':
+			arr[1].fill(Classes::Color(rand()%256*1.0/256,
+			                           rand()%256*1.0/256,
+			                           rand()%256*1.0/256));
+			break;
+		case 'c':
+			/*arr[0].fill(Classes::Color(rand()%256*1.0/256,
+			                           rand()%256*1.0/256,
+			                           rand()%256*1.0/256));
+			arr[1].fill(Classes::Color(rand()%256*1.0/256,
+			                           rand()%256*1.0/256,
+			                           rand()%256*1.0/256));*/
+			arr[0].refill();
+			arr[1].refill();
+			break;
+		case 'r':
+			if (arr.size() > 0) {
+				arr[0].rotate_to(-10);
+				arr[0].move_to(Classes::Point(-100, 100));
+			}
+			if (arr.size() > 1) {
+				arr[1].rotate_to(10);
+				arr[1].move_to(Classes::Point(100, -100));
+			}
+			break;
 	}
 	display();
+}
+
+void special_keyboard(int theKey, GLint mouse_x, GLint mouse_y) {
+	switch (theKey) {
+		case GLUT_KEY_F6:
+			if (ani1 != -1 || ani2 != -1) {
+				ani1 = -1;ani2 = -1;
+			} else {ani1 = 0; ani2 = 0;}
+			break;
+		case GLUT_KEY_F7:
+			if (ani1 != 1 || ani2 != 1) {
+				ani1 = 1; ani2 = 1;
+			} else {ani1 = 0;ani2 = 0;}
+			break;
+		case GLUT_KEY_F8:
+			if (ani1 != 1 || ani2 != -1) {
+				ani1 = 1; ani2 = -1;
+			} else {ani1 = 0; ani2 = 0;}
+			break;
+		case GLUT_KEY_PAGE_UP:
+			ang += 10;
+			break;
+		case GLUT_KEY_PAGE_DOWN:
+			ang -= 10;
+			break;
+	}
+	display();
+}
+
+void timer_function(int value) {
+	if (ani1) arr[0].rotate_rel(ani1 * 10);
+	if (ani2) arr[1].rotate_rel(ani2 * 10);
+	if (ani1 || ani2) {
+		glutPostRedisplay();
+		glutTimerFunc(33, timer_function, 1);
+	}
 }
 
 //<<<<<<<<<<<<<<< main >>>>>>>>>>>>>>>
@@ -137,12 +207,13 @@ int main(int argc, char * argv[]) {
 	glutInit(&argc, argv);
 	// initialize the toolkit
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	//glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	// set display mode
 	glutInitWindowSize(700, 700);
 	// set window size
 	glutInitWindowPosition(25, 25);
 	// set window position
-	glutCreateWindow("Лабораторна робота 1");
+	glutCreateWindow("Laboratory work 1 by Egor Panasenko");
 	// open the screen window
 	cvs.set_window_size(700, 700);
 	// the window opened in the Canvas constructor
@@ -153,7 +224,9 @@ int main(int argc, char * argv[]) {
 	glutReshapeFunc(reshape);
 	// specifies the function called on a resize event
 	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(special_keyboard);
 	// keyboard event
+	glutTimerFunc(33, timer_function, 1);
 	glutMainLoop();
 	// go into a perpetual loop
 	return 0;
