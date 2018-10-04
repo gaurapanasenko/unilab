@@ -17,6 +17,25 @@ private:
     MiniParser mp;
 };
 
+class Polynomial {
+public:
+	Polynomial();
+	Polynomial(double a);
+	Polynomial(double a, double b);
+	Polynomial(const Polynomial& right);
+	const std::vector<double>& get_coefficients() const;
+	Polynomial& operator()(double a);
+	Polynomial& operator=(const Polynomial& right);
+	friend Polynomial operator+(const Polynomial& left,const Polynomial& right);
+	friend Polynomial operator-(const Polynomial& left,const Polynomial& right);
+	friend const Polynomial operator*(const Polynomial& left,
+	                                  const Polynomial& right);
+	friend std::ostream &operator<<(std::ostream &output,
+	                                const Polynomial &right);
+private:
+	std::vector<double> cof;
+};
+
 class Model {
 public:
 	Model();
