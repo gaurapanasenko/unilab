@@ -21,18 +21,19 @@ indent_mode=3
 name=main
 base_path=/home/egor/projects/university/531/
 description=
+file_patterns=
 
 [long line marker]
 long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=3
-FILE_NAME_0=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.cc;0;4
-FILE_NAME_1=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.h;0;4
-FILE_NAME_2=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmain.cc;0;4
-FILE_NAME_3=1010;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.cc;0;4
-FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.h;0;4
+current_page=2
+FILE_NAME_0=7437;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.cc;0;4
+FILE_NAME_1=1121;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.h;0;4
+FILE_NAME_2=4625;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.cc;0;4
+FILE_NAME_3=1506;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.h;0;4
+FILE_NAME_4=12449;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2Fglibmm-2.4%2Fglibmm%2Fustring.h;0;4
 
 [VTE]
 last_dir=/home/egor/projects/university/531/src
@@ -44,3 +45,11 @@ ignored_dirs_patterns=.*;CVS;
 ignored_file_patterns=*.o;*.obj;*.a;*.lib;*.so;*.dll;*.lo;*.la;*.class;*.jar;*.pyc;*.mo;*.gmo;
 generate_tag_prefs=0
 external_dirs=
+
+[build-menu]
+EX_00_LB=_Execute
+EX_00_CM=build-and-execute.sh 1
+EX_00_WD=
+NF_00_LB=_Make
+NF_00_CM=build-and-execute.sh
+NF_00_WD=

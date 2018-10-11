@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <stdlib.h>
+#include <iomanip>
 #include "MiniParser.hpp"
 
 class Function {
@@ -20,7 +21,7 @@ private:
 class Polynomial {
 public:
 	Polynomial();
-	Polynomial(double a);
+	Polynomial(const double& a);
 	Polynomial(double a, double b);
 	Polynomial(const Polynomial& right);
 	const std::vector<double>& get_coefficients() const;
@@ -39,18 +40,33 @@ private:
 class Model {
 public:
 	Model();
-	void update(Glib::ustring function, Glib::ustring in_a, Glib::ustring in_b,
-	            Glib::ustring control_points);
+	void update(const Glib::ustring& function,
+	            const Glib::ustring& in_a,
+	            const Glib::ustring& in_b,
+	            const Glib::ustring& in_n);
+	void resize(const int& h, const int& w);
 	const std::vector<double>& get_cp();
-	double get_a();
-	double get_b();
-	double operator()(char f, double x);
-	double lagrange(double x);
-	Glib::ustring lagrange_str();
-	
+	const double& get_a();
+	const double& get_b();
+	const    int& get_ox();
+	const    int& get_oy();
+	const double& get_min();
+	const double& get_max();
+	const double get_n();
+	const double get_h();
+	const std::map<double, double>& get_fx();
+	const std::map<double, double>& get_lx();
+	const double operator()(const char& f, const double& x);
+	const double lagrange(const double& x);
+	Glib::ustring generate_str();
+
 private:
-	double a, b;
+	void render();
+	double a, b, min, max, dx, dy, ii, h;
+	int height, width, ox, oy, n;
 	std::vector<double> cp;
+	std::map<double, double> fx, lx;
+	Glib::ustring fun_str;
 	Function * fun;
 };
 
