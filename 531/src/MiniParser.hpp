@@ -8,7 +8,7 @@ class MiniParserNode ;
 class MiniParser
 {
 public:
-    typedef double real ;
+    typedef long double real ;
     typedef std::map< std::string, real > IDMap ;
     
     // There is no order of operations (everything is evaluated left-associative),

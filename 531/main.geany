@@ -28,12 +28,14 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=2
-FILE_NAME_0=7437;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.cc;0;4
-FILE_NAME_1=1121;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.h;0;4
-FILE_NAME_2=4625;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.cc;0;4
-FILE_NAME_3=1506;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.h;0;4
+current_page=0
+FILE_NAME_0=4701;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.cc;0;4
+FILE_NAME_1=1104;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.h;0;4
+FILE_NAME_2=4635;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.cc;0;4
+FILE_NAME_3=1886;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.h;0;4
 FILE_NAME_4=12449;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2Fglibmm-2.4%2Fglibmm%2Fustring.h;0;4
+FILE_NAME_5=27009;C++;0;EUTF-8;1;1;1;%2Fusr%2Finclude%2Fc%2B%2B%2F5%2Fbits%2Fstl_vector.h;0;4
+FILE_NAME_6=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmain.cc;0;4
 
 [VTE]
 last_dir=/home/egor/projects/university/531/src

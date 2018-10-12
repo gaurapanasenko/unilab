@@ -25,12 +25,13 @@ main_SOURCES = \
 	derivedwindow.cc \
 	derivedwindow.h \
 	model.cc \
-	model.h
+	model.h \
+	MiniParser.cpp \
+	MiniParser.hpp
 
 main_LDFLAGS = 
 
-main_LDADD = $(MAIN_LIBS) \
-	miniparser.la
+main_LDADD = $(MAIN_LIBS)
 
 
 if NATIVE_WIN32
@@ -46,16 +47,6 @@ uninstall-local:
 	-rm -r $(uidir)
 	-rm -r $(pkgdatadir)
 
-
-lib_LTLIBRARIES =  \
-	miniparser.la
-
-miniparser_la_SOURCES =  \
-	MiniParser.cpp \
-	MiniParser.hpp
-
-miniparser_la_LDFLAGS = -module \
-	-avoid-version 
 
 AM_CXXFLAGS = -Wall \
 	-g 

@@ -10,64 +10,74 @@
 #include <iomanip>
 #include "MiniParser.hpp"
 
+typedef long double real;
+
 class Function {
 public:
-    Function(const char * str);
-    double operator()(double x);
+	Function(const char * str);
+	real operator()(const real& x);
 private:
-    MiniParser mp;
+	MiniParser mp;
 };
 
 class Polynomial {
 public:
 	Polynomial();
-	Polynomial(const double& a);
-	Polynomial(double a, double b);
+	Polynomial(const real& a);
+	Polynomial(const real& a, const real& b);
 	Polynomial(const Polynomial& right);
-	const std::vector<double>& get_coefficients() const;
-	Polynomial& operator()(double a);
+	const std::vector<real>& get_coefficients() const;
+	real operator()(const real& a);
 	Polynomial& operator=(const Polynomial& right);
-	friend Polynomial operator+(const Polynomial& left,const Polynomial& right);
-	friend Polynomial operator-(const Polynomial& left,const Polynomial& right);
-	friend const Polynomial operator*(const Polynomial& left,
-	                                  const Polynomial& right);
-	friend std::ostream &operator<<(std::ostream &output,
-	                                const Polynomial &right);
+	friend Polynomial operator+(const Polynomial& left,
+	                            const Polynomial& right);
+	friend Polynomial operator-(const Polynomial& left,
+	                            const Polynomial& right);
+	friend Polynomial operator*(const Polynomial& left,
+	                            const Polynomial& right);
+	friend Polynomial operator/(const Polynomial& left,
+	                            const real& right);
+	friend std::ostream& operator<<(std::ostream& output,
+	                                const Polynomial& right);
 private:
-	std::vector<double> cof;
+	std::vector<real> cof;
 };
 
 class Model {
 public:
 	Model();
-	void update(const Glib::ustring& function,
+	~Model();
+	bool update(const Glib::ustring& function,
 	            const Glib::ustring& in_a,
 	            const Glib::ustring& in_b,
 	            const Glib::ustring& in_n);
 	void resize(const int& h, const int& w);
-	const std::vector<double>& get_cp();
-	const double& get_a();
-	const double& get_b();
-	const    int& get_ox();
-	const    int& get_oy();
-	const double& get_min();
-	const double& get_max();
-	const double get_n();
-	const double get_h();
-	const std::map<double, double>& get_fx();
-	const std::map<double, double>& get_lx();
-	const double operator()(const char& f, const double& x);
-	const double lagrange(const double& x);
+	const std::vector<real>& get_cp();
+	const real& get_a();
+	const real& get_b();
+	const  int& get_ox();
+	const  int& get_oy();
+	const real& get_min();
+	const real& get_max();
+	const real get_n();
+	const real get_h();
+	const std::map<real, real>& get_fx();
+	const std::map<real, real>& get_Lx();
+	const std::map<real, real>& get_Px();
+	const std::map<real, real>& get_Fx();
+	const real operator()(const char& f, const real x);
+	const real lagrange(const real& x);
 	Glib::ustring generate_str();
 
 private:
 	void render();
-	double a, b, min, max, dx, dy, ii, h;
+	real a, b, min, max, dx, dy, ii, h;
 	int height, width, ox, oy, n;
-	std::vector<double> cp;
-	std::map<double, double> fx, lx;
+	std::vector<real> cp;
+	std::map<real, real> fx, Lx, Px, Fx;
 	Glib::ustring fun_str;
 	Function * fun;
+	Polynomial lag;
 };
 
 #endif //MODEL_H

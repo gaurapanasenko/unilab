@@ -2,7 +2,7 @@
 
 Function::Function(const char * str) : mp(str) {}
 
-double Function::operator()(double x) {
+real Function::operator()(const real& x) {
 	MiniParser::IDMap ids;
 	ids["x"] = x;
 	return mp.eval(ids);
@@ -10,16 +10,28 @@ double Function::operator()(double x) {
 
 Polynomial::Polynomial() : cof() {}
 
-Polynomial::Polynomial(const double& a) : cof() {cof.push_back(a);}
+Polynomial::Polynomial(const real& a) : cof() {cof.push_back(a);}
 
-Polynomial::Polynomial(double a, double b) : cof()
-	{cof.push_back(a); cof.push_back(b);}
+Polynomial::Polynomial(const real& a,
+                       const real& b) : cof() {
+	cof.push_back(a); cof.push_back(b);
+}
 
 Polynomial::Polynomial(const Polynomial& right) {(*this) = right;}
 
-const std::vector<double>& Polynomial::get_coefficients() const {return cof;}
+const std::vector<real>& Polynomial::get_coefficients() const {
+	return cof;
+}
 
-//Polynomial& Polynomial::operator()(double a);
+real Polynomial::operator()(const real& a) {
+	if (cof.size() == 0) return 0;
+	real out = 0;
+	size_t sz = cof.size();
+	for (size_t i = 0; i < sz; i++)
+		out += cof[i] * pow(a, sz - i - 1);
+	out += cof.back();
+	return out;
+}
 
 Polynomial& Polynomial::operator=(const Polynomial& right) {
 	cof = right.cof; return *this;
@@ -38,8 +50,7 @@ Polynomial operator+(const Polynomial& left, const Polynomial& right) {
 
 //Polynomial operator-(const Polynomial& left,const Polynomial& right);
 
-const Polynomial operator*(const Polynomial& left,
-                                  const Polynomial& right) {
+Polynomial operator*(const Polynomial& left, const Polynomial& right) {
 	Polynomial out;
 	const Polynomial * l, * r;
 	if (left.cof.size() > right.cof.size()) {l = &left; r = &right;}
@@ -51,8 +62,14 @@ const Polynomial operator*(const Polynomial& left,
 	return out;
 }
 
+Polynomial operator/(const Polynomial& left, const real& right) {
+	Polynomial out = left;
+	for (size_t i = 0; i < out.cof.size(); i++)
+		out.cof[i] /= right;
+	return out;
+}
 
-std::ostream &operator<<(std::ostream &output, const Polynomial &right) {
+std::ostream& operator<<(std::ostream& output,const Polynomial& right) {
 	size_t sz = right.cof.size();
 	for (size_t i = 0; i < sz; i++) {
 		output << right.cof[i];
@@ -61,6 +78,7 @@ std::ostream &operator<<(std::ostream &output, const Polynomial &right) {
 	}
 	return output;
 }
+
 Model::Model() : cp(0) {
 	fun_str = "x";
 	fun = new Function(fun_str.c_str());
@@ -68,12 +86,14 @@ Model::Model() : cp(0) {
 	height = 0, width = 0, ox = 0, oy = 0;
 }
 
-void Model::update(const Glib::ustring& function,
+Model::~Model() {delete fun;}
+
+bool Model::update(const Glib::ustring& function,
                    const Glib::ustring& in_a,
                    const Glib::ustring& in_b,
                    const Glib::ustring& in_n) {
 	char * end;
-	double tmp, aa = strtod(in_a.c_str(), &end),
+	real tmp, aa = strtod(in_a.c_str(), &end),
 		bb = strtod(in_b.c_str(), &end),
 		nn = strtod(in_n.c_str(), &end);
 	if (aa == bb) bb += 1;
@@ -82,17 +102,14 @@ void Model::update(const Glib::ustring& function,
 		fun_str = function; a = aa; b = bb; n = nn;
 		delete fun;
 		fun = new Function(fun_str.c_str());
-		//~ std::stringstream ss;
-		//~ cp_str = control_points;
-		//~ ss << cp_str;
-		//~ cp.clear();
-		//~ while (!ss.eof()) {
-			//~ ss >> tmp;
-			//~ cp.push_back(tmp);
-		//~ }
-		fx.clear(); lx.clear(); cp.clear();
+		cp.clear(); fx.clear(); Lx.clear(); Px.clear(); Fx.clear();
+		h = (b - a) / n;
+		for (int i = 0; i <= n; i++)
+			cp.push_back(a + i * h);
 		render();
+		return true;
 	}
+	return false;
 }
 
 void Model::resize(const int& h, const int& w) {
@@ -102,20 +119,22 @@ void Model::resize(const int& h, const int& w) {
 	}
 }
 
-const std::vector<double>& Model::get_cp() {return cp;}
-const double& Model::get_a()   {return a;}
-const double& Model::get_b()   {return b;}
+const std::vector<real>& Model::get_cp() {return cp;}
+const real& Model::get_a()   {return a;}
+const real& Model::get_b()   {return b;}
 const    int& Model::get_ox()  {return ox;}
 const    int& Model::get_oy()  {return oy;}
-const double& Model::get_min() {return min;}
-const double& Model::get_max() {return max;}
-const double Model::get_n() {return n;}
-const double Model::get_h() {return h;}
-const std::map<double, double>& Model::get_fx() {return fx;}
-const std::map<double, double>& Model::get_lx() {return lx;}
-const double Model::operator()(const char& f, const double& x) {
-	std::map<double,double>::iterator it;
-	double tmp;
+const real& Model::get_min() {return min;}
+const real& Model::get_max() {return max;}
+const real Model::get_n() {return n;}
+const real Model::get_h() {return h;}
+const std::map<real, real>& Model::get_fx() {return fx;}
+const std::map<real, real>& Model::get_Lx() {return Lx;}
+const std::map<real, real>& Model::get_Px() {return Px;}
+const std::map<real, real>& Model::get_Fx() {return Fx;}
+const real Model::operator()(const char& f, const real x) {
+	std::map<real,real>::iterator it;
+	real tmp;
 	switch(f) {
 		case 'f':
 			it = fx.find(x);
@@ -126,25 +145,44 @@ const double Model::operator()(const char& f, const double& x) {
 			return tmp;
 			break;
 		case 'L':
-			//~ it = lx.find(x);
-			//~ if (it != lx.end())
-				//~ return (*it).second;
+			it = Lx.find(x);
+			if (it != Lx.end())
+				return (*it).second;
 			tmp = lagrange(x);
-			//~ lx[x] = tmp;
+			//tmp = lag(x);
+			Lx[x] = tmp;
+			return tmp;
+			break;
+		case 'P':
+			it = Px.find(x);
+			if (it != Px.end())
+				return (*it).second;
+			tmp = 0;
+			//tmp = lag(x);
+			Px[x] = tmp;
+			return tmp;
+			break;
+		case 'F':
+			it = Fx.find(x);
+			if (it != Fx.end())
+				return (*it).second;
+			tmp = 0;
+			//tmp = lag(x);
+			Fx[x] = tmp;
 			return tmp;
 			break;
 		case 'X':
 			return (x - a) * dx + width * 0.05;
 			break;
 		case 'Y':
-			return (x - max) * dy + height * 0.1;
+			return (x - max) * dy + height * 0.15;
 			break;
 	}
 	return 0;
 }
 
-const double Model::lagrange(const double& x) {
-	long double xx = x, l = 0, p;
+const real Model::lagrange(const real& x) {
+	real xx = x, l = 0, p;
 	for (size_t i = 0; i < cp.size(); i++) {
 		p = 1;
 		for (size_t j = 0; j < cp.size(); j++)
@@ -158,7 +196,7 @@ const double Model::lagrange(const double& x) {
 
 Glib::ustring Model::generate_str() {
 	std::stringstream ss;
-	double tmp;
+	//real tmp;
 	ss << "Відрізок [a, b] = [" << a << ", " << b
 		<< "]\nКількіть точок та шаг:\nn = "
 		<< n << ", h = " << (b - a) / n
@@ -168,59 +206,38 @@ Glib::ustring Model::generate_str() {
 		<< "P(x) - значення інтерполяційного\n"
 		<< "       многочлена у формі Ньютона\n"
 		<< "Ф(x) - значення многочлена найкращого\n"
-		<< "       середньоквадратичного наближення\n";
+		<< "       середньоквадратичного наближення\n"
+		<< "R1(x) = f(x) - L(x) (похибка інтерполяції)\n"
+		<< "R2(x) = f(x) - P(x) (похибка інтерполяції)\n"
+		<< "R3(x) = f(x) - Ф(x)\n"
+		<< "    (похибка найкращого середньоквадратичного наближення)";
+	//ss << "\n" << lag;
 	return ss.str();
-	//~ ss << "L(x) = ";
-	//~ for (int i = 0; i < (int) cp.size(); i++) {
-		//~ ss << "(" << (*this)('f', cp[i]);
-		//~ for (int j = 0; j < (int) cp.size(); j++)
-			//~ if (i != j)
-				//~ ss << "*(x-" << cp[j] << ")/(" << cp[i] << "-" << cp[j] << ")";
-		//~ ss << ")";
-		//~ if (i + 1 != (int) cp.size()) ss << " + ";
-	//~ }
-	//~ ss << "\n";
-	//~ Polynomial p, p1;
-	//~ double t1;
-	//~ for (int i = 0; i < (int) cp.size(); i++) {
-		//~ p1 = Polynomial(1);
-		//~ t1 = 1;
-		//~ for (int j = 0; j < (int) cp.size(); j++)
-			//~ if (i != j) {
-				//~ p1 = p1 * Polynomial(1, -cp[j]);
-				//~ t1 *= (cp[i]-cp[j]);
-			//~ }
-		//~ //p = p + p1;
-		//~ p = p + p1 * Polynomial((*this)('f', cp[i]) / t1);
-	//~ }
-	//~ ss << p;
 }
 
 void Model::render() {
-	if (fx.size() > 10000) fx.clear();
-	if (lx.size() > 10000) lx.clear();
 
-	cp.clear();
-	h = (b - a) / n;
-	for (int i = 0; i <= n; i++)
-		cp.push_back(a + i * h);
+	//~ Polynomial p, p1;
+	//~ for (int i = 0; i < (int) cp.size(); i++) {
+		//~ p1 = Polynomial(1);
+		//~ for (int j = 0; j < (int) cp.size(); j++)
+			//~ if (i != j) {
+				//~ p1 = p1 * Polynomial(1, -cp[j]) / (cp[i] - cp[j]);
+			//~ }
+		//~ p = p + p1 * Polynomial((*this)('f', cp[i]));
+	//~ }
+	//~ lag = p;
 
-	dx = width * 0.90 / (b - a); ii = 1 / dx / 4;
-	double tmp;
+	dx = width * 0.8 / (b - a); ii = 1 / dx / 4;
+	real tmp;
 	min = (*this)('f', a); max = (*this)('f', a);
-	for (double i = a; i <= b; i += ii) {
+	for (real i = a; i <= b; i += ii) {
 		tmp = (*this)('f', i);
-		fx[i] = tmp;
 		if (tmp > max) max = tmp;
 		if (tmp < min) min = tmp;
+		(*this)('L', i); (*this)('P', i); (*this)('F', i);
 	}
-	for (double i = a; i <= b; i += ii) {
-		tmp = (*this)('L', i);
-		lx[i] = tmp;
-		//if (tmp > max) max = tmp;
-		//if (tmp < min) min = tmp;
-	}
-	dy = height * 0.80 / (min - max);
+	dy = height * 0.8 / (min - max);
 
 	if (0 < a) ox = a;
 	else if (0 > b) ox = b;
