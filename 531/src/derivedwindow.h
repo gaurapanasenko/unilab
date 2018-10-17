@@ -1,6 +1,5 @@
 #ifndef GTKMM_DERIVED_WINDOW_H
 #define GTKMM_DERIVED_WINDOW_H
-#include <map>
 #include "model.h"
 
 class Col : public Gtk::TreeModel::ColumnRecord {
@@ -49,7 +48,7 @@ protected:
 	Col cols;
 };
 
-void calculate_axis(const double& a, const double& b,
+void calculate_axis(const real& a, const real& b,
 					long long& new_a, long long& new_b,
 					long long& step, long long& enlarger);
 

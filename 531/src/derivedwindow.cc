@@ -102,7 +102,7 @@ bool DerivedWindow::on_drawingarea1_draw
 	Gtk::Allocation allocation = m_drawingarea1->get_allocation();
 	const int& width = allocation.get_width();
 	const int& height = allocation.get_height();
-	cr->set_line_width(2);
+	cr->set_line_width(1);
 	cr->set_line_cap(Cairo::LINE_CAP_ROUND);
 	cr->set_line_join(Cairo::LINE_JOIN_ROUND);
 
@@ -116,7 +116,7 @@ bool DerivedWindow::on_drawingarea1_draw
 	const int& ox = m.get_ox(), oy = m.get_oy();
 	const std::map<real, real>& fx = m.get_fx(), Lx = m.get_Lx(),
 		Px = m.get_Px(), Fx = m.get_Fx();
-	std::vector<double> dashes = {2.0, 4.0};
+	std::vector<double> dashes = {4.0, 6.0};
 	real tmp;
 	long long xai, xbi, xii, xd, yai, ybi, yii, yd;
 	calculate_axis(a, b, xai, xbi, xii, xd);
@@ -132,42 +132,46 @@ bool DerivedWindow::on_drawingarea1_draw
 	cr->set_source_rgb(0, 0, 0);
 	cr->stroke();
 
-	cr->set_source_rgb(1, 0, 0);
+	cr->set_source_rgb(0, 0, 0);
 	cr->arc(width * 0.87, height * 0.025, 8, 0, 2 * M_PI);
 	cr->fill();
 	cr->set_source_rgb(0, 0, 0);
 	draw_text(cr, "M(x,f(x))", width * 0.89, height * 0.025+1, 10, 1, 0);
 
-	cr->set_source_rgb(0.8, 0.8, 0.2);
-	cr->move_to(width * 0.87 - 5, height * 0.05);
-	cr->line_to(width * 0.87 + 5, height * 0.05);
+	cr->set_line_width(8);
+	cr->set_source_rgb(0.0, 0.0, 0.0);
+	cr->move_to(width * 0.87 - 7, height * 0.05);
+	cr->line_to(width * 0.87 + 7, height * 0.05);
 	cr->stroke();
 	cr->set_source_rgb(0, 0, 0);
 	draw_text(cr, "f(x)", width * 0.89, height * 0.05+1, 10, 1, 0);
 
+	cr->set_line_width(4);
 	cr->set_dash(dashes, 0);
-	cr->set_source_rgb(0.8, 0.2, 0.2);
-	cr->move_to(width * 0.87 - 5, height * 0.075);
-	cr->line_to(width * 0.87 + 5, height * 0.075);
+	cr->set_source_rgb(1.0, 0.0, 0.0);
+	cr->move_to(width * 0.87 - 7, height * 0.075);
+	cr->line_to(width * 0.87 + 7, height * 0.075);
 	cr->stroke();
 	cr->set_source_rgb(0, 0, 0);
 	draw_text(cr, "L(x)", width * 0.89, height * 0.075+1, 10, 1, 0);
 
-	cr->set_source_rgb(0.2, 0.8, 0.2);
-	cr->move_to(width * 0.87 - 5, height * 0.1);
-	cr->line_to(width * 0.87 + 5, height * 0.1);
+	cr->set_source_rgb(0.0, 1.0, 0.0);
+	cr->move_to(width * 0.87 - 7, height * 0.1);
+	cr->line_to(width * 0.87 + 7, height * 0.1);
 	cr->stroke();
 	cr->set_source_rgb(0, 0, 0);
 	draw_text(cr, "P(x)", width * 0.89, height * 0.1+1, 10, 1, 0);
 
-	cr->set_source_rgb(0.2, 0.2, 0.8);
-	cr->move_to(width * 0.87 - 5, height * 0.125);
-	cr->line_to(width * 0.87 + 5, height * 0.125);
+	cr->set_source_rgb(0.0, 0.0, 1.0);
+	cr->move_to(width * 0.87 - 7, height * 0.125);
+	cr->line_to(width * 0.87 + 7, height * 0.125);
 	cr->stroke();
 	cr->set_source_rgb(0, 0, 0);
 	draw_text(cr, "Ф(x)", width * 0.89, height * 0.125+1, 10, 1, 0);
 
+	cr->set_line_width(1);
 	cr->unset_dash();
+
 	cr->set_source_rgb(0, 0, 0);
 	cr->move_to(width * 0.00, m('Y', oy));
 	cr->line_to(width * 1.00 - 1, m('Y', oy));
@@ -217,30 +221,40 @@ bool DerivedWindow::on_drawingarea1_draw
 
 
 	const std::vector<real>& cp = m.get_cp();
-	cr->set_source_rgb(1, 0, 0);
+	cr->set_source_rgb(0, 0, 0);
 	for (size_t i = 0; i < cp.size(); i++) {
 		cr->arc(m('X', cp[i]), m('Y', m('f', cp[i])), 8, 0, 2 * M_PI);
 		cr->fill();
 	}
 
-	cr->set_source_rgb(0.8, 0.8, 0.2);
+	cr->set_line_width(8);
+	cr->set_source_rgb(0, 0, 0);
 	draw_map(cr, fx.begin(), fx.end());
+	cr->stroke();
 
+	cr->set_line_width(4);
+	dashes = {10.0, 10.0};
 	cr->set_dash(dashes, 0);
-	cr->set_source_rgb(0.8, 0.2, 0.2);
+	cr->set_source_rgb(1.0, 0.0, 0.0);
 	draw_map(cr, Lx.begin(), Lx.end());
+	cr->stroke();
 
-	cr->set_source_rgb(0.2, 0.8, 0.2);
+	cr->set_dash(dashes, 10);
+	cr->set_source_rgb(0.0, 1.0, 0.0);
 	draw_map(cr, Px.begin(), Px.end());
+	cr->stroke();
 
-	cr->set_source_rgb(0.2, 0.2, 0.8);
+	cr->set_dash(dashes, 5);
+	cr->set_source_rgb(0.0, 0.0, 1.0);
 	draw_map(cr, Fx.begin(), Fx.end());
+	cr->stroke();
 
 	if (update) {
 		m_liststore1->clear();
 		Gtk::TreeRow row;
 		for (int i = 0; i <= m.get_n() + 1; i++) {
 			for (int j = 0; j < 2; j++) {
+				if (i == m.get_n() + 1 && j == 1) break;
 				row = *(m_liststore1->append());
 				if (j == 0) {
 					tmp = a + (2 * i - 1) * m.get_h() / 2;
@@ -300,25 +314,24 @@ bool DerivedWindow::draw_map (const Cairo::RefPtr<Cairo::Context>& cr,
 				t = true;
 			} else cr->line_to(m('X', it->first), m('Y', it->second));
 		}
-	cr->stroke();
 	return true;
 }
 
 void DerivedWindow::set(Gtk::TreeRow& row, const int& i,
                         const real& a) {
-	row[cols(i,1)] = to_string(a);
+	row[cols(i,1)] = (std::abs(a) > eps) ? to_string(a) : "0";
 	row[cols(i)] = a;
 }
 
-void calculate_axis(const double& a, const double& b,
+void calculate_axis(const real& a, const real& b,
 					long long& new_a, long long& new_b,
 					long long& step, long long& enlarger) {
-	double double_step = (b - a) / 10;
+	real double_step = (b - a) / 10;
 	new_a = a - 1, new_b = b + 1, step = 1;
 	// dsl - double step log10
 	long long dsl = floor(log10(double_step));
 	enlarger = pow(10, abs(dsl));
-	double tmp = double_step * pow(10, -dsl);
+	real tmp = double_step * pow(10, -dsl);
 	if (dsl < 0) {
 		new_a *= enlarger; new_b *= enlarger;
 		if (tmp >= 5) {new_a /= 5; new_b /= 5; enlarger /= 5;}
