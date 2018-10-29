@@ -28,20 +28,18 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=3
-FILE_NAME_0=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.cc;0;4
-FILE_NAME_1=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.h;0;4
-FILE_NAME_2=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmain.cc;0;4
-FILE_NAME_3=590;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.cc;0;4
-FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.h;0;4
+current_page=-1
 
 [VTE]
 last_dir=/home/egor/projects/university/531/src
 
 [build-menu]
 EX_00_LB=_Execute
-EX_00_CM=make && LD_LIBRARY_PATH=. "./main"
+EX_00_CM=build-and-execute.sh 1
 EX_00_WD=
+NF_00_LB=_Make
+NF_00_CM=build-and-execute.sh
+NF_00_WD=
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;

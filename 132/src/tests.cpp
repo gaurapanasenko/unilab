@@ -244,13 +244,14 @@ int test(int id) {
 	return 0;
 }
 
-void run_tests() {
+int run_tests() {
 	int x = 0, y = 0, z = 0;
 	for (int i = 1; (x = test(i)); i++)
 		if (x == 1) y++; else z++;
 	cout << "Всего пройденных тестов:      " << y + z << endl;
 	cout << "Количество тестов с ошибками: \033[0;31m" << y << "\033[0m\n";
 	cout << "Количество успешных тестов:   \033[0;32m" << z << "\033[0m\n";
+	return y;
 }
 
 int test_status(bool status) {

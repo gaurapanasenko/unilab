@@ -13,6 +13,6 @@ int test(int id);
 int test_status(bool status);
 
 // Запустить все тесты
-void run_tests();
+int run_tests();
 
 #endif
