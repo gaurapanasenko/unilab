@@ -28,10 +28,16 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=-1
+current_page=5
+FILE_NAME_0=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Fmain.cpp;0;4
+FILE_NAME_1=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Frun_tests.cpp;0;4
+FILE_NAME_2=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Ftests.cpp;0;4
+FILE_NAME_3=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Ftests.h;0;4
+FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.cpp;0;4
+FILE_NAME_5=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.h;0;4
 
 [VTE]
-last_dir=/home/egor/projects/university/531/src
+last_dir=/home/egor/projects/university/132/libsuperint
 
 [build-menu]
 EX_00_LB=_Execute

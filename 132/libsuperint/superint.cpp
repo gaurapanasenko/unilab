@@ -2,27 +2,58 @@
 
 using namespace std;
 
+SuperInt::interval::interval(SuperInt& number, const size_t& begin,
+	const size_t& length) : number(number), begin(begin), length(length) {}
+
+SuperInt& SuperInt::interval::operator=(const SuperInt& right) {
+	size_t a = (begin + 8) / 9, end = begin + length;
+	size_t b = end / 9;
+	vector<int> ra = right.a;
+	if (b >= number.a.size() || b >= ra.size()) {
+		if (number.a.size() > ra.size())
+			ra.resize(number.a.size());
+		if (number.a.size() < ra.size())
+			number.a.resize(ra.size());
+		if (b >= number.a.size()) {
+			b = number.a.size();
+			end = 9 * b - 1;
+		}
+	}
+	for (size_t i = a; i < b; i++)
+		number.a[i] = ra[i];
+	int aa = begin % 9, bb = (end - 1) % 9 + 1,
+		ap = pow(10, aa), bp = pow(10, bb);
+	if (a == b + 1 && aa != 0 && bb != 9) {
+		number.a[b] -= int(int(number.a[b] % bp) / ap) * ap;
+		number.a[b] += int(int(ra[b] % bp) / ap) * ap;
+	}
+	else {
+		if (aa != 0) {
+			number.a[a - 1] = number.a[a - 1] % ap;
+			number.a[a - 1] += int(ra[a - 1] / ap) * ap;
+		}
+		if (bb != 0) {
+			number.a[b] = int(number.a[b] / bp) * bp;
+			number.a[b] += ra[b] % bp;
+		}
+	}
+	number.clear_leading_zeros();
+	return number;
+}
+
 SuperInt::SuperInt() {
 	a.resize(1,0); sign = 1;
 }
 
-SuperInt::SuperInt(const SuperInt& right) {
-	*this = right;
-}
-
-//SuperInt::SuperInt(const std::vector<int>& x) { a = x; }
-
-SuperInt::SuperInt(const std::string& str) { *this = str; }
-
-SuperInt::SuperInt(const char * str) { *this = str; }
+SuperInt::SuperInt(const SuperInt& right) { *this = right; }
+SuperInt::SuperInt(const std::string& right) { *this = right; }
+SuperInt::SuperInt(const char * right) { *this = right; }
+SuperInt::SuperInt(const int& right) { *this = right; }
 
 SuperInt& SuperInt::operator=(const SuperInt& right) {
 	a = right.a; sign = right.sign;
 	return *this;
 }
-
-//SuperInt& SuperInt::operator=(const std::vector<int>& right)
-	//{ a = right; return *this; }
 
 SuperInt& SuperInt::operator=(const std::string& right) {
 	parse_string(right);
@@ -34,8 +65,27 @@ SuperInt& SuperInt::operator=(const char * right) {
 	return *this;
 }
 
+SuperInt& SuperInt::operator=(const int& right) {
+	sign = (right < 0) ? -1 : 1;
+	a.clear();
+	a.push_back(right);
+	return *this;
+}
+
 SuperInt& SuperInt::operator()(const SuperInt& right) {
 	*this = right;
+	return *this;
+}
+
+SuperInt::interval SuperInt::operator()(const size_t& begin,
+		const size_t& length) {
+	//limit = 1; this->begin = begin; this->length = length;
+	return SuperInt::interval(*this, begin, length);
+}
+
+SuperInt& SuperInt::operator()(const SuperInt& right, const size_t& begin,
+							   const size_t& length) {
+	(*this)(begin,length) = right;
 	return *this;
 }
 
@@ -68,8 +118,7 @@ SuperInt operator*(const SuperInt& left, const SuperInt& right) {
 			c->at(i+j) = int (cur % base);
 			carry = int (cur / base);
 		}
-	while (c->size() > 1 && c->back() == 0)
-		c->pop_back();
+	num.clear_leading_zeros();
 	return num;
 }
 
@@ -136,12 +185,12 @@ bool SuperInt::parse_string(const std::string& str) {
 	a.clear();
 	if (str[0] == '-') sign = -1; else sign = 1;
 	int x;
-	if (sign == 1) x = 0; else x = 1;
+	if (sign == -1) x = 1; else x = 0;
 	for (int i = (int)str.length(); i > x; i -= 9) {
-		if (i < 9) a.push_back(atoi(str.substr(x, i - x).c_str()));
+		if (i - x < 9) a.push_back(atoi(str.substr(x, i - x).c_str()));
 		else a.push_back(atoi(str.substr(i - 9, 9).c_str()));
 	}
-	while (a.size() > 1 && a.back() == 0) a.pop_back();
+	clear_leading_zeros();
 	return true;
 }
 
@@ -179,5 +228,9 @@ void SuperInt::subtraction(const std::vector<int>& b) {
 		carry = a[i] < 0;
 		if (carry) a[i] += SUPERINT_CELL_MAX;
 	}
+	clear_leading_zeros();
+}
+
+void SuperInt::clear_leading_zeros() {
 	while (a.size() > 1 && a.back() == 0) a.pop_back();
 }

@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <sstream>
+#include <math.h>
 
 #define SUPERINT_CELL_MAX 1000000000
 
@@ -19,20 +20,34 @@ private:
 	char sign;
 
 public:
+	class interval {
+		private:
+			SuperInt& number;
+			size_t begin, length;
+		public:
+			interval(SuperInt& number, const size_t& begin,
+				const size_t& length);
+			SuperInt& operator=(const SuperInt& right);
+	};
 	SuperInt();
 	SuperInt(const SuperInt& x);
-	//SuperInt(const std::vector<int>& x);
 	SuperInt(const std::string& str);
 	SuperInt(const char * str);
+	SuperInt(const int& right);
 	SuperInt& operator=(const SuperInt& right);
-	//SuperInt& operator=(const std::vector<int>& right);
 	SuperInt& operator=(const std::string& right);
 	SuperInt& operator=(const char * str);
+	SuperInt& operator=(const int& right);
 	SuperInt& operator()(const SuperInt& right);
+	interval operator()(const size_t& begin, const size_t& length);
+	SuperInt& operator()(const SuperInt& right, const size_t& begin,
+						 const size_t& length);
 	const string get_string();
 	friend SuperInt operator+(const SuperInt& left, const SuperInt& right);
 	friend SuperInt operator-(const SuperInt& left, const SuperInt& right);
 	friend SuperInt operator*(const SuperInt& left, const SuperInt& right);
+	//~ friend SuperInt operator/(const SuperInt& left, const int& right);
+	//~ friend SuperInt operator/(const SuperInt& left, const SuperInt& right);
 	friend bool operator  <(const SuperInt& left, const SuperInt& right);
 	friend bool operator  >(const SuperInt& left, const SuperInt& right);
 	friend bool operator ==(const SuperInt& left, const SuperInt& right);
@@ -49,6 +64,7 @@ private:
 	SuperInt operator_sum_sub(char s, const SuperInt& right) const;
 	void summation(const std::vector<int>& b);
 	void subtraction(const std::vector<int>& b);
+	void clear_leading_zeros();
 };
 
 

@@ -15,5 +15,5 @@ lib_LTLIBRARIES =  \
 	libsuperint.la
 
 libsuperint_la_SOURCES =  \
-	superint.cpp \
-	superint.h
+	superint.h \
+	superint.cpp
