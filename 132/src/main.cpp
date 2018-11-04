@@ -50,8 +50,8 @@ int main() {
 	srand(time(NULL));
 	string answer = "", buf;
 	vector<SuperInt> arr;
-	static const string show_arr[] = {"3", "5", "7", "8", "9", "10"};
-	static const int show_arr_size = 6;
+	static const string show_arr[] = {"3", "5", "7", "8", "9", "10", "11","12"};
+	static const int show_arr_size = 8;
 	size_t tmp0 = 0, tmp1 = 0, tmp2 = 0, tmp3 = 0;
 	while (answer != "0") {
 		cout << " 1. Запустить тесты\n"
@@ -63,7 +63,9 @@ int main() {
 			 << " 7. Сложить два числа из массива\n"
 			 << " 8. Отнять два числа из массива\n"
 			 << " 9. Умножить два числа из массива\n"
-			 << "10. Переместить часть числа в другое число на той же позиции\n"
+			 << "10. Поделить два числа из массива\n"
+			 << "11. Поделить число из массива на маленькое число\n"
+			 << "12. Переместить часть числа в другое число на той же позиции\n"
 			 << " 0. Выйти\n>>> ";
 		getline(cin, answer);
 		if (is_in(answer, show_arr, show_arr_size)) cout << arr;
@@ -93,7 +95,8 @@ int main() {
 		}
 		else if (answer == "5") {}
 		else if (answer == "6") arr.clear();
-		else if (answer == "7" || answer == "8" || answer == "9") {
+		else if (answer == "7" || answer == "8"
+				|| answer == "9" || answer == "10") {
 			cout << "Введите индексы:\n>>> ";
 			cin >> tmp0 >> tmp1;
 			getline(cin, buf);
@@ -105,8 +108,17 @@ int main() {
 				cout << arr[tmp0] - arr[tmp1] << endl;
 			else if (answer == "9")
 				cout << arr[tmp0] * arr[tmp1] << endl;
-		}
-		else if (answer == "10") {
+			else if (answer == "10")
+				cout << arr[tmp0] / arr[tmp1] << endl;
+		} else if (answer == "11") {
+			cout << "Введите индекс:\n>>> ";
+			cin >> tmp0;
+			getline(cin, buf);
+			cout << "Введите число:\n>>> ";
+			cin >> tmp1;
+			getline(cin, buf);
+			cout << arr[tmp0] / tmp1 << endl;
+		} else if (answer == "12") {
 			cout << "Введите индексы:\n>>> ";
 			cin >> tmp0 >> tmp1;
 			getline(cin, buf);

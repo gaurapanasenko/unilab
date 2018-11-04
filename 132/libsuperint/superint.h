@@ -46,11 +46,12 @@ public:
 	friend SuperInt operator+(const SuperInt& left, const SuperInt& right);
 	friend SuperInt operator-(const SuperInt& left, const SuperInt& right);
 	friend SuperInt operator*(const SuperInt& left, const SuperInt& right);
-	//~ friend SuperInt operator/(const SuperInt& left, const int& right);
-	//~ friend SuperInt operator/(const SuperInt& left, const SuperInt& right);
+	friend SuperInt operator/(const SuperInt& left, const int& right);
+	friend SuperInt operator/(const SuperInt& left, const SuperInt& right);
 	friend bool operator  <(const SuperInt& left, const SuperInt& right);
 	friend bool operator  >(const SuperInt& left, const SuperInt& right);
 	friend bool operator ==(const SuperInt& left, const SuperInt& right);
+	friend bool operator !=(const SuperInt& left, const SuperInt& right);
 	friend bool operator <=(const SuperInt& left, const SuperInt& right);
 	friend bool operator >=(const SuperInt& left, const SuperInt& right);
 	friend std::ostream &operator<<(std::ostream &output,const SuperInt &right);
@@ -71,9 +72,12 @@ private:
 SuperInt operator+(const SuperInt& left, const SuperInt& right);
 SuperInt operator-(const SuperInt& left, const SuperInt& right);
 SuperInt operator*(const SuperInt& left, const SuperInt& right);
+SuperInt operator/(const SuperInt& left, const int& right);
+SuperInt operator/(const SuperInt& left, const SuperInt& right);
 bool operator  <(const SuperInt& left, const SuperInt& right);
 bool operator  >(const SuperInt& left, const SuperInt& right);
 bool operator ==(const SuperInt& left, const SuperInt& right);
+bool operator !=(const SuperInt& left, const SuperInt& right);
 bool operator <=(const SuperInt& left, const SuperInt& right);
 bool operator >=(const SuperInt& left, const SuperInt& right);
 std::ostream &operator<<(std::ostream &output,const SuperInt &right);

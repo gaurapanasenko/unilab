@@ -240,6 +240,36 @@ int test(int id) {
 		num3 = num1 * num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
+	} else if (id == x++) {
+		string str1 = "1000";
+		string str2 = "10";
+		string str3 = "100";
+		cout << "Тест " << id << ": Деление чисел.\n"
+			 << "  " << str1 << " / " << str2 << " = " << str3 << endl;
+		SuperInt num1(str1), num2(str2), num3;
+		num3 = num1 / num2;
+		cout << "  Получили: " << num3 << endl;
+		return test_status(num3.get_string() == str3);
+	} else if (id == x++) {
+		string str1 = "86268899871445573544214396190118856636735081551005747108718941826401206006161284858778561";
+		string str2 = "67192821126871631081442838051458189584";
+		string str3 = "1283900548074250623644389123870814133103722664980675";
+		cout << "Тест " << id << ": Деление огромных чисел.\n"
+			 << "  " << str1 << " / " << str2 << " = " << str3 << endl;
+		SuperInt num1(str1), num2(str2), num3;
+		num3 = num1 / num2;
+		cout << "  Получили: " << num3 << endl;
+		return test_status(num3.get_string() == str3);
+	} else if (id == x++) {
+		string str1 = "-40048373237416499812465043130666760599033986648729986782097283851821046546100994183951183001398692996640282371982297607128477";
+		string str2 = "51643121349599506216474677132119";
+		string str3 = "-775483204555122732044500368424438835982107745698044739510147559688972127010730447291923252155";
+		cout << "Тест " << id << ": Деление огромных чисел.\n"
+			 << "  " << str1 << " / " << str2 << " = " << str3 << endl;
+		SuperInt num1(str1), num2(str2), num3;
+		num3 = num1 / num2;
+		cout << "  Получили: " << num3 << endl;
+		return test_status(num3.get_string() == str3);
 	}
 	return 0;
 }

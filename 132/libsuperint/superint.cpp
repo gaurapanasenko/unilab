@@ -122,6 +122,41 @@ SuperInt operator*(const SuperInt& left, const SuperInt& right) {
 	return num;
 }
 
+SuperInt operator/(const SuperInt& left, const int& right) {
+	SuperInt num = left;
+	int carry = 0;
+	long long base = SUPERINT_CELL_MAX;
+	long long cur;
+	for (int i = int(num.a.size()) - 1; i >= 0; i--) {
+		cur = num.a[i] + carry * 1ll * base;
+		num.a[i] = int (cur / right);
+		carry = int (cur % right);
+	}
+	num.clear_leading_zeros();
+	return num;
+}
+
+SuperInt operator/(const SuperInt& left, const SuperInt& right) {
+	SuperInt num, l, r, m;
+	num.sign = left.sign * right.sign;
+	if (left.a.size() < right.a.size()) return 0;
+	r.a.clear();
+	r.a.resize(left.a.size() - right.a.size() + 2, 1);
+	while (r != l + 1) {
+		m = (r + l) / 2;
+		if (left.compare_module(m * right) == 1)
+			l = m;
+		else if (left.compare_module(m * right) == -1)
+			r = m;
+		else {
+			r = m; l = m; break;
+		}
+	}
+	num.a = l.a;
+	num.clear_leading_zeros();
+	return num;
+}
+
 bool operator  <(const SuperInt& left, const SuperInt& right) {
 	if (left.compare(right) == -1) return true;
 	else return false;
@@ -134,6 +169,11 @@ bool operator  >(const SuperInt& left, const SuperInt& right) {
 
 bool operator ==(const SuperInt& left, const SuperInt& right) {
 	if (left.compare(right) == 0) return true;
+	else return false;
+}
+
+bool operator !=(const SuperInt& left, const SuperInt& right) {
+	if (left.compare(right) != 0) return true;
 	else return false;
 }
 
