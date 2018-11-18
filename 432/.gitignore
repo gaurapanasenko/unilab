@@ -1,5 +1,6 @@
 /libsuperint.so
 /Debug/
+!/src/*.obj
 
 # Local configuration folder and symbol database
 /.anjuta/
