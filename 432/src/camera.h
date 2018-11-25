@@ -16,8 +16,8 @@ enum Camera_Transform {
 };
 
 // Default camera values
-const float CAMERA_MOVE_SPEED   =  2.5f;
-const float CAMERA_ROTATE_SPEED =  2.5f;
+const float CAMERA_MOVE_SPEED   =  0.5f;
+const float CAMERA_ROTATE_SPEED =  0.5f;
 const float ZOOM                =  45.0f;
 
 class Camera {
@@ -47,14 +47,14 @@ public:
 	void rotate(Camera_Transform direction, float deltaTime) {
 		glm::vec3 vec;
         float velocity = CAMERA_ROTATE_SPEED * deltaTime;
-        if (direction == LEFT)
-			vec = glm::vec3(-1.0f, 0.0f, 0.0f);
-        if (direction == RIGHT)
-			vec = glm::vec3(1.0f, 0.0f, 0.0f);
         if (direction == UP)
-			vec = glm::vec3(0.0f, 1.0f, 0.0f);
+			vec = glm::vec3(-1.0f, 0.0f, 0.0f);
         if (direction == DOWN)
+			vec = glm::vec3(1.0f, 0.0f, 0.0f);
+        if (direction == LEFT)
 			vec = glm::vec3(0.0f, -1.0f, 0.0f);
+        if (direction == RIGHT)
+			vec = glm::vec3(0.0f, 1.0f, 0.0f);
         if (direction == FORWARD)
 			vec = glm::vec3(0.0f, 0.0f, -1.0f);
         if (direction == BACKWARD)
@@ -64,6 +64,12 @@ public:
 	void reset() {
 		view = glm::translate(glm::mat4(1.0),
 		                      glm::vec3(0.0f, 0.0f, -3.0f));
+	}
+	glm::vec3 get_position() {
+		return glm::vec3(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	}
+	glm::vec3 get_direction() {
+		return glm::vec3(glm::inverse(view) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
 	}
 	glm::mat4 GetViewMatrix() {
         return view;

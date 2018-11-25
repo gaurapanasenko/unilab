@@ -106,15 +106,15 @@ private:
             vertex.Normal = vector;
 
 			// color
-			//vector.x = rand()%256*1.0/256;
-			//vector.y = rand()%256*1.0/256;
-			//vector.z = rand()%256*1.0/256;
-			float dot = max(glm::dot
+			vector.x = (rand() % 256) * 1.0 / 256;
+			vector.y = (rand() % 256) * 1.0 / 256;
+			vector.z = (rand() % 256) * 1.0 / 256;
+			/*float dot = max(glm::dot
 				(glm::normalize(vertex.Normal),
 				 glm::normalize(glm::vec3(10.0f, 0.0f, 10.0f))), 0.3f);
 			vector.x = 0.4 * dot;
 			vector.y = 0.8 * dot;
-			vector.z = 0.4 * dot;
+			vector.z = 0.4 * dot;*/
             vertex.Color = vector;
 			
 			vertices.push_back(vertex);
