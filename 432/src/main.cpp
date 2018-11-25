@@ -19,19 +19,20 @@
 /* #define RES_DIR PACKAGE_DATA_DIR"/res/" */
 #define RES_DIR "src/"
 
+void processInput(GLFWwindow *window);
 void framebuffer_size_callback(GLFWwindow* window, GLint width,
                                GLint height);
-void mouse_callback(GLFWwindow* window, GLdouble xpos, GLdouble ypos);
 void scroll_callback(GLFWwindow* window, GLdouble xoffset,
                      GLdouble yoffset);
-void processInput(GLFWwindow *window);
+void key_callback(GLFWwindow* window, int key, int scancode,
+                     int action, int mods);
 
 // settings
 unsigned int SCR_WIDTH = 1366;
 unsigned int SCR_HEIGHT = 700;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -41,7 +42,7 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos(12.0f, 10.0f, 20.0f);
+glm::vec3 lightPos(10.0f, 0.0f, 10.0f);
 
 // letters data
 glm::vec3 EPos(  0.6f,   0.0f,   0.0f);
@@ -51,10 +52,16 @@ glm::vec3 PPos( -0.6f,   0.0f,   0.0f);
 glm::vec3 PDeg(  0.0f,   0.0f,   5.0f);
 glm::vec3 PAni(  0.0f,   0.0f,   0.0f);
 
+// active element
+int active = 0;
 
-const float MOVE_SPEED =  0.5f;
-const float ROTATE_SPEED =  64.0f;
-const float ANIMATE_SPEED =  256.0f;
+// states
+bool waterframe = 0;
+bool light = 0;
+
+const float MOVE_SPEED    = 0.5f;
+const float ROTATE_SPEED  = 64.0f;
+const float ANIMATE_SPEED = 256.0f;
 
 int main() {
     // glfw: initialize and configure
@@ -63,7 +70,6 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -81,11 +87,8 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-
-    // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetKeyCallback(window, key_callback);
 
     // load glew
     // ---------
@@ -103,15 +106,17 @@ int main() {
     // -------------------------------------
 	Shader lightingShader(RES_DIR"lighting.vs", RES_DIR"lighting.fs");
 	Shader lightlessShader(RES_DIR"lightless.vs",RES_DIR"lightless.fs");
-	Shader lampShader(RES_DIR"lamp.vs", RES_DIR"lamp.fs");
-
+	Shader * sh;
+	
     // load models
     // -----------
     Model EModel(RES_DIR"E.obj");
     Model PModel(RES_DIR"P.obj");
+    Model CubeModel(RES_DIR"Cube.obj");
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_POLYGON);
 
 	glm::mat4 model;
 	
@@ -135,68 +140,70 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // activate shader
-        lightingShader.use();
-        lightingShader.setVec3("objectColor", 0.4f, 0.8f, 0.4f);
-        lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-        lightingShader.setVec3("lightPos", lightPos);
+		if (light) {
+			sh = &lightingShader;
+			sh->use();
+			sh->setVec3("objectColor", 0.4f, 0.8f, 0.4f);
+			sh->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+			sh->setVec3("lightPos", lightPos);
+		} else {
+			sh = &lightlessShader;
+			sh->use();
+		}
 
-        //lightlessShader.use();
         // pass projection matrix to shader
         glm::mat4 projection = glm::perspective
 			(glm::radians(camera.Zoom),
 			 (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        lightingShader.setMat4("projection", projection);
+        sh->setMat4("projection", projection);
 
         // camera/view transformation
         glm::mat4 view = camera.GetViewMatrix();
-        lightingShader.setMat4("view", view);
+        sh->setMat4("view", view);
 
 		// render the loaded model
-        model = glm::mat4();
+        model = glm::mat4(1.0);
 		/*model = glm::rotate(model, (float)glfwGetTime(),
 		//model = glm::rotate(model, (float)glm::radians(180),
 		                    glm::vec3(0.0, 1.0, 0.0));*/
+		//model = glm::scale(model, glm::vec3(110.0, 111.0, 110.0));
 		model = glm::translate(model, EPos);
-		model = glm::rotate(model,
-		                    glm::radians(EDeg.x += deltaTime * EAni.x),
-		                    glm::vec3(1.0, 0.0, 0.0));
 		model = glm::rotate(model,
 		                    glm::radians(EDeg.y += deltaTime * EAni.y),
 		                    glm::vec3(0.0, 1.0, 0.0));
 		model = glm::rotate(model,
+		                    glm::radians(EDeg.x += deltaTime * EAni.x),
+		                    glm::vec3(1.0, 0.0, 0.0));
+		model = glm::rotate(model,
 		                    glm::radians(EDeg.z += deltaTime * EAni.z),
 		                    glm::vec3(0.0, 0.0, 1.0));
-		lightingShader.setMat4("model", model);
-        EModel.Draw(lightingShader);
+		sh->setMat4("model", model);
+        EModel.Draw(*sh);
 		
 		// render the loaded model
-        model = glm::mat4();
+        model = glm::mat4(1.0);
 		/*model = glm::rotate(model, (float)glfwGetTime(),
 		//model = glm::rotate(model, (float)glm::radians(180),
 		                    glm::vec3(0.0, 1.0, 0.0));*/
 		model = glm::translate(model, PPos);
 		model = glm::rotate(model,
-		                    glm::radians(PDeg.x += deltaTime * PAni.x),
-		                    glm::vec3(1.0, 0.0, 0.0));
-		model = glm::rotate(model,
 		                    glm::radians(PDeg.y += deltaTime * PAni.y),
 		                    glm::vec3(0.0, 1.0, 0.0));
 		model = glm::rotate(model,
+		                    glm::radians(PDeg.x += deltaTime * PAni.x),
+		                    glm::vec3(1.0, 0.0, 0.0));
+		model = glm::rotate(model,
 		                    glm::radians(PDeg.z += deltaTime * PAni.z),
 		                    glm::vec3(0.0, 0.0, 1.0));
-		lightingShader.setMat4("model", model);
-        PModel.Draw(lightingShader);
+		sh->setMat4("model", model);
+        PModel.Draw(*sh);
 
-        // also draw the lamp object
-        lampShader.use();
-        lampShader.setMat4("projection", projection);
-        lampShader.setMat4("view", view);
-        model = glm::mat4();
-        model = glm::translate(model, lightPos);
-        model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-        lampShader.setMat4("model", model);
-		
-        EModel.Draw(lampShader);
+        lightlessShader.use();
+        lightlessShader.setMat4("projection", projection);
+        lightlessShader.setMat4("view", view);
+        lightlessShader.setMat4
+			("model", glm::translate(glm::mat4(1.0), lightPos));
+        CubeModel.Draw(lightlessShader);
 
         // glfw: swap buffers and poll IO events
         // -------------------------------------
@@ -217,56 +224,81 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        camera.ProcessKeyboard(UP, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        camera.ProcessKeyboard(DOWN, deltaTime);
-
-
-	int a = (glfwGetKey(window,GLFW_KEY_C)==GLFW_PRESS)? 0 : 1;
-	int s = 0;
-
-	if (glfwGetKey(window,GLFW_KEY_Z) == GLFW_PRESS) s = -1;
-	if (glfwGetKey(window,GLFW_KEY_X) == GLFW_PRESS) s = 1;
-	
-	float mv = s * MOVE_SPEED    * deltaTime;
-	float rt = s * ROTATE_SPEED  * deltaTime;
-	float an = s * ANIMATE_SPEED * deltaTime;
-
-	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-		*((a)?&EPos.x:&PPos.x) += mv;
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-		*((a)?&EPos.y:&PPos.y) += mv;
-	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
-		*((a)?&EPos.z:&PPos.z) += mv;
+	if (active == 0) {
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			camera.move(FORWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			camera.move(BACKWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			camera.move(LEFT, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+			camera.move(RIGHT, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+			camera.move(UP, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			camera.move(DOWN, deltaTime);
 		
-	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-		*((a)?&EDeg.x:&PDeg.x) += rt;
-	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-		*((a)?&EDeg.y:&PDeg.y) += rt;
-	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
-		*((a)?&EDeg.z:&PDeg.z) += rt;
+		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+			camera.rotate(FORWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+			camera.rotate(BACKWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+			camera.rotate(LEFT, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+			camera.rotate(RIGHT, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+			camera.rotate(UP, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+			camera.rotate(DOWN, deltaTime);
+	} else {
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+			*((active == 1)?&EPos.x:&PPos.x) += MOVE_SPEED   *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			*((active == 1)?&EPos.x:&PPos.x) -= MOVE_SPEED   *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			*((active == 1)?&EPos.y:&PPos.y) += MOVE_SPEED   *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			*((active == 1)?&EPos.y:&PPos.y) -= MOVE_SPEED   *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+			*((active == 1)?&EPos.z:&PPos.z) += MOVE_SPEED   *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			*((active == 1)?&EPos.z:&PPos.z) -= MOVE_SPEED   *deltaTime;
+
+		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+			*((active == 1)?&EDeg.x:&PDeg.x) -= ROTATE_SPEED *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+			*((active == 1)?&EDeg.x:&PDeg.x) += ROTATE_SPEED *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+			*((active == 1)?&EDeg.y:&PDeg.y) -= ROTATE_SPEED *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+			*((active == 1)?&EDeg.y:&PDeg.y) += ROTATE_SPEED *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+			*((active == 1)?&EDeg.z:&PDeg.z) -= ROTATE_SPEED *deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+			*((active == 1)?&EDeg.z:&PDeg.z) += ROTATE_SPEED *deltaTime;
+		
+		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+			*((active == 1)?&EAni.x:&PAni.x) -= ANIMATE_SPEED*deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+			*((active == 1)?&EAni.x:&PAni.x) += ANIMATE_SPEED*deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+			*((active == 1)?&EAni.y:&PAni.y) -= ANIMATE_SPEED*deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+			*((active == 1)?&EAni.y:&PAni.y) += ANIMATE_SPEED*deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
+			*((active == 1)?&EAni.z:&PAni.z) -= ANIMATE_SPEED*deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+			*((active == 1)?&EAni.z:&PAni.z) += ANIMATE_SPEED*deltaTime;
+	}
 	
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-		*((a)?&EAni.x:&PAni.x) += an;
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-		*((a)?&EAni.y:&PAni.y) += an;
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-		*((a)?&EAni.z:&PAni.z) += an;
-	
-	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+		camera.reset();
+	}
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
 		EAni = glm::vec3(  0.0f,   0.0f,   0.0f);
 		PAni = glm::vec3(  0.0f,   0.0f,   0.0f);
 	}
-	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
 		EPos = glm::vec3(  0.6f,   0.0f,   0.0f);
 		EDeg = glm::vec3(  0.0f,   0.0f,  -5.0f);
 		EAni = glm::vec3(  0.0f,   0.0f,   0.0f);
@@ -287,30 +319,29 @@ void framebuffer_size_callback(GLFWwindow* window, GLint width,
 	SCR_WIDTH = width; SCR_HEIGHT = height;
 }
 
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, GLdouble xpos, GLdouble ypos) {
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-		// reversed since y-coordinates go
-		// from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
 // glfw: when the mouse scroll wheel scrolls, this callback is called
 // ------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, GLdouble xoffset,
                      GLdouble yoffset) {
     camera.ProcessMouseScroll(yoffset);
+}
+
+// glfw: when the keyboard was used, this callback is called
+// ------------------------------------------------------------------
+void key_callback(GLFWwindow* window, int key, int scancode,
+                     int action, int mods) {
+	if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
+        active++;
+	if (active > 2) active = 0;
+	if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+		if (waterframe) {
+			waterframe = 0;
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		} else {
+			waterframe = 1;
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+	}
+	if (key == GLFW_KEY_X && action == GLFW_PRESS)
+		light = (light)? 0 : 1;
 }

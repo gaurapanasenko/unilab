@@ -30,13 +30,12 @@ main_LDFLAGS += -mwindows
 endif
 
 res_DATA = E.obj \
-	lamp.fs \
-	lamp.vs \
 	lighting.fs \
 	lighting.vs \
-	E.mtl \
-	P.mtl \
-	P.obj
+	P.obj \
+	Cube.obj \
+	lightless.fs \
+	lightless.vs
 resdir = $(pkgdatadir)/shaders
 
 EXTRA_DIST = $(res_DATA)
