@@ -9,7 +9,8 @@ int main(int argc, char * argv[]) {
 	int n, bn, cn, min, max, *a = NULL, *b, *c, tmp;
 	n = atoi(argv[1]); min = atoi(argv[2]); max = atoi(argv[3]);
 	if (n <= 0) {
-		printf("Размер массива не может быть нулевым или отрицательным");
+		printf
+			("Размер массива не может быть нулевым или отрицательным");
 		return 1;
 	}
 	if (min > max) {
@@ -20,8 +21,8 @@ int main(int argc, char * argv[]) {
 		answer = menu(stdin, stdout, "Выберете функцию:\n\
 1. Сложить массив в одно число.\n\
 2. Умножить какое-то число на каждый элемент массива.\n\
-3. Разделить массив на два массива, где в первом положительные, \
-а во втором отрицательные.\n\
+3. Разделить массив на два массива, где в первом положительные, \n\
+   а во втором отрицательные.\n\
 4. Соединить все массивы в один сложением.\n\
 0. Выход\n\
 >>> ", 5);
@@ -29,7 +30,10 @@ int main(int argc, char * argv[]) {
 		switch(answer) {
 			case 1:
 				a = generate_array(n, min, max);
-				if (a == NULL) {printf("Не удалось выделить память\n");break;}
+				if (a == NULL) {
+					printf("Не удалось выделить память\n");
+					break;
+				}
 				printf("Входящий массив:\n");
 				print_array(stdin, a, n);
 				printf("Сумма массива: %i\n", summarize(a, n));
@@ -38,7 +42,9 @@ int main(int argc, char * argv[]) {
 			case 2:
 				tmp = rnd(min, max);
 				a = generate_array(n, min, max);
-				if (a == NULL) {printf("Не удалось выделить память\n");break;}
+				if (a == NULL) {printf("Не удалось выделить память\n");
+					break;
+				}
 				printf("Входящее цисло: %i\n", tmp);
 				printf("Входящий массив:\n");
 				print_array(stdin, a, n);
@@ -49,7 +55,8 @@ int main(int argc, char * argv[]) {
 				break;
 			case 3:
 				a = generate_array(n, min, max);
-				b = malloc(n * sizeof(int)); c = malloc(n * sizeof(int));
+				b = malloc(n * sizeof(int));
+				c = malloc(n * sizeof(int));
 				if (a == NULL || b == NULL || c == NULL) {
 					printf("Не удалось выделить память\n");
 					free(a);free(b);free(c);break;
@@ -76,7 +83,10 @@ int main(int argc, char * argv[]) {
 				printf("Входящий второй массив:\n");
 				print_array(stdin, b, n);
 				c = summarize_arrays(a, b, n);
-				if (c == NULL) {printf("Не удалось выделить память\n");break;}
+				if (c == NULL) {
+					printf("Не удалось выделить память\n");
+					break;
+				}
 				printf("Выходящий массив:\n");
 				print_array(stdin, c, n);
 				free(a);free(b);free(c);

@@ -40,8 +40,9 @@ int menu (FILE * input, FILE * output, char * message, int count) {
 		// Ask to try again
 		if (answer < 0 || answer >= count) {
 			system("clear");
-			printf("Вводить нужно только цифры от 0 до %hhi. Попробуйте ещё\n",
-				count - 1);
+			printf(
+			"Вводить нужно только цифры от 0 до %hhi. Попробуйте ещё\n",
+			count - 1);
 		}
 	}
 	return answer;
