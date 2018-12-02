@@ -4,8 +4,6 @@
 main
 vgcore.*
 *~
-Readme.pdf
-
 Debug/
 
 # Local configuration folder and symbol database
