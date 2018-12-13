@@ -28,7 +28,7 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=3
+current_page=4
 FILE_NAME_0=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.cc;0;4
 FILE_NAME_1=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.h;0;4
 FILE_NAME_2=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmain.cc;0;4

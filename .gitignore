@@ -3,15 +3,86 @@
 /322/datagen
 main
 vgcore.*
-*~
 Debug/
+
+# This file is used to ignore files which are generated
+# ----------------------------------------------------------------------------
+
+*~
+*.autosave
+*.a
+*.core
+*.moc
+*.o
+*.obj
+*.orig
+*.rej
+*.so
+*.so.*
+*_pch.h.cpp
+*_resource.rc
+*.qm
+.#*
+*.*#
+core
+!core/
+tags
+.DS_Store
+.directory
+*.debug
+Makefile*
+*.prl
+*.app
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+Thumbs.db
+*.res
+*.rc
+/.qmake.cache
+/.qmake.stash
+
+# qtcreator generated files
+*.pro.user*
+
+# xemacs temporary files
+*.flc
+
+# Vim temporary files
+.*.swp
+
+# Visual Studio generated files
+*.ib_pdb_index
+*.idb
+*.ilk
+*.pdb
+*.sln
+*.suo
+*.vcproj
+*vcproj.*.*.user
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj
+*vcxproj.*
+
+# MinGW generated files
+*.Debug
+*.Release
+
+# Python byte code
+*.pyc
+
+# Binaries
+# --------
+*.dll
+*.exe
 
 # Local configuration folder and symbol database
 .anjuta/
 .anjuta_sym_db.db
 
 # http://www.gnu.org/software/automake
-
 Makefile.in
 ar-lib
 mdate-sh
@@ -20,7 +91,6 @@ test-driver
 ylwrap
 
 # http://www.gnu.org/software/autoconf
-
 autom4te.cache
 autoscan.log
 autoscan-*.log
@@ -39,15 +109,12 @@ missing
 stamp-h1
 
 # https://www.gnu.org/software/libtool/
-
 ltmain.sh
 
 # http://www.gnu.org/software/texinfo
-
 texinfo.tex
 
 # http://www.gnu.org/software/m4/
-
 m4/libtool.m4
 m4/ltoptions.m4
 m4/ltsugar.m4
@@ -70,7 +137,6 @@ m4/lt~obsolete.m4
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -83,6 +149,5 @@ m4/lt~obsolete.m4
 *.lib
 
 # Executables
-*.exe
 *.out
 *.app

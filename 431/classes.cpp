@@ -1,7 +1,5 @@
 #include "classes.h"
 
-namespace Classes {
-
 Point::Point() {memset(cord, 0, 3*sizeof(GLfloat));}
 
 Point::Point(GLfloat x, GLfloat y) { (*this)(x,y); }
@@ -20,34 +18,6 @@ void Point::put_on_line(const Point& a, const Point& b, GLfloat t) {
 		cords[i] = (bc[i] - ac[i]) * t + ac[i];
 	*this = cords;
 }
-
-/*// pa - point A, pb - point B, lac - AC length, lbc - BC length
-void Point::calculate_third (const Point pa, const Point pb,
-		GLfloat lac, GLfloat lbc, int direction) {
-	if (pa[3] || pb[3]) return;
-	if (direction < 1 && direction > 2) return;
-	GLdouble a, b, c, x0, y0, x2, y2;
-	// http://e-maxx.ru/algo/circles_intersection
-	x2 = pb[0] - pa[0];
-	y2 = pb[1] - pa[1];
-	a = -2 * x2; b = -2 * y2; c = x2*x2 + y2*y2 + lac*lac - lbc*lbc;
-	// http://e-maxx.ru/algo/circle_line_intersection
-	x0 = -a*c/(a*a+b*b); y0 = -b*c/(a*a+b*b);
-	if (c*c > lac*lac*(a*a+b*b)+0.000001)
-		return;
-	else if (abs (c*c - lac*lac*(a*a+b*b)) > 0.0001) {
-		double d = lac*lac - c*c/(a*a+b*b);
-		double mult = sqrt (d / (a*a+b*b));
-		if (direction == 1) {x0 += b * mult; y0 -= a * mult;}
-		else {x0 -= b * mult; y0 += a * mult;}
-	}
-	(*this)(x0 + pa[0], y0 + pa[0]);
-}
-
-GLfloat Point::distance(const Point& a) {
-	return sqrt(pow(cord[0]-a[0],2)+pow(cord[1]-a[1],2)
-		+pow(cord[2]-a[2],2));
-}*/
 
 Point& Point::operator=(const Point& right) {
 	if (this == &right) {return *this;}
@@ -215,12 +185,10 @@ void PointArray::render() {
 }
 
 void PointArray::render_triangles() {
-	for (size_t i = 0; i < arr.size(); i+=3) {
-		glBegin(GL_POLYGON);
-			for (size_t j = 0; j < 3; j++)
-				arr[i + j].vertex();
-		glEnd();
-	}
+	glBegin(GL_TRIANGLES);
+		for (size_t i = 0; i < arr.size(); i++)
+			arr[i].vertex();
+	glEnd();
 }
 
 Point& PointArray::operator[](const int index) {return arr[index];}
@@ -241,10 +209,6 @@ PointArray& PointArray::operator=(const std::vector<Point>& right) {
 PointArray& PointArray::operator<<(const Point& right) {
 	arr.push_back(right);
 	return *this;
-}
-
-PointArray& PointArray::operator<<(GLfloat cords[3]) {
-	*this << Point(cords); return *this;
 }
 
 const PointArray PointArray::operator*(const PointArray& right) {
@@ -598,4 +562,3 @@ std::list<Point>::iterator next(std::list<Point>& list,
 	return out;
 }
 
-}
