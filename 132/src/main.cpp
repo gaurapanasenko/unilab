@@ -1,13 +1,7 @@
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-#include <time.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
 #include "superint.h"
 #include "tests.h"
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -31,7 +25,8 @@ using namespace std;
 	//~ return output;
 //~ }
 
-std::ostream &operator<<(std::ostream &output, const vector<SuperInt>& right) {
+std::ostream &operator<<(std::ostream &output,
+		const vector<SuperInt::SuperInt>& right) {
 	output << "array(" << right.size() << ") {\n";
 	for (size_t i = 0; i < right.size(); i++) {
 		output << "\t[" << i << "] => " << right[i] << endl;
@@ -49,8 +44,9 @@ bool is_in(const string& str, const string arr[], const int& size) {
 int main() {
 	srand(time(NULL));
 	string answer = "", buf;
-	vector<SuperInt> arr;
-	static const string show_arr[] = {"3", "5", "7", "8", "9", "10", "11","12"};
+	vector<SuperInt::SuperInt> arr;
+	static const string show_arr[] =
+		{"3", "5", "7", "8", "9", "10", "11", "12", "13", "14"};
 	static const int show_arr_size = 8;
 	size_t tmp0 = 0, tmp1 = 0, tmp2 = 0, tmp3 = 0;
 	while (answer != "0") {
@@ -66,6 +62,8 @@ int main() {
 			 << "10. Поделить два числа из массива\n"
 			 << "11. Поделить число из массива на маленькое число\n"
 			 << "12. Переместить часть числа в другое число на той же позиции\n"
+			 << "13. Забрать разряд числа\n"
+			 << "14. Изменить цифру на разряде числа\n"
 			 << " 0. Выйти\n>>> ";
 		getline(cin, answer);
 		if (is_in(answer, show_arr, show_arr_size)) cout << arr;
@@ -86,8 +84,8 @@ int main() {
 			for (int i = 0; i < 10; i++) {
 				stringstream ss;
 				if (rand() % 2) ss << "-";
-				tmp0 = rand() % 128;
-				for (int j = 0; j < tmp0; j++)
+				tmp0 = rand() % 32;
+				for (size_t j = 0; j < tmp0; j++)
 					ss << abs(rand() % 10);
 				arr.push_back(ss.str());
 			}
@@ -125,11 +123,31 @@ int main() {
 			if (tmp0 >= arr.size() || tmp1 >= arr.size())
 				cout << "Неправильные индексы\n";
 			else {
-				cout << "Введите диапазон:\n>>> ";
+				cout << "Введите начальный разряд и количество цифр:\n>>> ";
 				cin >> tmp2 >> tmp3;
 				getline(cin, buf);
 				cout << (arr[tmp0](tmp2, tmp3) = arr[tmp1]) << endl;
 			}
+		} else if (answer == "13") {
+			cout << "Введите индекс:\n>>> ";
+			cin >> tmp0;
+			getline(cin, buf);
+			cout << "Введите разряд:\n>>> ";
+			cin >> tmp1;
+			getline(cin, buf);
+			cout << arr[tmp0][tmp1] << endl;
+		} else if (answer == "14") {
+			cout << "Введите индекс:\n>>> ";
+			cin >> tmp0;
+			getline(cin, buf);
+			cout << "Введите разряд:\n>>> ";
+			cin >> tmp1;
+			getline(cin, buf);
+			cout << "Введите цифру:\n>>> ";
+			cin >> tmp2;
+			getline(cin, buf);
+			arr[tmp0][tmp1] = tmp2;
+			cout << arr[tmp0] << endl;
 		}
 		else cout << "Нет такой опции\n";
 		cout << "Нажмите ENTER для продолжения... ";

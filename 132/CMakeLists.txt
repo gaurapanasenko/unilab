@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(superint)
 
+add_definitions ("-Wall")
+
 #link_directories(${GL_LIBRARY_)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libsuperint ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

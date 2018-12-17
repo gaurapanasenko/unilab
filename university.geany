@@ -28,12 +28,14 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=1
-FILE_NAME_0=610;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.cpp;0;4
-FILE_NAME_1=3244;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.h;0;4
+current_page=3
+FILE_NAME_0=77;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.cpp;0;4
+FILE_NAME_1=74;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.h;0;4
+FILE_NAME_2=487;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Fmain.cpp;0;4
+FILE_NAME_3=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Ftests.h;0;4
 
 [VTE]
-last_dir=/home/egor/projects/university/132/libsuperint
+last_dir=/home/egor/projects/university/132/src
 
 [build-menu]
 NF_00_LB=_Make

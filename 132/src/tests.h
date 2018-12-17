@@ -1,8 +1,6 @@
 #ifndef TESTS_H
 #define TESTS_H
-#include <string>
 #include <iostream>
-#include <sstream>
 #include "superint.h"
 using namespace std;
 

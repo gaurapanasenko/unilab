@@ -7,52 +7,52 @@ int test(int id) {
 	if (id == x++) {
 		string str = "1234";
 		cout << "Тест " << id << ": Инициализация.\n"
-			 << "    Вводим \"" << str << "\" в SuperInt и сравниваем вывод\n"
+			 << "    Вводим \"" << str << "\" в SuperInt::SuperInt и сравниваем вывод\n"
 			 << "    объекта со стокой \"" << str << "\"\n";
-		SuperInt num(str);
+		SuperInt::SuperInt num(str);
 		cout << "  Получили: " << num << endl;
 		return test_status(num.get_string() == str);
 	} else if (id == x++) {
 		string str = "1231231312312313-2312312313123";
 		string str2 = "0";
 		cout << "Тест " << id << ": Инициализация с неверной строкой.\n"
-			 << "    Вводим \"" << str << "\" в SuperInt и сравниваем вывод\n"
+			 << "    Вводим \"" << str << "\" в SuperInt::SuperInt и сравниваем вывод\n"
 			 << "    объекта со стокой \"" << str2 << "\"\n";
-		SuperInt num(str);
+		SuperInt::SuperInt num(str);
 		cout << "  Получили: " << num << endl;
 		return test_status(num.get_string() == str2);
 	} else if (id == x++) {
 		string str = "1234";
 		cout << "Тест " << id << ": Присваивание.\n"
-			 << "  Вводим \"" << str << "\" в SuperInt через присваивание и\n"
+			 << "  Вводим \"" << str << "\" в SuperInt::SuperInt через присваивание и\n"
 			 << "  сравниваем вывод объекта со стокой \"" << str << "\"\n";
-		SuperInt num;
+		SuperInt::SuperInt num;
 		num = str;
 		cout << "  Получили: " << num << endl;
 		return test_status(num.get_string() == str);
 	} else if (id == x++) {
 		string str = "1234567891357924680";
 		cout << "Тест " << id << ": Ввод больших чисел.\n"
-			 << "  Вводим \"" << str << "\" в SuperInt и\n"
+			 << "  Вводим \"" << str << "\" в SuperInt::SuperInt и\n"
 			 << "  сравниваем вывод объекта со стокой \"" << str << "\"\n";
-		SuperInt num(str);
+		SuperInt::SuperInt num(str);
 		cout << "  Получили: " << num << endl;
 		return test_status(num.get_string() == str);
 	} else if (id == x++) {
 		string str = "-1234567891357924680";
 		cout << "Тест " << id << ": Ввод отриательных больших чисел.\n"
-			 << "  Вводим \"" << str << "\" в SuperInt и\n"
+			 << "  Вводим \"" << str << "\" в SuperInt::SuperInt и\n"
 			 << "  сравниваем вывод объекта со стокой \"" << str << "\"\n";
-		SuperInt num(str);
+		SuperInt::SuperInt num(str);
 		cout << "  Получили: " << num << endl;
 		return test_status(num.get_string() == str);
 	} else if (id == x++) {
 		string str = "-1234567891357924680";
 		cout << "Тест " << id << ": Конструктор копирования.\n"
-			 << "  Вводим \"" << str << "\" в SuperInt и копируем в другой\n"
-			 << "  SuperInt сравниваем вывод объекта со стокой \""<<str<<"\"\n";
-		SuperInt num(str);
-		SuperInt num2(num);
+			 << "  Вводим \"" << str << "\" в SuperInt::SuperInt и копируем в другой\n"
+			 << "  SuperInt::SuperInt сравниваем вывод объекта со стокой \""<<str<<"\"\n";
+		SuperInt::SuperInt num(str);
+		SuperInt::SuperInt num2(num);
 		cout << "  Получили: " << num2 << endl;
 		return test_status(num.get_string() == str);
 	} else if (id == x++) {
@@ -60,49 +60,49 @@ int test(int id) {
 		string str2 = "547509411375863014";
 		cout << "Тест " << id << ": Сравнение одинаковых чисел.\n"
 			 << "  " << str1 << " == " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
+		SuperInt::SuperInt num1(str1), num2(str2);
 		return test_status(num1 == num2);
 	} else if (id == x++) {
 		string str1 = "547509411375863014";
 		string str2 = "-547509411375863014";
 		cout << "Тест " << id << ": Сравнение одинаковых по модулю чисел.\n"
 			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
+		SuperInt::SuperInt num1(str1), num2(str2);
 		return test_status(num1 > num2);
 	} else if (id == x++) {
 		string str1 = "547509411375863014";
 		string str2 = "47509411375863014";
 		cout << "Тест " << id << ": Сравнение разных чисел.\n"
 			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
+		SuperInt::SuperInt num1(str1), num2(str2);
 		return test_status(num1 > num2);
 	} else if (id == x++) {
 		string str1 = "547509411375863014";
 		string str2 = "54750941137586301";
 		cout << "Тест " << id << ": Сравнение разных чисел.\n"
 			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
+		SuperInt::SuperInt num1(str1), num2(str2);
 		return test_status(num1 > num2);
 	} else if (id == x++) {
 		string str1 = "-547509411375863014";
 		string str2 = "54750941137586301";
 		cout << "Тест " << id << ": Сравнение разных чисел.\n"
 			 << "  " << str1 << " < " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
+		SuperInt::SuperInt num1(str1), num2(str2);
 		return test_status(num1 < num2);
 	} else if (id == x++) {
 		string str1 = "547509411375863014";
 		string str2 = "24440630276";
 		cout << "Тест " << id << ": Сравнение разных чисел.\n"
 			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
+		SuperInt::SuperInt num1(str1), num2(str2);
 		return test_status(num1 > num2);
 	} else if (id == x++) {
 		string str1 = "547509411375863014";
 		string str2 = "1";
 		cout << "Тест " << id << ": Сравнение разных чисел.\n"
 			 << "  " << str1 << " > " << str2 << endl;
-		SuperInt num1(str1), num2(str2);
+		SuperInt::SuperInt num1(str1), num2(str2);
 		return test_status(num1 > num2);
 	} else if (id == x++) {
 		string str1 = "12345";
@@ -110,7 +110,7 @@ int test(int id) {
 		string str3 = "35801";
 		cout << "Тест " << id << ": Сложение.\n"
 			 << "  " << str1 << " + " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 + num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -120,7 +120,7 @@ int test(int id) {
 		string str3 = "547509435816493290";
 		cout << "Тест " << id << ": Сложение огромных чисел.\n"
 			 << "  " << str1 << " + " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 + num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -131,7 +131,7 @@ int test(int id) {
 		cout << "Тест " << id << ": Сложение отрицательного числа и "
 			 << "положительного.\n" << "  " << str1 << " + " << str2
 			 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 + num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -142,7 +142,7 @@ int test(int id) {
 		cout << "Тест " << id << ": Сложение отрицательного числа и "
 			 << "положительного.\n" << "  " << str1 << " + " << str2
 			 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 + num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -152,7 +152,7 @@ int test(int id) {
 		string str3 = "-35801";
 		cout << "Тест " << id << ": Сложение отрицательных чисел.\n"
 			 << "  " << str1 << " + " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 + num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -162,7 +162,7 @@ int test(int id) {
 		string str3 = "547509386935232738";
 		cout << "Тест " << id << ": вычитание огромных чисел.\n"
 			 << "  " << str1 << " - " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 - num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -173,7 +173,7 @@ int test(int id) {
 		cout << "Тест " << id << ": вычитание отрицательного числа и "
 			 << "положительного.\n" << "  " << str1 << " - " << str2
 			 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 - num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -184,7 +184,7 @@ int test(int id) {
 		cout << "Тест " << id << ": вычитание отрицательного числа и "
 			 << "положительного.\n" << "  " << str1 << " - " << str2
 			 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 - num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -194,7 +194,7 @@ int test(int id) {
 		string str3 = "-11111";
 		cout << "Тест " << id << ": вычитание отрицательных чисел.\n"
 			 << "  " << str1 << " - " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 - num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -204,7 +204,7 @@ int test(int id) {
 		string str3 = "13381475096067856395597011864";
 		cout << "Тест " << id << ": Умножение огромных чисел.\n"
 			 << "  " << str1 << " * " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 * num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -215,7 +215,7 @@ int test(int id) {
 		cout << "Тест " << id << ": Умножение отрицательного числа и "
 			 << "положительного.\n" << "  " << str1 << " * " << str2
 			 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 * num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -226,7 +226,7 @@ int test(int id) {
 		cout << "Тест " << id << ": Умножение отрицательного числа и "
 			 << "положительного.\n" << "  " << str1 << " * " << str2
 			 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 * num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -236,7 +236,7 @@ int test(int id) {
 		string str3 = "289564320";
 		cout << "Тест " << id << ": Умножение отрицательных чисел.\n"
 			 << "  " << str1 << " * " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 * num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -246,7 +246,7 @@ int test(int id) {
 		string str3 = "100";
 		cout << "Тест " << id << ": Деление чисел.\n"
 			 << "  " << str1 << " / " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 / num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -256,7 +256,7 @@ int test(int id) {
 		string str3 = "1283900548074250623644389123870814133103722664980675";
 		cout << "Тест " << id << ": Деление огромных чисел.\n"
 			 << "  " << str1 << " / " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 / num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);
@@ -266,7 +266,7 @@ int test(int id) {
 		string str3 = "-775483204555122732044500368424438835982107745698044739510147559688972127010730447291923252155";
 		cout << "Тест " << id << ": Деление огромных чисел.\n"
 			 << "  " << str1 << " / " << str2 << " = " << str3 << endl;
-		SuperInt num1(str1), num2(str2), num3;
+		SuperInt::SuperInt num1(str1), num2(str2), num3;
 		num3 = num1 / num2;
 		cout << "  Получили: " << num3 << endl;
 		return test_status(num3.get_string() == str3);

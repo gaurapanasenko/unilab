@@ -1,45 +1,11 @@
 #include "superint.h"
+#include <iomanip>
+#include <sstream>
+#include <math.h>
 
 using namespace std;
 
-SuperInt::interval::interval(SuperInt& number, const size_t& begin,
-	const size_t& length) : number(number), begin(begin), length(length) {}
-
-SuperInt& SuperInt::interval::operator=(const SuperInt& right) {
-	size_t a = (begin + 8) / 9, end = begin + length;
-	size_t b = end / 9;
-	vector<int> ra = right.a;
-	if (b >= number.a.size() || b >= ra.size()) {
-		if (number.a.size() > ra.size())
-			ra.resize(number.a.size());
-		if (number.a.size() < ra.size())
-			number.a.resize(ra.size());
-		if (b >= number.a.size()) {
-			b = number.a.size();
-			end = 9 * b - 1;
-		}
-	}
-	for (size_t i = a; i < b; i++)
-		number.a[i] = ra[i];
-	int aa = begin % 9, bb = (end - 1) % 9 + 1,
-		ap = pow(10, aa), bp = pow(10, bb);
-	if (a == b + 1 && aa != 0 && bb != 9) {
-		number.a[b] -= int(int(number.a[b] % bp) / ap) * ap;
-		number.a[b] += int(int(ra[b] % bp) / ap) * ap;
-	}
-	else {
-		if (aa != 0) {
-			number.a[a - 1] = number.a[a - 1] % ap;
-			number.a[a - 1] += int(ra[a - 1] / ap) * ap;
-		}
-		if (bb != 0) {
-			number.a[b] = int(number.a[b] / bp) * bp;
-			number.a[b] += ra[b] % bp;
-		}
-	}
-	number.clear_leading_zeros();
-	return number;
-}
+namespace SuperInt {
 
 SuperInt::SuperInt() {
 	a.resize(1,0); sign = 1;
@@ -72,15 +38,23 @@ SuperInt& SuperInt::operator=(const int& right) {
 	return *this;
 }
 
+position SuperInt::operator[](const size_t& digit) {
+	return position(*this, digit);
+}
+
+const_position SuperInt::operator[](const size_t& digit) const {
+	return const_position(*this, digit);
+}
+
 SuperInt& SuperInt::operator()(const SuperInt& right) {
 	*this = right;
 	return *this;
 }
 
-SuperInt::interval SuperInt::operator()(const size_t& begin,
+interval SuperInt::operator()(const size_t& begin,
 		const size_t& length) {
 	//limit = 1; this->begin = begin; this->length = length;
-	return SuperInt::interval(*this, begin, length);
+	return interval(*this, begin, length);
 }
 
 SuperInt& SuperInt::operator()(const SuperInt& right, const size_t& begin,
@@ -93,6 +67,33 @@ const string SuperInt::get_string() {
 	stringstream ss;
 	ss << *this;
 	return ss.str();
+}
+
+int SuperInt::get_digit(const size_t& digit) {
+	return static_cast<const SuperInt&>(*this).get_digit(digit);
+}
+
+int SuperInt::get_digit(const size_t& digit) const {
+	size_t d = digit, b = d / 9, c = d % 9;
+	if (b >= a.size()) return 0;
+	stringstream ss;
+	ss << setfill('0') << setw(9) << a[b];
+	return ss.str()[9 - c] - '0';
+}
+
+SuperInt& SuperInt::set_digit(const size_t& digit, const int& number) {
+	if (number < 0 || number > 9) return *this;
+	size_t d = digit, b = d / 9, c = d % 9;
+	if (b >= a.size())
+		a.resize(b + 1);
+	stringstream ss;
+	ss << setfill('0') << setw(9) << a[b];
+	string str = ss.str();
+	str[9 - c] = number + '0';
+	istringstream iss(str);
+	iss >> a[b];
+	clear_leading_zeros();
+	return *this;
 }
 
 SuperInt operator+(const SuperInt& left, const SuperInt& right) {
@@ -273,4 +274,56 @@ void SuperInt::subtraction(const std::vector<int>& b) {
 
 void SuperInt::clear_leading_zeros() {
 	while (a.size() > 1 && a.back() == 0) a.pop_back();
+}
+
+SuperInt& position::operator=(const SuperInt& right)
+	{return (*this) = right[digit];}
+SuperInt& position::operator=(const position& right)
+	{return (*this) = *right;}
+SuperInt& position::operator=(const const_position& right)
+	{return (*this) = *right;}
+
+std::ostream& operator<<(std::ostream& output, const position& right)
+		{return output << right.number.get_digit(right.digit);}
+
+std::istream &operator>>(std::istream& input, position& right) {
+	int n;
+	input >> n;
+	right = n;
+	return input;
+}
+
+std::ostream& operator<<(std::ostream& output, const const_position& right)
+		{return output << right.number.get_digit(right.digit);}
+
+SuperInt& interval::operator=(const SuperInt& right) {
+	size_t a = begin, b = begin + length;
+	for (size_t i = a; i <= b; i++) number[i] = right;
+	return number;
+}
+
+SuperInt interval::operator*() {
+	return *(static_cast<const interval&>(*this));
+}
+
+SuperInt interval::operator*() const {
+	SuperInt out;
+	size_t a = begin, b = begin + length;
+	for (size_t i = a; i <= b; i++) out[i - a] = number[i];
+	return out;
+}
+
+
+std::ostream &operator<<(std::ostream& output, const interval& right) {
+	return output << *right;
+}
+
+std::istream &operator>>(std::istream& input, interval& right) {
+	SuperInt in;
+	input >> in;
+	size_t a = right.begin, b = right.begin + right.length;
+	for (size_t i = a; i <= b; i++) right.number[i] = in[i - a];
+	return input;
+}
+
 }
