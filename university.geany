@@ -28,20 +28,33 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=4
-FILE_NAME_0=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.cc;0;4
-FILE_NAME_1=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fderivedwindow.h;0;4
-FILE_NAME_2=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmain.cc;0;4
-FILE_NAME_3=590;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.cc;0;4
-FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F531%2Fsrc%2Fmodel.h;0;4
+current_page=1
+FILE_NAME_0=610;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.cpp;0;4
+FILE_NAME_1=3244;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.h;0;4
 
 [VTE]
-last_dir=/home/egor/projects/university/531/src
+last_dir=/home/egor/projects/university/132/libsuperint
 
 [build-menu]
+NF_00_LB=_Make
+NF_00_CM=cd ../build && make
+NF_00_WD=
+NF_01_LB=Make Custom _Target...
+NF_01_CM=cd ../build && make 
+NF_01_WD=
+NF_02_LB=Make _Object
+NF_02_CM=cd ../build && make %e.o
+NF_02_WD=
 EX_00_LB=_Execute
-EX_00_CM=make && LD_LIBRARY_PATH=. "./main"
+EX_00_CM=../build/main
 EX_00_WD=
+C++FT_00_LB=_Compile
+C++FT_00_CM=cd ../build && make
+C++FT_00_WD=
+C++FT_01_LB=_Build
+C++FT_01_CM=cd ../build && make
+C++FT_01_WD=
+filetypes=C++;
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;
