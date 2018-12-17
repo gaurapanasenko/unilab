@@ -5,26 +5,6 @@
 
 using namespace std;
 
-//~ std::ostream &operator<<(std::ostream &output, vector<SuperInt>& right) {
-	//~ struct winsize w;
-	//~ ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-	//~ printf ("lines %d\n", w.ws_row);
-	//~ printf ("columns %d\n", w.ws_col);
-	//~ int line = 0;
-	//~ for (size_t i = 0; i < right.size(); i++) {
-		//~ stringstream ss;
-		//~ ss << right[i];
-		//~ if (line + ss.str().size() + 1 > w.ws_col) {
-			//~ line = 0;
-			//~ output << endl;
-		//~ }
-		//~ output << ss.str() << " ";
-		//~ line += ss.str().size() + 1;
-	//~ }
-	//~ output << endl;
-	//~ return output;
-//~ }
-
 std::ostream &operator<<(std::ostream &output,
 		const vector<SuperInt::SuperInt>& right) {
 	output << "array(" << right.size() << ") {\n";
@@ -47,7 +27,7 @@ int main() {
 	vector<SuperInt::SuperInt> arr;
 	static const string show_arr[] =
 		{"3", "5", "7", "8", "9", "10", "11", "12", "13", "14"};
-	static const int show_arr_size = 8;
+	static const int show_arr_size = 10;
 	size_t tmp0 = 0, tmp1 = 0, tmp2 = 0, tmp3 = 0;
 	while (answer != "0") {
 		cout << " 1. Запустить тесты\n"

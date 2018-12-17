@@ -28,11 +28,12 @@ long_line_behaviour=2
 long_line_column=80
 
 [files]
-current_page=3
-FILE_NAME_0=77;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.cpp;0;4
-FILE_NAME_1=74;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.h;0;4
-FILE_NAME_2=487;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Fmain.cpp;0;4
+current_page=2
+FILE_NAME_0=173;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.cpp;0;4
+FILE_NAME_1=3452;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Flibsuperint%2Fsuperint.h;0;4
+FILE_NAME_2=2111;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Fmain.cpp;0;4
 FILE_NAME_3=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Ftests.h;0;4
+FILE_NAME_4=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fegor%2Fprojects%2Funiversity%2F132%2Fsrc%2Ftests.cpp;0;4
 
 [VTE]
 last_dir=/home/egor/projects/university/132/src
