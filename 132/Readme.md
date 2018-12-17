@@ -1,4 +1,4 @@
-#Звіт з лабораторної роботи №1<br/>за дисципліною "Програмування II"<br/>студента групи ПА-17-1<br/>Панасенка Єгора Сергійовича<br/>Кафедра комп'ютерних технологій<br/>ФПМ, ДНУ, 2017-2018 навч.р.
+# Звіт з лабораторної роботи №1<br/>за дисципліною "Програмування II"<br/>студента групи ПА-17-1<br/>Панасенка Єгора Сергійовича<br/>Кафедра комп'ютерних технологій<br/>ФПМ, ДНУ, 2017-2018 навч.р.
 
 ## Постановка задачі
 
@@ -16,8 +16,8 @@
 
 ##### Поля
 
-1. `vector<int> a;` // массив із чисел по 9 розрядів
-2. `char sign;` // знак числа: -1 - від'ємне, 1 - додатне число
+1. `vector<int> a;` - массив із чисел по 9 розрядів
+2. `char sign;` - знак числа: -1 - від'ємне, 1 - додатне число
 
 ##### Публічні функції
 
@@ -189,25 +189,120 @@
 
 #### Клас position
 
+Клас position призначений для зберігання поточного розряду для подальшої обробки цього розряду. Дружить з класом const_position.
+
 ##### Поля
 
-SuperInt& number;
-size_t digit;
+1. `SuperInt& number` - посилання на число
+2. `size_t digit` - номер розряду
 
-position(SuperInt& number, const size_t& digit)
-	: number(number), digit(digit) {}
-SuperInt& operator=(const SuperInt& right);
-SuperInt& operator=(const position& right);
-SuperInt& operator=(const const_position& right);
-SuperInt& operator=(const int& right)
-	{return number.set_digit(digit, right);}
-int operator*() {return number.get_digit(digit);}
-int operator*() const {return number.get_digit(digit);}
+##### Функції
 
-friend const_position;
-friend ostream& operator<<(ostream& output,
-	const position& right);
-friend istream& operator>>(istream& input, position& right);
+1. `position(SuperInt& number, const size_t& digit)`
+    1. Конструктор з параметрами, потрібними для обробки числа.
+    2. Аргументи:
+        1. number - посилання на число.
+        2. digit - номер розряду.
+    3. Нічого не виводить.
+2. `SuperInt& operator=(const SuperInt& right)`
+    1. Оператор присвоювання, який копіює цифру на розряді digit з числа right на тому ж розряді.
+    2. Має єдиний аргумент-посилання на число.
+    3. Виводить посилання на поле number.
+3. `SuperInt& operator=(const position& right)`  
+   `SuperInt& operator=(const const_position& right)`
+    1. Оператор присвоювання, який замінює цифру на розряді digit на цифру на яку вказує right.
+    2. Має єдиний аргумент-посилання на клас position.
+    3. Виводить посилання на поле number.
+4. `SuperInt& operator=(const int& right)`
+    1. Оператор присвоювання, який замінює цифру на розряді digit на цифру right.
+    2. Має єдиний аргумент-посилання на число.
+    3. Виводить посилання на поле number.
+5. `int operator*()`
+   `int operator*() const`
+    1. Оператори доступу до даних.
+    2. Не мають аргументів.
+    3. Виводять цифру з числа number на розряді digit.
+
+##### Дружелюбні функції
+
+1. `ostream& operator<<(ostream& output, const position& right)`  
+   `istream& operator>>(istream& input, position& right)`
+    1. Оператори вводу та виводу з потоку.
+    2. Аргументи:
+        1. input/output - посилання на потоки вводу/виводу.
+        2. right - посилання на клас, який потрібно вивести.
+    3. Виводить посилання на поток з першого аргументу.
+
+#### Клас const_position
+
+##### Поля
+
+1. `SuperInt& number` - посилання на число
+2. `size_t digit` - номер розряду
+
+##### Функції
+
+1. `const_position(const SuperInt& number, const size_t& digit)`
+    1. Конструктор з параметрами, потрібними для обробки числа.
+    2. Аргументи:
+        1. number - посилання на число.
+        2. digit - номер розряду.
+    3. Нічого не виводить.
+2. `const_position(const position& right)`
+    1. Конструктор неявного перетворення з position;
+    2. Має єдиний аргумент-посилання на клас position.
+    3. Нічого не виводить.
+3. `int operator*()`  
+   `int operator*() const`
+    1. Оператори доступу до даних.
+    2. Не мають аргументів.
+    3. Виводять цифру з числа number на розряді digit.
+
+##### Дружелюбні функції
+
+1. `ostream& operator<<(ostream& output, const const_position& right)`
+    1. Оператор виводу з потоку.
+    2. Аргументи:
+        1. output - посилання на потоки виводу.
+        2. right - посилання на клас, який потрібно вивести.
+    3. Виводить посилання на поток з першого аргументу.
+
+#### Клас interval
+
+##### Поля
+
+1. `SuperInt& number` - посилання на число
+2. `size_t begin` - номер розряду з якого починається інтервал
+3. `size_t length` - кількість розрядів в інтервалі
+
+##### Функції
+
+1. `interval(SuperInt& number, const size_t& begin, const size_t& length)`
+    1. Конструктор з параметрами, потрібними для обробки числа.
+    2. Аргументи:
+        1. number - посилання на число.
+        2. begin - номер розряду з якого починається інтервал.
+        3. length - кількість розрядів в інтервалі.
+    3. Нічого не виводить.
+2. `SuperInt& operator=(const SuperInt& right)`
+    1. Оператор присвоювання який копіює цифри на заданому інтервалі з числа right.
+    2. Має єдиний аргумент-посилання на число.
+    3. Виводить посилання на поле number.
+3. `SuperInt operator*()`  
+   `SuperInt operator*() const`
+    1. Оператори доступу до даних.
+    2. Не мають аргументів.
+    3. Виводять нове число починаючи з розряду begin на кількість розрядів length.
+
+##### Дружелюбні функції
+
+1. `ostream &operator<<(ostream& output, const interval& right)`  
+   `istream &operator>>(istream& input, interval& right)`
+    1. Оператори вводу та виводу з потоку.
+    2. Аргументи:
+        1. input/output - посилання на потоки вводу/виводу.
+        2. right - посилання на клас, який потрібно вивести.
+    3. Виводить посилання на поток з першого аргументу.
 
 ## Вихідний текст програми розв’язку задачі
 
@@ -241,26 +336,6 @@ target_link_libraries(run_tests superint)
 #include <sstream>
 
 using namespace std;
-
-//~ std::ostream &operator<<(std::ostream &output, vector<SuperInt>& right) {
-	//~ struct winsize w;
-	//~ ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-	//~ printf ("lines %d\n", w.ws_row);
-	//~ printf ("columns %d\n", w.ws_col);
-	//~ int line = 0;
-	//~ for (size_t i = 0; i < right.size(); i++) {
-		//~ stringstream ss;
-		//~ ss << right[i];
-		//~ if (line + ss.str().size() + 1 > w.ws_col) {
-			//~ line = 0;
-			//~ output << endl;
-		//~ }
-		//~ output << ss.str() << " ";
-		//~ line += ss.str().size() + 1;
-	//~ }
-	//~ output << endl;
-	//~ return output;
-//~ }
 
 std::ostream &operator<<(std::ostream &output,
 		const vector<SuperInt::SuperInt>& right) {
