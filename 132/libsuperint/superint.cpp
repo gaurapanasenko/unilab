@@ -54,13 +54,13 @@ SuperInt& SuperInt::operator()(const SuperInt& right) {
 }
 
 interval SuperInt::operator()(const size_t& begin,
-		const size_t& length) {
+                              const size_t& length) {
 	return interval(*this, begin, length);
 }
 
 SuperInt& SuperInt::operator()(const SuperInt& right,
-							   const size_t& begin,
-							   const size_t& length) {
+                               const size_t& begin,
+                               const size_t& length) {
 	(*this)(begin,length) = right;
 	return *this;
 }
@@ -247,7 +247,7 @@ bool SuperInt::validate(const std::string& str) {
 }
 
 SuperInt SuperInt::operator_sum_sub(char s,
-		const SuperInt& right) const {
+                                    const SuperInt& right) const {
 	SuperInt num;
 	if (sign * right.sign * s == 1)
 		num(*this).summation(right.a);
@@ -288,8 +288,9 @@ SuperInt& position::operator=(const position& right)
 SuperInt& position::operator=(const const_position& right)
 	{return (*this) = *right;}
 
-std::ostream& operator<<(std::ostream& output, const position& right)
-		{return output << right.number.get_digit(right.digit);}
+std::ostream& operator<<(std::ostream& output, const position& right) {
+	return output << right.number.get_digit(right.digit);
+}
 
 std::istream &operator>>(std::istream& input, position& right) {
 	int n;
