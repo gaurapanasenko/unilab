@@ -8,7 +8,8 @@ using namespace std;
 namespace SuperInt {
 
 SuperInt::SuperInt() {
-	a.resize(1,0); sign = 1;
+	a.resize(1,0);
+	sign = 1;
 }
 
 SuperInt::SuperInt(const SuperInt& right) { *this = right; }
@@ -17,7 +18,8 @@ SuperInt::SuperInt(const char * right) { *this = right; }
 SuperInt::SuperInt(const int& right) { *this = right; }
 
 SuperInt& SuperInt::operator=(const SuperInt& right) {
-	a = right.a; sign = right.sign;
+	a = right.a;
+	sign = right.sign;
 	return *this;
 }
 
@@ -53,11 +55,11 @@ SuperInt& SuperInt::operator()(const SuperInt& right) {
 
 interval SuperInt::operator()(const size_t& begin,
 		const size_t& length) {
-	//limit = 1; this->begin = begin; this->length = length;
 	return interval(*this, begin, length);
 }
 
-SuperInt& SuperInt::operator()(const SuperInt& right, const size_t& begin,
+SuperInt& SuperInt::operator()(const SuperInt& right,
+							   const size_t& begin,
 							   const size_t& length) {
 	(*this)(begin,length) = right;
 	return *this;
@@ -114,8 +116,10 @@ SuperInt operator*(const SuperInt& left, const SuperInt& right) {
 	long long cur;
 	for (size_t i = 0; i < a->size(); i++)
 		for (int j = 0, carry = 0; j < (int)b->size() || carry; j++) {
-			cur = c->at(i+j) + a->at(i) * 1ll
-				* (j < (int)b->size() ? b->at(j) : 0) + carry;
+			if (j < (int)b->size())
+				cur = c->at(i+j) + a->at(i) * 1ll * b->at(j) + carry;
+			else
+				cur = c->at(i+j) + carry;
 			c->at(i+j) = int (cur % base);
 			carry = int (cur / base);
 		}
@@ -242,7 +246,8 @@ bool SuperInt::validate(const std::string& str) {
 	return true;
 }
 
-SuperInt SuperInt::operator_sum_sub(char s, const SuperInt& right) const {
+SuperInt SuperInt::operator_sum_sub(char s,
+		const SuperInt& right) const {
 	SuperInt num;
 	if (sign * right.sign * s == 1)
 		num(*this).summation(right.a);
@@ -293,8 +298,10 @@ std::istream &operator>>(std::istream& input, position& right) {
 	return input;
 }
 
-std::ostream& operator<<(std::ostream& output, const const_position& right)
-		{return output << right.number.get_digit(right.digit);}
+std::ostream& operator<<(std::ostream& output,
+                         const const_position& right) {
+	return output << right.number.get_digit(right.digit);
+}
 
 SuperInt& interval::operator=(const SuperInt& right) {
 	size_t a = begin, b = begin + length;
