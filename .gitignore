@@ -1,13 +1,20 @@
 /999/
-/431/bin/
 /322/datagen
 main
 vgcore.*
 Debug/
 build/
+*.geany
+doxygen
 
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
+
+# CodeBlocks
+/*/*.layout
+/*/*.depend
+/*/bin/
+/*/obj/
 
 *~
 *.autosave
