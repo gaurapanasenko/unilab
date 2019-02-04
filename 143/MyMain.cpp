@@ -8,6 +8,9 @@
  **************************************************************/
 
 #include "MyMain.h"
+
+#include "ShapesChilds.h"
+
 #include <wx/msgdlg.h>
 #include <wx/dcgraph.h>
 
@@ -81,14 +84,14 @@ wxThread::ExitCode MyThread::Entry() {
     return (wxThread::ExitCode)0;
 }
 
-MyFrame::MyFrame(wxWindow* parent, wxWindowID id) {
+MyFrame::MyFrame(wxWindow* parent, wxWindowID id) : shapes(new Shapes) {
     //(*Initialize(MyFrame)
     wxMenuItem* MenuItem2;
-    wxMenu* Menu1;
     wxBoxSizer* BoxSizer2;
-    wxMenuItem* idMenuQuit;
+    wxMenu* Menu1;
     wxBoxSizer* BoxSizer1;
     wxMenuBar* MenuBar1;
+    wxMenuItem* idMenuQuit;
     wxMenu* Menu2;
 
     Create(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("wxID_ANY"));
@@ -145,6 +148,7 @@ MyFrame::MyFrame(wxWindow* parent, wxWindowID id) {
     Connect(ID_CLONE,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MyFrame::OnCloneClick);
     Connect(ID_DELETE,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MyFrame::OnDeleteClick);
     Panel1->Connect(wxEVT_PAINT,(wxObjectEventFunction)&MyFrame::OnPanel1Paint,0,this);
+    Panel1->Connect(wxEVT_ERASE_BACKGROUND,(wxObjectEventFunction)&MyFrame::OnPanel1EraseBackground,0,this);
     Panel1->Connect(wxEVT_LEFT_DOWN,(wxObjectEventFunction)&MyFrame::OnPanel1LeftDown,0,this);
     Panel1->Connect(wxEVT_LEFT_UP,(wxObjectEventFunction)&MyFrame::OnPanel1LeftUp,0,this);
     Panel1->Connect(wxEVT_MOTION,(wxObjectEventFunction)&MyFrame::OnPanel1MouseMove,0,this);
@@ -184,7 +188,7 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
 void MyFrame::OnPanel1Paint(wxPaintEvent& event) {
     wxPaintDC dc(Panel1);
     wxGCDC gdc(dc);
-    shapes.draw(gdc);
+    shapes->draw(gdc);
 }
 
 void MyFrame::OnClose(wxCloseEvent& event) {
@@ -207,58 +211,62 @@ void MyFrame::OnClose(wxCloseEvent& event) {
 }
 
 void MyFrame::OnAddTriangleClick(wxCommandEvent& event) {
-    shapes.add(createTriangle());
+    shapes->add(createTriangle());
 }
 
 void MyFrame::OnDeleteClick(wxCommandEvent& event) {
-    shapes.erase(shapes.getActiveId());
+    shapes->erase(shapes->getActiveId());
 }
 
 void MyFrame::OnPanel1LeftDown(wxMouseEvent& event) {
     wxPoint p = event.GetLogicalPosition(wxPaintDC(Panel1));
-    shapes.activate(p);
+    shapes->activate(p);
 }
 
 void MyFrame::OnPanel1MouseMove(wxMouseEvent& event) {
     wxPoint p = event.GetLogicalPosition(wxPaintDC(Panel1));
-    shapes.moveActive(p);
+    shapes->moveActive(p);
 }
 
 void MyFrame::OnPanel1LeftUp(wxMouseEvent& event) {
-    shapes.release();
+    shapes->release();
 }
 
 void MyFrame::OnAddRectangleClick(wxCommandEvent& event) {
-    shapes.add(createRectangle());
+    shapes->add(createRectangle());
 }
 
 void MyFrame::OnCloneClick(wxCommandEvent& event) {
     try {
-        shapes.add(shapes.getActive().clone());
+        shapes->add(shapes->getActive().clone());
     } catch(const gauraException&) {}
 }
 
 void MyFrame::OnToggleVisibilityClick(wxCommandEvent& event)
 {
     try {
-        shapes.getActive().toggleVisibility();
+        shapes->getActive().toggleVisibility();
     } catch(const gauraException&) {}
 }
 
 void MyFrame::OnChangeColorClick(wxCommandEvent& event) {
     try {
-        shapes.getActive().changeColor();
+        shapes->getActive().changeColor();
     } catch(const gauraException&) {}
 }
 
 void MyFrame::OnResetColorClick(wxCommandEvent& event) {
     try {
-        shapes.getActive().resetColor();
+        shapes->getActive().resetColor();
     } catch(const gauraException&) {}
 }
 
 void MyFrame::OnToggleTraceClick(wxCommandEvent& event) {
     try {
-        shapes.getActive().toggleTrace();
+        shapes->getActive().toggleTrace();
     } catch(const gauraException&) {}
+}
+
+void MyFrame::OnPanel1EraseBackground(wxEraseEvent& event)
+{
 }

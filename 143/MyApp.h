@@ -10,6 +10,7 @@
 #ifndef MYAPP_H
 #define MYAPP_H
 
+#include "wx_pch.h"
 #include <wx/app.h>
 
 /// Represents the application itself

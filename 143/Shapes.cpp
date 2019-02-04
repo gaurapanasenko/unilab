@@ -157,13 +157,14 @@ void Shape::areIntersected(Shape& shape) {
       if (!shape.intersected_.find(this, index))
         shape.intersected_.add(this);
     }
-    /*if (b1) {
-
+    if (b1) {
+      /*point1.x = pos.x;       point1.y = pos.y;
+      shape.point2.x = pos.x; shape.point2.y = pos.y;*/
     }
     if (b2) {
-      point1.x = pos.x;       point2.y = pos.y;
+    point1.x = pos.x;       point2.y = pos.y;
       shape.point2.x = pos.x; shape.point1.y = pos.y;
-    }*/
+    }
   } else {
     size_t index;
     if (intersected_.find(&shape, index))
@@ -194,7 +195,7 @@ void Shapes::erase(const size_t& index) {
 }
 
 void Shapes::activate(const wxPoint& p) {
-  if (array_.size() < 1) return;
+  //if (array_.size() < 1) return;
   size_t i = array_.size();
   while(i > 0) {
     i--;

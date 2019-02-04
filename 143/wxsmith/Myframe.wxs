@@ -94,6 +94,7 @@
 					<size>333,176</size>
 					<maxsize>-1,-1</maxsize>
 					<handler function="OnPanel1Paint" entry="EVT_PAINT" />
+					<handler function="OnPanel1EraseBackground" entry="EVT_ERASE_BACKGROUND" />
 					<handler function="OnPanel1LeftDown" entry="EVT_LEFT_DOWN" />
 					<handler function="OnPanel1LeftUp" entry="EVT_LEFT_UP" />
 					<handler function="OnPanel1MouseMove" entry="EVT_MOTION" />

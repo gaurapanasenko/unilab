@@ -10,17 +10,22 @@
 #ifndef MYMAIN_H
 #define MYMAIN_H
 
-#include "ShapesChilds.h"
+#include "wx_pch.h"
+
+#include "libgaura.h"
+
 #include <wx/wx.h>
 #include <wx/dcbuffer.h>
 //(*Headers(MyFrame)
 #include <wx/sizer.h>
-#include <wx/button.h>
 #include <wx/menu.h>
 #include <wx/panel.h>
-#include <wx/statusbr.h>
+#include <wx/button.h>
 #include <wx/frame.h>
+#include <wx/statusbr.h>
 //*)
+
+class Shapes;
 
 wxDECLARE_EVENT(wxEVT_COMMAND_MYTHREAD_UPDATE, wxThreadEvent);
 
@@ -62,6 +67,7 @@ class MyFrame: public wxFrame {
         void OnChangeColorClick(wxCommandEvent& event);
         void OnResetColorClick(wxCommandEvent& event);
         void OnToggleTraceClick(wxCommandEvent& event);
+        void OnPanel1EraseBackground(wxEraseEvent& event);
         //*)
 
         //(*Identifiers(MyFrame)
@@ -80,25 +86,25 @@ class MyFrame: public wxFrame {
         //*)
 
         //(*Declarations(MyFrame)
+        wxButton* ToggleVisibility;
+        wxButton* ToggleTrace;
+        wxButton* ChangeColor;
         wxPanel* Panel1;
         wxButton* AddTriangle;
-        wxStatusBar* StatusBar1;
-        wxButton* ToggleTrace;
+        wxButton* Delete;
         wxButton* ResetColor;
         wxButton* Clone;
-        wxButton* ToggleVisibility;
-        wxButton* Delete;
+        wxStatusBar* StatusBar1;
         wxButton* AddRectangle;
-        wxButton* ChangeColor;
         //*)
 
         MyThread* myThread;
         wxCriticalSection myThreadCS;
         friend MyThread;
-
-        Shapes shapes;
+        Pointer<Shapes> shapes;
 
         DECLARE_EVENT_TABLE()
 };
 
 #endif // MYMAIN_H
+

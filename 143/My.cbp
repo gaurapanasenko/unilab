@@ -3,7 +3,7 @@
 	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="My" />
-		<Option pch_mode="2" />
+		<Option pch_mode="0" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
@@ -31,8 +31,11 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="`wx-config --cflags`" />
 			<Add option="-Wall" />
+			<Add option="`wx-config --cflags`" />
+			<Add option="-Winvalid-pch" />
+			<Add option="-include wx_pch.h" />
+			<Add option="-DWX_PRECOMP" />
 		</Compiler>
 		<Linker>
 			<Add option="`wx-config --libs`" />
@@ -46,6 +49,10 @@
 		<Unit filename="ShapesChilds.cpp" />
 		<Unit filename="ShapesChilds.h" />
 		<Unit filename="libgaura.h" />
+		<Unit filename="wx_pch.h">
+			<Option compile="1" />
+			<Option weight="0" />
+		</Unit>
 		<Unit filename="wxsmith/Myframe.wxs" />
 		<Extensions>
 			<code_completion />

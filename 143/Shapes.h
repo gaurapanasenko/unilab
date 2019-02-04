@@ -10,6 +10,7 @@
 #ifndef SHAPES_H
 #define SHAPES_H
 
+#include "wx_pch.h"
 #include "libgaura.h"
 
 #include <math.h>
