@@ -12,6 +12,8 @@
 
 #include "Shapes.h"
 
+namespace ShapesChilds {
+
 class Triangle : public Shape {
 public:
   Triangle() {}
@@ -30,4 +32,5 @@ public:
 
 const Pointer<Shape> createRectangle();
 
+}
 #endif // SHAPESCHILDS_H

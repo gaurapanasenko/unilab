@@ -2,6 +2,9 @@
 #include "tests.h"
 #include <iostream>
 #include <sstream>
+#include <time.h>
+#include <stdlib.h>
+#include <locale>
 
 using namespace std;
 
@@ -23,6 +26,7 @@ bool is_in(const string& str, const string arr[], const int& size) {
 
 int main() {
 	srand(time(NULL));
+	setlocale(LC_ALL, "Russian");
 	string answer = "", buf;
 	vector<SuperInt::SuperInt> arr;
 	static const string show_arr[] =

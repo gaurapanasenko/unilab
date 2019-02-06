@@ -9,6 +9,8 @@
 
 #include "ShapesChilds.h"
 
+namespace ShapesChilds {
+
 const Pointer<Shape> Triangle::clone() {
   return Pointer<Shape>(new Triangle(*this));
 }
@@ -44,4 +46,6 @@ void Rectangle::drawShape(wxDC& dc) {
 
 const Pointer<Shape> createRectangle() {
   return Pointer<Shape>(new Rectangle);
+}
+
 }

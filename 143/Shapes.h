@@ -129,7 +129,7 @@ private:
   /// \brief List of Shape objects that intersects this object
   Array<Shape*> intersected_;
   /// \brief Saved path for automated motion
-  Array<wxPoint> path_;
+  //Array<wxPoint> path_;
   /// \brief Defines visibility of shape
   bool visible_;
   /// \brief Defines visibility of shape

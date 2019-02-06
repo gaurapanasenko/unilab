@@ -162,8 +162,8 @@ void Shape::areIntersected(Shape& shape) {
       shape.point2.x = pos.x; shape.point2.y = pos.y;*/
     }
     if (b2) {
-    point1.x = pos.x;       point2.y = pos.y;
-      shape.point2.x = pos.x; shape.point1.y = pos.y;
+      /*point1.x = pos.x;       point2.y = pos.y;
+      shape.point2.x = pos.x; shape.point1.y = pos.y;*/
     }
   } else {
     size_t index;
@@ -191,6 +191,8 @@ void Shapes::add(const Pointer<Shape>& item) {
 }
 
 void Shapes::erase(const size_t& index) {
+  activated_ = 0;
+  activeId_ = 0;
   array_.erase(index);
 }
 

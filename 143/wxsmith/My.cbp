@@ -42,8 +42,8 @@
 		</Linker>
 		<Unit filename="MyApp.cpp" />
 		<Unit filename="MyApp.h" />
-		<Unit filename="MyMain.cpp" />
-		<Unit filename="MyMain.h" />
+		<Unit filename="MyFrame.cpp" />
+		<Unit filename="MyFrame.h" />
 		<Unit filename="Shapes.cpp" />
 		<Unit filename="Shapes.h" />
 		<Unit filename="ShapesChilds.cpp" />
@@ -61,7 +61,7 @@
 			<wxsmith version="1">
 				<gui name="wxWidgets" src="MyApp.cpp" main="MyFrame" init_handlers="necessary" language="CPP" />
 				<resources>
-					<wxFrame wxs="wxsmith/Myframe.wxs" src="MyMain.cpp" hdr="MyMain.h" fwddecl="0" i18n="1" name="MyFrame" language="CPP" />
+					<wxFrame wxs="wxsmith/MyFrame.wxs" src="MyMain.cpp" hdr="MyMain.h" fwddecl="0" i18n="1" name="MyFrame" language="CPP" />
 				</resources>
 			</wxsmith>
 			<debugger />

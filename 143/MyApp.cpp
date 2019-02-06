@@ -10,13 +10,14 @@
 #include "MyApp.h"
 
 //(*AppHeaders
-#include "MyMain.h"
+#include "MyFrame.h"
 #include <wx/image.h>
 //*)
 
 IMPLEMENT_APP(MyApp);
 
-bool MyApp::OnInit() {
+bool MyApp::OnInit()
+{
     //(*AppInitialize
     bool wxsOK = true;
     wxInitAllImageHandlers();
@@ -30,4 +31,3 @@ bool MyApp::OnInit() {
     return wxsOK;
 
 }
-

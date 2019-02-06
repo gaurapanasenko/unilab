@@ -10,15 +10,12 @@
 #ifndef MYAPP_H
 #define MYAPP_H
 
-#include "wx_pch.h"
 #include <wx/app.h>
 
-/// Represents the application itself
-class MyApp : public wxApp {
-public:
-  /// \brief Creates the application's main window
-  /// \return true
-  virtual bool OnInit();
+class MyApp : public wxApp
+{
+    public:
+        virtual bool OnInit();
 };
 
 #endif // MYAPP_H

@@ -33,16 +33,17 @@ class Array {
 public:
   Array()  : array_(0), size_(0), realsize_(LIBGAURA_ARRAY_STEP) {
     array_ = new T[realsize_];
-    if (array_ == 0) {
+    if (!array_) {
       throw GAURA_EXCEPTION_MEMFAIL;
     }
   }
   ~Array() {
     delete[] array_;
+    array_ = NULL;
   }
   Array(const Array& rhs) : size_(rhs.size_), realsize_(rhs.realsize_) {
     array_ = new T[realsize_];
-    if (array_ == 0) {
+    if (!array_) {
       throw GAURA_EXCEPTION_MEMFAIL;
     }
     for (size_t i = 0; i < rhs.size_; i++) {
@@ -51,8 +52,8 @@ public:
   }
   Array& operator=(const Array& rhs) throw() {
     if (this == &rhs) return *this;
-    T* tmp = new T[realsize_];
-    if (tmp == 0) {
+    T* tmp = new T[rhs.realsize_];
+    if (!tmp) {
       throw GAURA_EXCEPTION_MEMFAIL;
     }
     for (size_t i = 0; i < rhs.size_; i++) {
@@ -110,7 +111,7 @@ private:
     size_ = size;
 
     realsize_ = LIBGAURA_ARRAY_STEP;
-    while (size_ > realsize_) realsize_ <<=LIBGAURA_ARRAY_POW;
+    while (size_ >= realsize_) realsize_ <<=LIBGAURA_ARRAY_POW;
     if (ors == realsize_) return 1;
     T* tmp = new T[realsize_];
     if (tmp == 0) return 0;

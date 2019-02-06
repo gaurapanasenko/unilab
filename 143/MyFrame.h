@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      MyMain.h
+ * Name:      MyFrame.h
  * Purpose:   Defines Application Frame
  * Author:    Egor Panasenko (gaura.panasenko@gmail.com)
  * Created:   2019-01-20
@@ -7,8 +7,8 @@
  * License:   GPLv3
  **************************************************************/
 
-#ifndef MYMAIN_H
-#define MYMAIN_H
+#ifndef MYFRAME_H
+#define MYFRAME_H
 
 #include "wx_pch.h"
 
@@ -18,11 +18,11 @@
 #include <wx/dcbuffer.h>
 //(*Headers(MyFrame)
 #include <wx/sizer.h>
+#include <wx/button.h>
 #include <wx/menu.h>
 #include <wx/panel.h>
-#include <wx/button.h>
-#include <wx/frame.h>
 #include <wx/statusbr.h>
+#include <wx/frame.h>
 //*)
 
 class Shapes;
@@ -86,25 +86,26 @@ class MyFrame: public wxFrame {
         //*)
 
         //(*Declarations(MyFrame)
-        wxButton* ToggleVisibility;
-        wxButton* ToggleTrace;
-        wxButton* ChangeColor;
         wxPanel* Panel1;
         wxButton* AddTriangle;
-        wxButton* Delete;
+        wxStatusBar* StatusBar1;
+        wxButton* ToggleTrace;
         wxButton* ResetColor;
         wxButton* Clone;
-        wxStatusBar* StatusBar1;
+        wxButton* ToggleVisibility;
+        wxButton* Delete;
         wxButton* AddRectangle;
+        wxButton* ChangeColor;
         //*)
 
         MyThread* myThread;
         wxCriticalSection myThreadCS;
         friend MyThread;
         Pointer<Shapes> shapes;
+        int currBuffer;
 
         DECLARE_EVENT_TABLE()
 };
 
-#endif // MYMAIN_H
+#endif // MYFRAME_H
 
