@@ -45,6 +45,7 @@ wxString wxbuildinfo(wxbuildinfoformat format) {
 }
 
 //(*IdInit(MyFrame)
+const long MyFrame::ID_SPINCTRL1 = wxNewId();
 const long MyFrame::ID_ADDTRIANGLE = wxNewId();
 const long MyFrame::ID_ADDRECTANGLE = wxNewId();
 const long MyFrame::ID_TOGGLETRACE = wxNewId();
@@ -97,6 +98,9 @@ MyFrame::MyFrame(wxWindow* parent, wxWindowID id) : shapes(new Shapes) {
   SetClientSize(wxSize(512,512));
   BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
   BoxSizer2 = new wxBoxSizer(wxVERTICAL);
+  SpinCtrl1 = new wxSpinCtrl(this, ID_SPINCTRL1, _T("1"), wxDefaultPosition, wxDefaultSize, 0, 1, 16384, 1, _T("ID_SPINCTRL1"));
+  SpinCtrl1->SetValue(_T("1"));
+  BoxSizer2->Add(SpinCtrl1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
   AddTriangle = new wxButton(this, ID_ADDTRIANGLE, _("Add Triangle"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_ADDTRIANGLE"));
   BoxSizer2->Add(AddTriangle, 1, wxALL|wxEXPAND, 5);
   AddRectangle = new wxButton(this, ID_ADDRECTANGLE, _("Add Rectangle"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_ADDRECTANGLE"));
@@ -211,7 +215,16 @@ void MyFrame::OnClose(wxCloseEvent& event) {
 }
 
 void MyFrame::OnAddTriangleClick(wxCommandEvent& event) {
-  shapes->add(ShapesChilds::createTriangle());
+  int tmp = SpinCtrl1->GetValue();
+  for (int i = 0; i < tmp; i++)
+    shapes->add(ShapesChilds::createTriangle());
+  Panel1->Refresh(0);
+}
+
+void MyFrame::OnAddRectangleClick(wxCommandEvent& event) {
+  int tmp = SpinCtrl1->GetValue();
+  for (int i = 0; i < tmp; i++)
+    shapes->add(ShapesChilds::createRectangle());
   Panel1->Refresh(0);
 }
 
@@ -235,11 +248,6 @@ void MyFrame::OnPanel1MouseMove(wxMouseEvent& event) {
 
 void MyFrame::OnPanel1LeftUp(wxMouseEvent& event) {
   shapes->release();
-  Panel1->Refresh(0);
-}
-
-void MyFrame::OnAddRectangleClick(wxCommandEvent& event) {
-  shapes->add(ShapesChilds::createRectangle());
   Panel1->Refresh(0);
 }
 
@@ -280,4 +288,4 @@ void MyFrame::OnToggleTraceClick(wxCommandEvent& event) {
 
 void MyFrame::OnPanel1EraseBackground(wxEraseEvent& event) {
 }
-
+                

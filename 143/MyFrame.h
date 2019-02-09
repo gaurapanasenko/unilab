@@ -17,6 +17,7 @@
 #include <wx/wx.h>
 #include <wx/dcbuffer.h>
 //(*Headers(MyFrame)
+#include <wx/spinctrl.h>
 #include <wx/sizer.h>
 #include <wx/button.h>
 #include <wx/menu.h>
@@ -71,6 +72,7 @@ class MyFrame: public wxFrame {
         //*)
 
         //(*Identifiers(MyFrame)
+        static const long ID_SPINCTRL1;
         static const long ID_ADDTRIANGLE;
         static const long ID_ADDRECTANGLE;
         static const long ID_TOGGLETRACE;
@@ -96,6 +98,7 @@ class MyFrame: public wxFrame {
         wxButton* Delete;
         wxButton* AddRectangle;
         wxButton* ChangeColor;
+        wxSpinCtrl* SpinCtrl1;
         //*)
 
         MyThread* myThread;

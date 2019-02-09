@@ -17,7 +17,7 @@
 
 /* For testing propose use the local (not installed) ui file */
 /* #define RES_DIR PACKAGE_DATA_DIR"/res/" */
-#define RES_DIR "src/"
+#define RES_DIR "resources/"
 
 void processInput(GLFWwindow *window);
 void framebuffer_size_callback(GLFWwindow* window, GLint width,
@@ -111,9 +111,9 @@ int main() {
 	
     // load models
     // -----------
-    Model EModel(RES_DIR"E.obj");
-    Model PModel(RES_DIR"P.obj");
-    Model CubeModel(RES_DIR"Cube.obj");
+    Model EModel(RES_DIR"E.bo");
+    Model PModel(RES_DIR"P.bo");
+    Model CubeModel(RES_DIR"Cube.bo");
 
     // lamp positions
     // --------------

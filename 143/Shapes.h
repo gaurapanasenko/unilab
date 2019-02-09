@@ -154,7 +154,7 @@ public:
   void add(const Pointer<Shape>& item);
   /// \brief Deletes Shape object on index
   /// \param index index of object that will be deleted
-  void erase(const size_t& index);
+  void erase(const size_t index);
 
   /// \brief Activates Shape object if point in argument placed in Shape
   /// \param p point by which finding Shape object

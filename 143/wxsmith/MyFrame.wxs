@@ -9,6 +9,16 @@
 				<object class="wxBoxSizer" variable="BoxSizer2" member="no">
 					<orient>wxVERTICAL</orient>
 					<object class="sizeritem">
+						<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrl1" member="yes">
+							<value>1</value>
+							<min>1</min>
+							<max>16384</max>
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
 						<object class="wxButton" name="ID_ADDTRIANGLE" variable="AddTriangle" member="yes">
 							<label>Add Triangle</label>
 							<handler function="OnAddTriangleClick" entry="EVT_BUTTON" />

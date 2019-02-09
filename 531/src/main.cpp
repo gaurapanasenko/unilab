@@ -21,15 +21,11 @@
 #include <iostream>
 
 #include "MiniParser.hpp"
-#include "config.h"
 #include "derivedwindow.h"
-
-
-
 
 /* For testing propose use the local (not installed) ui file */
 /* #define UI_FILE PACKAGE_DATA_DIR"/ui/main.ui" */
-#define UI_FILE "src/main.ui"
+#define UI_FILE "resources/main.ui"
    
 int
 main (int argc, char *argv[])

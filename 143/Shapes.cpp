@@ -190,7 +190,7 @@ void Shapes::add(const Pointer<Shape>& item) {
   array_[array_.size() - 1] = item;
 }
 
-void Shapes::erase(const size_t& index) {
+void Shapes::erase(const size_t index) {
   activated_ = 0;
   activeId_ = 0;
   array_.erase(index);
@@ -224,11 +224,11 @@ void Shapes::draw(wxDC& dc) {
   for (size_t i = 0; i < array_.size(); i++) {
     array_[i]->render(dc);
   }
-  for (size_t i = 0; i < array_.size(); i++) {
+  /*for (size_t i = 0; i < array_.size(); i++) {
     for (size_t j = 0; j < array_.size(); j++) {
       array_[i]->areIntersected(*array_[j]);
     }
-  }
+  }*/
   for (size_t i = 0; i < array_.size(); i++) {
     array_[i].draw(dc);
   }
