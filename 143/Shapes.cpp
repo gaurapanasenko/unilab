@@ -157,14 +157,15 @@ void Shape::areIntersected(Shape& shape) {
       if (!shape.intersected_.find(this, index))
         shape.intersected_.add(this);
     }
-    if (b1) {
-      /*point1.x = pos.x;       point1.y = pos.y;
-      shape.point2.x = pos.x; shape.point2.y = pos.y;*/
+    // TODO: Deformation
+    /*if (b1) {
+      point1.x = pos.x;       point1.y = pos.y;
+      shape.point2.x = pos.x; shape.point2.y = pos.y;
     }
     if (b2) {
-      /*point1.x = pos.x;       point2.y = pos.y;
-      shape.point2.x = pos.x; shape.point1.y = pos.y;*/
-    }
+      point1.x = pos.x;       point2.y = pos.y;
+      shape.point2.x = pos.x; shape.point1.y = pos.y;
+    }*/
   } else {
     size_t index;
     if (intersected_.find(&shape, index))
@@ -224,11 +225,11 @@ void Shapes::draw(wxDC& dc) {
   for (size_t i = 0; i < array_.size(); i++) {
     array_[i]->render(dc);
   }
-  /*for (size_t i = 0; i < array_.size(); i++) {
+  for (size_t i = 0; i < array_.size(); i++) {
     for (size_t j = 0; j < array_.size(); j++) {
       array_[i]->areIntersected(*array_[j]);
     }
-  }*/
+  }
   for (size_t i = 0; i < array_.size(); i++) {
     array_[i].draw(dc);
   }

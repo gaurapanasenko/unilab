@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      ShapesChilds.cpp
+ * Name:      ShapeChilds.cpp
  * Purpose:   Implementation of shapes childs
  * Author:    Egor Panasenko (gaura.panasenko@gmail.com)
  * Created:   2019-01-20
@@ -7,9 +7,9 @@
  * License:   GPLv3
  **************************************************************/
 
-#include "ShapesChilds.h"
+#include "ShapeChilds.h"
 
-namespace ShapesChilds {
+namespace ShapeChilds {
 
 const Pointer<Shape> Triangle::clone() {
   return Pointer<Shape>(new Triangle(*this));

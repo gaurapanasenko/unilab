@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      ShapesChilds.h
+ * Name:      ShapeChilds.h
  * Purpose:   Defines shapes childs
  * Author:    Egor Panasenko (gaura.panasenko@gmail.com)
  * Created:   2019-01-20
@@ -7,12 +7,12 @@
  * License:   GPLv3
  **************************************************************/
 
-#ifndef SHAPESCHILDS_H
-#define SHAPESCHILDS_H
+#ifndef SHAPECHILDS_H
+#define SHAPECHILDS_H
 
 #include "Shapes.h"
 
-namespace ShapesChilds {
+namespace ShapeChilds {
 
 class Triangle : public Shape {
 public:
@@ -33,4 +33,4 @@ public:
 const Pointer<Shape> createRectangle();
 
 }
-#endif // SHAPESCHILDS_H
+#endif // SHAPECHILDS_H

@@ -9,7 +9,7 @@
 
 #include "MyFrame.h"
 
-#include "ShapesChilds.h"
+#include "ShapeChilds.h"
 
 #include <wx/msgdlg.h>
 #include <wx/dcgraph.h>
@@ -217,14 +217,14 @@ void MyFrame::OnClose(wxCloseEvent& event) {
 void MyFrame::OnAddTriangleClick(wxCommandEvent& event) {
   int tmp = SpinCtrl1->GetValue();
   for (int i = 0; i < tmp; i++)
-    shapes->add(ShapesChilds::createTriangle());
+    shapes->add(ShapeChilds::createTriangle());
   Panel1->Refresh(0);
 }
 
 void MyFrame::OnAddRectangleClick(wxCommandEvent& event) {
   int tmp = SpinCtrl1->GetValue();
   for (int i = 0; i < tmp; i++)
-    shapes->add(ShapesChilds::createRectangle());
+    shapes->add(ShapeChilds::createRectangle());
   Panel1->Refresh(0);
 }
 
@@ -288,4 +288,4 @@ void MyFrame::OnToggleTraceClick(wxCommandEvent& event) {
 
 void MyFrame::OnPanel1EraseBackground(wxEraseEvent& event) {
 }
-                
+
