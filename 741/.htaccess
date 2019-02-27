@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteRule /static/ static
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ cgi-bin/python.cgi/$1 [QSA,L]
