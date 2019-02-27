@@ -77,31 +77,34 @@ enc_print('''Content-type: text/html\n
     <div class="container">''')
 
 
-html = '''<h1 class="mt-2">Hello, world!</h1>'''
-
-
+html = {
+  'head': '<h1 class="mt-2">Hello, world!</h1>',
+  'error': "",
+  'content': "",
+}
 
 try:
   import mysql.connector
 
   def create_table(name, thead, data):
-    html = '''<h1 class="mt-2">%s <a href="/%s/edit/0">+</a></h1>
-    <table class="table"><thead><tr>''' % (name.capitalize(), name)
-    html += '<th scope="col">#</th>'
+    head = '<h1 class="mt-2">%s <a href="/%s/edit/0">+</a></h1>'% \
+              (name.capitalize(), name)
+    content = '''<table class="table"><thead><tr>'''
+    content += '<th scope="col">#</th>'
     for i in thead:
-      html += '<th scope="col">%s</th>' % i
-    html += '<th scope="col">Handle</th></tr></thead><tbody>'
+      content += '<th scope="col">%s</th>' % i
+    content += '<th scope="col">Handle</th></tr></thead><tbody>'
     for i in data:
-      html += \
+      content += \
         '<tr><th scope="row"><a href="/%s/edit/%s">%s</td></th>' \
         % (name, i[0], i[0])
       for j in range(len(thead)):
-        html += '<td><a href="/%s/edit/%s">%s</td>'\
+        content += '<td><a href="/%s/edit/%s">%s</td>'\
                       % (name, i[0], i[j + 1])
-      html += '<td><a href="/%s/delete/%s">-</a></td></tr>'\
+      content += '<td><a href="/%s/delete/%s">-</a></td></tr>'\
               % (name, i[0])
-    html += '</tbody></table>'
-    return html
+    content += '</tbody></table>'
+    return head, content
 
   def create_input_text(name_id, name, data):
     return '''
@@ -115,9 +118,9 @@ try:
   def create_error(message):
     return "<h1 class='mt-2 text-danger'>%s</h1>" % message
 
-  def create_alert(message):
-    return '<div class="alert alert-danger" role="alert">%s</div>' \
-      % message
+  def create_alert(name, message):
+    return '<div class="alert alert-%s" role="alert">%s</div>' \
+      % (name, message)
 
   class DataColumn:
     def __init__(self, name, type = 0,
@@ -187,6 +190,10 @@ try:
                      for i in self.data_columns) \
             + " FROM " + self.table_name
 
+    def gen_insert_query(self):
+      return self.table_name + " (" + ", ".join(i[1].name
+                     for i in self.data_columns[1:]) + ")"
+
     def gen_dep_query(self):
       out = []
       for i in self.tables[1:]:
@@ -199,8 +206,8 @@ try:
 
 
   class Database:
-    def __init__(self, cursor):
-      self.cursor = cursor
+    def __init__(self, db):
+      self.db = db
       self.tables = {
         "persons": Table("persons", [
           DataColumn("id"),
@@ -221,8 +228,10 @@ try:
         "students": Table("students", [
           DataColumn("id"),
           DataColumn("person_id", type = 1, link_table = "persons"),
+          DataColumn("group_id", type = 1, link_table = "groups"),
         ], [
           ViewColumn("Student name", "%s", [1]),
+          ViewColumn("Group name", "%s", [2]),
         ]),
         "teachers": Table("teachers", [
           DataColumn("id"),
@@ -296,7 +305,8 @@ try:
         ]),
       }
 
-    def gen_col_query(self, table_name, main = False, full = False, parent_column = "", recursive = True):
+    def gen_col_query(self, table_name, main = False, full = False,
+        parent_column = "", recursive = True):
       if table_name not in self.tables:
         return False
       query = Query(table_name, parent_column)
@@ -316,7 +326,8 @@ try:
             query.append_data(data_col)
           elif data_col.type == 1:
             if recursive:
-              query.insert(self.gen_col_query(data_col.link_table, True, full, data_col.name))
+              query.insert(self.gen_col_query(data_col.link_table,
+                True, full, data_col.name))
             else:
               query.append_data(data_col)
       return query
@@ -327,32 +338,34 @@ try:
       query = self.gen_col_query(table_name)
       q = "SELECT %s %s" % \
           (query.gen_main_query(), query.gen_dep_query())
-      enc_print(q)
-      self.cursor.execute(q)
-      result = self.cursor.fetchall()
+      #enc_print(q)
+      cursor = self.db.cursor()
+      cursor.execute(q)
+      result = cursor.fetchall()
       names = []
       for i in query.view_columns:
         names.append(i.name)
-      data = [[i[0]] + [(j.pattern % tuple(i[k] for k in j.column_ids)) for j in query.view_columns] for i in result]
+      data = [[i[0]] + [(j.pattern % tuple(i[k] for k in j.column_ids))
+                        for j in query.view_columns] for i in result]
       return (names, data)
 
-    def get_edit(self, table_name, id):
+    def get_edit(self, table_name, id, error = ""):
       if table_name not in self.tables:
         return create_error("No such table " % table_name)
       query = self.gen_col_query(table_name, recursive = False)
       views = query.view_columns
       data = ["" for i in range(len(views) + 1)]
-      error = ""
       page_name = table_name[:-1]
 
       if id != 0:
         q = "SELECT %s %s WHERE %s.id = %s"\
               % (query.gen_main_query(), query.gen_dep_query(),
                  table_name, id)
-        self.cursor.execute(q)
-        result = self.cursor.fetchall()
+        cursor = self.db.cursor()
+        cursor.execute(q)
+        result = cursor.fetchall()
         if len(result) == 0:
-          error = create_alert("No such " + page_name)
+          error += create_alert("danger","No such " + page_name)
         else: data = result[0]
       form = ""
       for k, v in enumerate(views):
@@ -360,31 +373,82 @@ try:
           col_id = v.column_ids[0]
           col = query.data_columns[v.column_ids[0]][1].name
           form += create_input_text(col, v.name, data[col_id]);
-      html = '''
-<h1 class="mt-2">Edit %s</h1>
-%s
+      head = '<h1 class="mt-2">Edit %s</h1>' % page_name
+      content = '''
 <form>
   <input type="hidden" name="id" value="%s">
   %s
   <div class="form-group row">
     <div class="col-sm-10">
-      <button type="submit" class="btn btn-primary">Add</button>
+      <button type="submit" class="btn btn-primary">Edit</button>
+      <a class="btn btn-primary" href="/%s/delete/%s">Delete</a>
     </div>
   </div>
 </form>
-''' % (page_name, error, id, form)
-      return html
+''' % (id, form, table_name, id)
+      return head, error, content
+
+    def create_or_edit(self, table_name, parsed_query):
+      data_id = int(parsed_query['id'][0])
+      if table_name not in self.tables:
+        return create_error("No such table " % table_name)
+      query = self.gen_col_query(table_name, recursive = False)
+      views = query.view_columns
+      for i in query.data_columns[1:]:
+        if i[1].name not in parsed_query:
+          return self.get_edit(table_name, 0,
+              create_alert("danger", "Failed to create new"))
+      q = ""
+      if data_id == 0:
+        data = ["'%s'" % parsed_query[i[1].name][0]
+                for i in query.data_columns[1:]]
+        q = "INSERT INTO %s VALUES (%s)" % \
+            (query.gen_insert_query(), ", ".join(data))
+      else:
+        data = ["%s = '%s'" % (i[1].name, parsed_query[i[1].name][0])
+                for i in query.data_columns[1:]]
+        q = "UPDATE %s SET %s WHERE id = %s" % \
+            (table_name, ", ".join(data), data_id)
+      try:
+        cursor = self.db.cursor()
+        cursor.execute(q)
+        if data_id == 0:
+          if cursor.lastrowid:
+            return self.get_edit(table_name, cursor.lastrowid,
+                create_alert("success", "Done"))
+          else:
+            return self.get_edit(table_name, 0,
+                create_alert("danger", "Failed to create or edit"))
+        else:
+          return self.get_edit(table_name, data_id,
+              create_alert("success", "Done"))
+      except mysql.connector.Error as error:
+        return self.get_edit(table_name, 0,
+            create_alert("danger", error))
+      return ("","","")
+
+    def delete(self, table_name, id):
+      if table_name not in self.tables:
+        return create_error("No such table " % table_name)
+      query = "DELETE FROM %s WHERE id = %s" % (table_name, id)
+      try:
+        cursor = self.db.cursor()
+        cursor.execute(query)
+        cursor.close()
+        return create_alert("success", "Done")
+      except mysql.connector.Error as error:
+        return create_alert("danger", error)
+
 
 
   class App:
     def __init__(self):
-      db = mysql.connector.connect(
+      self.db = mysql.connector.connect(
         host="localhost",
         database="library",
         user="library",
         passwd="V9KaCHDIGSzAHyzj"
       )
-      self.cursor = db.cursor()
 
       url = os.environ["REQUEST_URI"]
       parsed_url = urllib.parse.urlparse(url)
@@ -397,19 +461,30 @@ try:
         self.operation = self.path[2]
       if len(self.path) > 3:
         self.selected_id = int(self.path[3])
-      self.database = Database(self.cursor)
+      self.database = Database(self.db)
 
       global html
 
       if self.table in self.database.tables:
         if self.operation == "edit":
           if 'id' in self.parsed_query:
-            pass
+            html['head'], html['error'], html['content'] = \
+                self.database.create_or_edit(self.table, self.parsed_query)
           else:
-            html = self.database.get_edit(self.table, self.selected_id)
+            html['head'], html['error'], html['content'] = \
+                self.database.get_edit(self.table, self.selected_id)
+        elif self.operation == "delete":
+          html['error'] = self.database.delete(self.table, self.selected_id)
+          try:
+            names, result = self.database.get_list(self.table)
+            html['head'], html['content'] = \
+              create_table(self.table, names, result)
+          except:
+            pass
         else:
           names, result = self.database.get_list(self.table)
-          html = create_table(self.table, names, result)
+          html['head'], html['content'] = \
+              create_table(self.table, names, result)
       elif self.table == 'books':
         cursor.execute("SELECT books.id, books.name, year, publishers.name, languages.name FROM books LEFT JOIN publishers ON publisher_id = publishers.id LEFT JOIN languages ON language_id = languages.id")
         result = cursor.fetchall()
@@ -425,17 +500,20 @@ try:
           ("Name","Year","Publisher","Language","Author"),
           list(books.values()))
 
+    def __del__(self):
+      self.db.commit()
+
 
   app = App()
 
 except Exception as e:
   import traceback
-  html = "<h1 class='mt-2 text-danger'>%s</h1>" % (e,)
-  html += '<pre>%s<pre>' % str(traceback.format_exc())
+  html['head'] = "<h1 class='mt-2 text-danger'>%s</h1>" % (e,)
+  html['content'] = '<pre>%s<pre>' % str(traceback.format_exc())
 except:
   html = "Unexpected error:", sys.exc_info()[0]
 
-enc_print('''%s
+enc_print('''%s%s%s
     </div>
 
     <!-- Optional JavaScript -->
@@ -450,4 +528,4 @@ enc_print('''%s
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
     crossorigin="anonymous"></script>
   </body>
-</html>''' % html)
+</html>''' % (html['head'], html['error'], html['content']))
