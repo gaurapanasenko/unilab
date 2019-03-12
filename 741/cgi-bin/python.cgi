@@ -70,6 +70,9 @@ enc_print('''Content-type: text/html\n
             <li class="nav-item">
               <a class="nav-link" href="/books">Books</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/book_author">Books and authors</a>
+            </li>
           </ul>
         </div>
       </div>
@@ -124,10 +127,11 @@ try:
 
   class DataColumn:
     def __init__(self, name, type = 0,
-                 link_table = ""):
+                 link_table = "", link_column = "id"):
       self.name = name
       self.type = type
       self.link_table = link_table
+      self.link_column = link_column
 
     def __str__(self):
       return self.name
@@ -145,62 +149,152 @@ try:
 
     __repr__ = __str__
 
+  class ViewColumnLink:
+    def __init__(self, name, column):
+      self.name = name
+      self.column = column
+
+    def __str__(self):
+      return self.name
+
+    __repr__ = __str__
+
   class Table:
     def __init__(self, name, data, view,
-        main_view = [ViewColumn("", "%s", [1])]):
+        main_view = ViewColumn("", "%s", [1])):
       self.name = name
       self.data = data
       self.view = view
       self.main_view = main_view
 
   class Query:
-    def __init__(self, table_name, parent_column = ""):
-      self.table_name = table_name
-      self.tables = [[[table_name], parent_column]]
-      self.data_columns = []
-      self.view_columns = []
+    def __init__(
+      self, database, table, parent_table = -1,
+      parent_column = "", link_column = "id"
+    ):
+      self.database = database
+      self.tables = [(
+        table, link_column, parent_table, parent_column
+      )]
+      self.data = []
+      self.data_dict = {}
+      self.view = []
+      self.generated = 0
 
     def append_data(self, column, table = 0):
-      self.data_columns.append((table, copy.copy(column)))
+      data_set = (table, column)
+      if data_set not in self.data_dict:
+        self.data.append((
+          data_set, self.tables[table][0].data[column]
+        ))
+        self.data_dict[data_set] = len(self.data) - 1
 
-    def append_view(self, column):
-      inc = len(self.data_columns)
-      s = len(column.column_ids)
-      self.view_columns.append(ViewColumn(column.name, column.pattern,
-                       [i + inc for i in range(s)]))
+    def append_view(self, column, table = 0):
+      self.view.append((table, column))
 
-    def insert(self, query):
-      table_size = len(self.tables)
-      data_size = len(self.tables)
-      inc = len(self.data_columns)
-      self.tables += [ [[self.table_name] + i[0], i[1]]
-          for i in query.tables ]
-      for i in query.data_columns:
-        self.append_data(i[1], i[0] + table_size)
+    def get_data_column(self, column, table = 0):
+      return self.data[self.get_data_column_id(column, table)][1]
 
-      column = query.view_columns[0]
-      s = len(column.column_ids)
-      self.view_columns[-1].pattern = column.pattern
-      self.view_columns[-1].column_ids = \
-          [i + inc for i in range(s)]
+    def get_data_column_id(self, column, table = 0):
+      return self.data_dict[(table, column)]
 
-    def gen_main_query(self):
-      return ", ".join("%s.%s" %
-                     ("_".join(self.tables[i[0]][0]), i[1].name)
-                     for i in self.data_columns) \
-            + " FROM " + self.table_name
+    def merge(self, query):
+      tables_size = len(self.tables)
+      self.tables += query.tables
+      for i in query.data:
+        self.append_data(i[0][1], i[0][0] + tables_size)
+      for i in query.view:
+        self.append_view(i[1], i[0] + tables_size)
 
-    def gen_insert_query(self):
-      return self.table_name + " (" + ", ".join(i[1].name
-                     for i in self.data_columns[1:]) + ")"
+    def collect_view(
+      self, main = False, full = False, recursive = True,
+      new_main_name = False, current_table = 0
+    ):
+      table = self.tables[0][0]
+      data = table.data
+      views = table.view
+      if not main or full:
+        self.append_data(0)
+      if main:
+        views = [table.main_view]
+      for k, v in enumerate(views):
+        if type(v) is ViewColumn:
+          if main and new_main_name:
+            self.append_view(ViewColumn(
+              new_main_name, v.pattern, v.column_ids
+            ))
+          else:
+            self.append_view(v)
+          for j in v.column_ids:
+            self.append_data(j)
+        elif type(v) is ViewColumnLink \
+            and data[v.column].link_table in self.database.tables:
+          if recursive:
+            if data[v.column].type == 1:
+              t = self.database.tables[data[v.column].link_table]
+              q = Query(
+                self.database, t, current_table, data[v.column].name,
+                data[v.column].link_column
+              )
+              q.collect_view(
+                True, full, True, v.name, current_table + len(self.tables)
+              )
+              self.merge(q)
+            elif data[v.column].type == 2:
+              t = self.database.tables[data[v.column].link_table]
+              q = Query(
+                self.database, t, current_table, "id",
+                data[v.column].link_column
+              )
+              q.collect_view(
+                True, full, True, v.name, current_table + len(self.tables)
+              )
+              self.merge(q)
+          else:
+            self.append_view(v)
+            self.append_data(v.column)
+      self.generated = 1
 
-    def gen_dep_query(self):
+    def generate_select(self, recursive = True):
+      if not self.generated:
+        self.collect_view(recursive = recursive)
+      return "SELECT %s FROM `%s` AS `0` %s" % (
+        ", ".join(
+          "`%s`.`%s`" % (
+            i[0][0], i[1].name
+          ) for i in self.data
+        ), self.tables[0][0].name, self.generate_joins()
+      )
+
+    def generate_insert(self, data):
+      cols = [i.name for i in self.tables[0][0].data]
+      for k, v in data.items():
+        if k not in cols:
+          return ""
+      k, v = zip(*(("`%s`" % k, "`%s`" % v) for k, v in data.items()))
+      return "INSERT INTO %s (%s) VALUES (%s)" % (
+        self.tables[0][0].name,  ", ".join(k), ", ".join(v)
+      )
+
+    def generate_update(self, data, data_id):
+      if not self.generated:
+        self.collect_view(False, False, False)
+      return "UPDATE %s SET %s WHERE id = %s" % (
+        self.table_name,  ", ".join(
+          "`%s`" % i[1].name
+            for k, v in self.data[1:]
+              if k[0] == 0 and v[1].name != "id"
+        )
+      )
+
+    def generate_joins(self):
       out = []
-      for i in self.tables[1:]:
-        path = "_".join(i[0][:])
-        s = "LEFT JOIN %s %s ON %s.%s = %s.id" % \
-            (i[0][-1], path, "_".join(i[0][:-1]), i[1], path)
-        out.append(s)
+      for k, v in enumerate(self.tables[:]):
+        if v[2] != -1:
+          s = "INNER JOIN `%s` `%s` ON `%s`.`%s` = `%s`.`%s`" % (
+            v[0].name, k, v[2], v[3], k, v[1]
+          )
+          out.append(s)
       return  " ".join(out)
 
 
@@ -218,33 +312,33 @@ try:
           ViewColumn("Last name", "%s", [1]),
           ViewColumn("First name", "%s", [2]),
           ViewColumn("Middle name", "%s", [3]),
-        ], [ViewColumn("Person name", "%s %s %s", [1, 2, 3])]),
+        ], ViewColumn("Person name", "%s %s %s", [1, 2, 3])),
         "authors": Table("authors", [
           DataColumn("id"),
-          DataColumn("person_id", type = 1, link_table = "persons"),
+          DataColumn("person_id", 1, "persons"),
         ], [
-          ViewColumn("Author name", "%s", [1]),
-        ]),
+          ViewColumnLink("Author name", 1),
+        ], ViewColumnLink("Person name", 1)),
         "students": Table("students", [
           DataColumn("id"),
-          DataColumn("person_id", type = 1, link_table = "persons"),
-          DataColumn("group_id", type = 1, link_table = "groups"),
+          DataColumn("person_id", 1, "persons"),
+          DataColumn("group_id", 1, "groups"),
         ], [
-          ViewColumn("Student name", "%s", [1]),
-          ViewColumn("Group name", "%s", [2]),
-        ]),
+          ViewColumnLink("Student name", 1),
+          ViewColumnLink("Group name", 2),
+        ], ViewColumnLink("Person name", 1)),
         "teachers": Table("teachers", [
           DataColumn("id"),
-          DataColumn("person_id", type = 1, link_table = "persons"),
+          DataColumn("person_id", 1, "persons"),
         ], [
-          ViewColumn("Teacher name", "%s", [1]),
-        ]),
+          ViewColumnLink("Teacher name", 1),
+        ], ViewColumnLink("Person name", 1)),
         "librarians": Table("librarians", [
           DataColumn("id"),
-          DataColumn("person_id", type = 1, link_table = "persons"),
+          DataColumn("person_id", 1, "persons"),
         ], [
-          ViewColumn("Librarian name", "%s", [1]),
-        ]),
+          ViewColumnLink("Librarian name", 1),
+        ], ViewColumnLink("Person name", 1)),
         "languages": Table("languages", [
           DataColumn("id"),
           DataColumn("name"),
@@ -265,25 +359,25 @@ try:
         ]),
         "student_cards": Table("student_cards", [
           DataColumn("id"),
-          DataColumn("student_id", type = 1, link_table = "students"),
-          DataColumn("librarian_id", type = 1, link_table = "librarians"),
+          DataColumn("student_id", 1, "students"),
+          DataColumn("librarian_id", 1, "librarians"),
           DataColumn("take_date"),
           DataColumn("return_date"),
         ], [
-          ViewColumn("Student name", "%s", [1]),
-          ViewColumn("Librarian name", "%s", [2]),
+          ViewColumnLink("Student name", 1),
+          ViewColumnLink("Librarian name", 2),
           ViewColumn("Take date", "%s", [3]),
           ViewColumn("Return date", "%s", [4]),
         ]),
         "teacher_cards": Table("teacher_cards", [
           DataColumn("id"),
-          DataColumn("teacher_id", type = 1, link_table = "teachers"),
-          DataColumn("librarian_id", type = 1, link_table = "librarians"),
+          DataColumn("teacher_id", 1, "teachers"),
+          DataColumn("librarian_id", 1, "librarians"),
           DataColumn("take_date"),
           DataColumn("return_date"),
         ], [
-          ViewColumn("Teachers name", "%s", [1]),
-          ViewColumn("Librarian name", "%s", [2]),
+          ViewColumnLink("Teachers name", 1),
+          ViewColumnLink("Librarian name", 2),
           ViewColumn("Take date", "%s", [3]),
           ViewColumn("Return date", "%s", [4]),
         ]),
@@ -292,75 +386,60 @@ try:
           DataColumn("name"),
           DataColumn("year"),
           DataColumn("isbn"),
-          DataColumn("publisher_id", type = 1, link_table = "publishers"),
-          DataColumn("language_id", type = 1, link_table = "languages"),
-          DataColumn("authors", type = 2, link_table = "book_author"),
+          DataColumn("publisher_id", 1, "publishers"),
+          DataColumn("language_id", 1, "languages"),
+          DataColumn("authors", 2, "book_author", "book_id"),
         ], [
           ViewColumn("Name", "%s", [1]),
           ViewColumn("Year", "%s", [2]),
           ViewColumn("ISBN", "%s", [3]),
-          ViewColumn("Publisher", "%s", [4]),
-          ViewColumn("Language", "%s", [5]),
-          #ViewColumn("Author", "%s", [3]),
+          ViewColumnLink("Publisher", 4),
+          ViewColumnLink("Language", 5),
+          ViewColumnLink("Author", 6),
         ]),
+        "book_author": Table("book_author", [
+          DataColumn("id"),
+          DataColumn("book_id", 1, "books"),
+          DataColumn("author_id", 1, "authors"),
+        ], [
+          ViewColumnLink("Book name", 1),
+          ViewColumnLink("Author name", 2),
+        ], ViewColumnLink("Author name", 2)),
       }
-
-    def gen_col_query(self, table_name, main = False, full = False,
-        parent_column = "", recursive = True):
-      if table_name not in self.tables:
-        return False
-      query = Query(table_name, parent_column)
-      if not main or full:
-        query.append_data(self.tables[table_name].data[0])
-
-      table = self.tables[table_name]
-      data = table.data
-      views = table.view
-      if main and not full:
-        views = table.main_view[0:1]
-      for i in views:
-        query.append_view(i)
-        for j in i.column_ids:
-          data_col = data[j]
-          if data_col.type == 0:
-            query.append_data(data_col)
-          elif data_col.type == 1:
-            if recursive:
-              query.insert(self.gen_col_query(data_col.link_table,
-                True, full, data_col.name))
-            else:
-              query.append_data(data_col)
-      return query
 
     def get_list(self, table_name):
       if table_name not in self.tables:
         return create_error("No such table " % table_name)
-      query = self.gen_col_query(table_name)
-      q = "SELECT %s %s" % \
-          (query.gen_main_query(), query.gen_dep_query())
+      query = Query(self, self.tables[table_name])
+      q = query.generate_select()
       #enc_print(q)
       cursor = self.db.cursor()
       cursor.execute(q)
       result = cursor.fetchall()
       names = []
-      for i in query.view_columns:
-        names.append(i.name)
-      data = [[i[0]] + [(j.pattern % tuple(i[k] for k in j.column_ids))
-                        for j in query.view_columns] for i in result]
+      for i in query.view:
+        names.append(i[1].name)
+      data = [
+        [i[0]] + [
+          (j[1].pattern % tuple(i[query.data_dict[(j[0], k)]]
+            for k in j[1].column_ids))
+              for j in query.view
+        ] for i in result
+      ]
       return (names, data)
 
     def get_edit(self, table_name, id, error = ""):
       if table_name not in self.tables:
         return create_error("No such table " % table_name)
-      query = self.gen_col_query(table_name, recursive = False)
-      views = query.view_columns
+      query = Query(self, self.tables[table_name])
+      query.collect_view(recursive = False)
+
+      views = query.view
       data = ["" for i in range(len(views) + 1)]
       page_name = table_name[:-1]
 
       if id != 0:
-        q = "SELECT %s %s WHERE %s.id = %s"\
-              % (query.gen_main_query(), query.gen_dep_query(),
-                 table_name, id)
+        q = query.generate_select(False) + "WHERE `0`.id = %s" % (id)
         cursor = self.db.cursor()
         cursor.execute(q)
         result = cursor.fetchall()
@@ -369,10 +448,20 @@ try:
         else: data = result[0]
       form = ""
       for k, v in enumerate(views):
-        if v.pattern == "%s":
-          col_id = v.column_ids[0]
-          col = query.data_columns[v.column_ids[0]][1].name
-          form += create_input_text(col, v.name, data[col_id]);
+        if type(v[1]) is ViewColumn:
+          if v[1].pattern == "%s":
+            col_id = v[1].column_ids[0]
+            col = query.get_data_column(col_id)
+            form += create_input_text(
+              col, v[1].name, data[query.get_data_column_id(col_id)]
+            )
+        elif type(v[1]) is ViewColumnLink:
+            col_id = v[1].column
+            col = query.get_data_column(col_id)
+            form += create_input_text(
+              col, v[1].name, data[query.get_data_column_id(col_id)]
+            )
+
       head = '<h1 class="mt-2">Edit %s</h1>' % page_name
       content = '''
 <form>
@@ -392,18 +481,23 @@ try:
       data_id = int(parsed_query['id'][0])
       if table_name not in self.tables:
         return create_error("No such table " % table_name)
-      query = self.gen_col_query(table_name, recursive = False)
-      views = query.view_columns
-      for i in query.data_columns[1:]:
-        if i[1].name not in parsed_query:
-          return self.get_edit(table_name, 0,
-              create_alert("danger", "Failed to create new"))
+      query = Query(self, self.tables[table_name])
+      query.collect_view(recursive = False)
+
+      views = query.view
+      #for i in query.data[1:]:
+      #  if i[1].name not in parsed_query:
+      #    return self.get_edit(
+      #      table_name, 0,
+      #      create_alert("danger", "Failed to create new")
+      #    )
       q = ""
       if data_id == 0:
-        data = ["'%s'" % parsed_query[i[1].name][0]
-                for i in query.data_columns[1:]]
-        q = "INSERT INTO %s VALUES (%s)" % \
-            (query.gen_insert_query(), ", ".join(data))
+        data = {
+          i[1].name: parsed_query[i[1].name][0]
+            for i in query.data[1:]
+        }
+        q = query.generate_insert(data)
       else:
         data = ["%s = '%s'" % (i[1].name, parsed_query[i[1].name][0])
                 for i in query.data_columns[1:]]
