@@ -9,7 +9,10 @@
 
 #include "shapes.h"
 
-Point::Point() : Gdk::Point() {}
+/********
+* Point *
+********/
+Point::Point() : Gdk::Point(0, 0) {}
 
 Point::Point(int x, int y) : Gdk::Point(x, y) {}
 
@@ -27,6 +30,15 @@ Point operator-(const Point& lhs, const Point& rhs) {
 	return Point(lhs.get_x() - rhs.get_x(), lhs.get_y() - rhs.get_y());
 }
 
+Point operator*(const Point& lhs, const Point& rhs) {
+	return Point(lhs.get_x() * rhs.get_x(), lhs.get_y() * rhs.get_y());
+}
+
+Point operator/(const Point& lhs, const Point& rhs) {
+	return Point(lhs.get_x() / rhs.get_x(), lhs.get_y() / rhs.get_y());
+}
+
+
 Point operator*(const Point& lhs, const int    rhs) {
 	return Point(lhs.get_x() * rhs, lhs.get_y() * rhs);
 }
@@ -35,10 +47,31 @@ Point operator/(const Point& lhs, const int    rhs) {
 	return Point(lhs.get_x() / rhs, lhs.get_y() / rhs);
 }
 
-const double calulateVectorLength(const Point& point) {
-	return sqrt(pow(point.get_x(), 2.0) + pow(point.get_y(), 2.0));
+const double calulateVectorLengthSqruare(const Point& point) {
+	return pow(point.get_x(), 2.0) + pow(point.get_y(), 2.0);
 }
 
+const Point abs(const Point& point) {
+	return Point(abs(point.get_x()), abs(point.get_y()));
+}
+
+double calculatePseudoscalarProduct(
+	const Point& a, const Point& b, const Point& c
+) {
+	Point ab = b - a, ac = c - a;
+	return ab.get_x() * ac.get_y() - ab.get_y() * ac.get_x();
+}
+
+bool isOneSizePointsToStraight(
+	const Point& a, const Point& b, const Point& c, const Point& d
+) {
+	return calculatePseudoscalarProduct(c, a, b) *
+	       calculatePseudoscalarProduct(d, a, b) > 0;
+}
+
+/********
+* Color *
+********/
 Color::Color() : color_{0, 0, 0} {}
 
 Color::Color(unsigned char r, unsigned char g, unsigned char b) :
@@ -62,6 +95,9 @@ Color randomColor() {
 	return Color(rand() % 256, rand() % 256, rand() % 256);
 }
 
+/*************
+* ShapeTrace *
+*************/
 ShapeTrace::ShapeTrace() : shape_(0), tail_(0), time_(0) {}
 
 ShapeTrace& ShapeTrace::operator=(Shape& pointer) {
@@ -93,16 +129,80 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 	}
 }
 
+/********
+* Frame *
+********/
+Frame::Frame() : point1_(0, 0), point2_(0, 0) {}
 
-
-
-Shape::Shape() : defaultColor_(randomColor()), color_(defaultColor_),
-visible_(1), trace_(0) {
-	setFrame(Point(0, 0), Point(SHAPE_DEFAULT_WIDTH, SHAPE_DEFAULT_HEIGHT));
+Frame::Frame(const Point& point1, const Point& point2) {
+	(*this)(point1, point2);
 }
 
-Shape::~Shape() {
+void Frame::operator()(const Point& point1, const Point& point2) {
+	point1_ = Point(
+		min(point1.get_x(), point2.get_x()), min(point1.get_y(), point2.get_y())
+	);
+	point2_ = Point(
+		max(point1.get_x(), point2.get_x()), max(point1.get_y(), point2.get_y())
+	);
 }
+
+const bool Frame::isInFrame(const Point& point) const {
+	return (
+		point1_.get_x() <= point.get_x() && point.get_x() <= point2_.get_x() &&
+		point1_.get_y() <= point.get_y() && point.get_y() <= point2_.get_y()
+	);
+}
+
+const Point Frame::getPosition() const {
+	return (point1_ + point2_) / 2;
+}
+
+void Frame::setPosition(const Point& point) {
+	Point size = getSize() / 2;
+	point1_ = point - size;
+	point2_ = point + size;
+}
+
+const Point Frame::getSize() const {
+	return point2_ - point1_;
+}
+
+void Frame::setSize(const Point& point) {
+	if (point.get_x() <= 0 || point.get_y() <= 0) return;
+	Point position = getPosition(), p = point / 2;
+	point1_ = position - p;
+	point2_ = position + p;
+}
+
+const Point& Frame::getPoint1() const {
+	return point1_;
+}
+
+const Point& Frame::getPoint2() const {
+	return point1_;
+}
+
+bool isPointInCircle(const Point& point, const Frame& frame) {
+	Point size = (frame.getSize()) / 2;
+	Point pr = point - frame.getPosition();
+	if (calulateVectorLengthSqruare(pr) < size.get_x() * size.get_x())
+		return true;
+	else return false;
+}
+
+/********
+* Shape *
+********/
+Shape::Shape() : defaultFrame_(
+	Point(SHAPE_DEFAULT_X, SHAPE_DEFAULT_Y), Point(
+		SHAPE_DEFAULT_WIDTH  + SHAPE_DEFAULT_X,
+		SHAPE_DEFAULT_HEIGHT + SHAPE_DEFAULT_Y
+	)
+), frame_(defaultFrame_), position_(frame_.getPosition()),
+defaultColor_(randomColor()), color_(defaultColor_), visible_(1), trace_(0) {}
+
+Shape::~Shape() {}
 
 void Shape::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {}
 
@@ -115,25 +215,31 @@ bool Shape::isInShapeVirtual(const Point& p) {
 }
 
 void Shape::setFrame(const Point& one, const Point& two) {
-	point1 = Point(min(one.get_x(), two.get_x()), min(one.get_y(), two.get_y()));
-	point2 = Point(max(one.get_x(), two.get_x()), max(one.get_y(), two.get_y()));
-	position_ = (point1 + point2) / 2;
-	defaultSize_ = point2 - point1;
+	frame_(one, two);
+	position_ = frame_.getPosition();
 }
 
 void Shape::render(const Gtk::Allocation& allocation) {
+	const int h = allocation.get_height(), w = allocation.get_width();
 	int x = position_.get_x(), y = position_.get_y();
-	int h = allocation.get_height(), w = allocation.get_width();
 
-	if (x < 10)     x = 10;
-	if (y < 10)     y = 10;
-	if (x > w - 10) x = w;
-	if (y > h - 10) y = h;
+	if (x < 20)     x = 20;
+	if (y < 20)     y = 20;
+	if (x > w - 20) x = w - 20;
+	if (y > h - 20) y = h - 20;
 	moveTo(Point(x, y));
-	if (point1.get_x() < 1)      point1.set_x(1);
-	if (point1.get_y() < 1)      point1.set_y(1);
-	if (point2.get_x() > w - 1)  point2.set_x(w - 1);
-	if (point2.get_y() > h - 1)  point2.set_y(h - 1);
+	auto sz = defaultFrame_.getSize();
+	int arr[] = {
+		(x - 2) * 2, (y - 2) * 2,
+		(w - 2 - x) * 2, (h - 2 - y) * 2,
+		sz.get_x(), sz.get_y()
+	}, min = 0;
+	auto n = sizeof(arr) / sizeof(int);
+	for (unsigned char i = 1; i < n; i++) {
+		if (arr[min] > arr[i]) min = i;
+	}
+	int a = arr[min];
+	frame_.setSize(Point(a, a));
 }
 
 void Shape::draw(
@@ -141,11 +247,11 @@ void Shape::draw(
   double alpha
 ) {
 	if (visible_) {
-		Point size = point2 - point1;
-		Point position = (point2 + point1) / 2;
+		const Point size = frame_.getSize();
+		const Point position = frame_.getPosition();
 		if (size.get_x() == 0 || size.get_y() == 0) return;
 		auto matrix = Cairo::Matrix(
-			size.get_x() / 2, 0, 0, size.get_y() / 2,
+			double(size.get_x()) / 2, 0, 0, double(size.get_y()) / 2,
 			position.get_x(), position.get_y()
 		);
 		context->transform(matrix);
@@ -160,23 +266,20 @@ void Shape::draw(
 }
 
 void Shape::moveTo(const Point& p) {
-	Point s = defaultSize_ / 2;
-
 	position_ = p;
-	point1 = p - s;
-	point2 = p + s;
+	frame_.setPosition(p);
 }
 
 const Point& Shape::getPosition() {
 	return position_;
 }
 
+const Frame& Shape::getFrame() {
+	return frame_;
+}
+
 bool Shape::isInShape(const Point& p) {
-	return (
-		point1.get_x() <= p.get_x() && p.get_x() <= point2.get_x() &&
-		point1.get_y() <= p.get_y() && p.get_y() <= point2.get_y() &&
-		isInShapeVirtual(p)
-	);
+	return (getFrame().isInFrame(p) && isInShapeVirtual(p));
 }
 
 void Shape::toggleVisibility() {
@@ -201,52 +304,33 @@ void Shape::toggleTrace() {
 
 void Shape::areIntersected(Shape& shape) {
 	if (this == &shape) return;
-	//~ Point pos  =      (position_ + shape.position_)   / 2;
-	Point s1p1 =       position_ -       defaultSize_ / 2;
-	Point s1p2 =       position_ +       defaultSize_ / 2;
-	Point s2p1 = shape.position_ - shape.defaultSize_ / 2;
-	Point s2p2 = shape.position_ + shape.defaultSize_ / 2;
-	bool b1 = s2p1.get_x() <= s1p1.get_x() && s1p1.get_x() <= s2p2.get_x() &&
-						s2p1.get_y() <= s1p1.get_y() && s1p1.get_y() <= s2p2.get_y();
-	bool b2 = s2p1.get_x() <= s1p1.get_x() && s1p1.get_x() <= s2p2.get_x() &&
-						s2p1.get_y() <= s1p2.get_y() && s1p2.get_y() <= s2p2.get_y();
-	bool b3 = s2p1.get_x() <= s1p2.get_x() && s1p2.get_x() <= s2p2.get_x() &&
-						s2p1.get_y() <= s1p2.get_y() && s1p2.get_y() <= s2p2.get_y();
-	bool b4 = s2p1.get_x() <= s1p2.get_x() && s1p2.get_x() <= s2p2.get_x() &&
-						s2p1.get_y() <= s1p1.get_y() && s1p1.get_y() <= s2p2.get_y();
-	if (b1 || b2 || b3 || b4) {
+	Frame f(defaultFrame_);
+	f.setPosition(getPosition());
+	bool b = f.isInFrame(shape.getPosition());
+	Point pos1 = getPosition(),
+	      pos2 = shape.getPosition();
+	if (b) {
 		size_t index;
 		if (!intersected_.find(&shape, index)) {
 			color_ = randomColor();
 			shape.color_ = randomColor();
 			intersected_.add(&shape);
-			if (!shape.intersected_.find(this, index))
-				shape.intersected_.add(this);
 		}
-		// TODO: Deformation
-		/*if (b1) {
-			point1.x = pos.x;       point1.y = pos.y;
-			shape.point2.x = pos.x; shape.point2.y = pos.y;
+		Point p = abs(pos1 - pos2);
+		int len = sqrt(calulateVectorLengthSqruare(p));
+		if (len < 20) len = 20;
+		Point pl(len, len);
+		if (len < getFrame().getSize().get_x() / 2) {
+			frame_(pos1 - pl, pos1 + pl);
 		}
-		if (b2) {
-			point1.x = pos.x;       point2.y = pos.y;
-			shape.point2.x = pos.x; shape.point1.y = pos.y;
-		}*/
+		if (len < shape.getFrame().getSize().get_x() / 2) {
+			shape.frame_(pos2 - pl, pos2 + pl);
+		}
 	} else {
 		size_t index;
 		if (intersected_.find(&shape, index))
 			intersected_.erase(index);
-		if (shape.intersected_.find(this, index))
-			shape.intersected_.erase(index);
 	}
-}
-
-const Point& Shape::getPoint1() const {
-	return point1;
-}
-
-const Point& Shape::getPoint2() const {
-	return point2;
 }
 
 Shapes::Shapes() :
@@ -272,7 +356,6 @@ void Shapes::erase(const size_t index) {
 }
 
 void Shapes::activate(const Point& p) {
-	//if (array_.size() < 1) return;
 	size_t i = array_.size();
 	while(i > 0) {
 		i--;
@@ -303,7 +386,7 @@ void Shapes::draw(
 		array_[i]->render(allocation);
 	}
 	for (size_t i = 0; i < array_.size(); i++) {
-		for (size_t j = 0; j < array_.size(); j++) {
+		for (size_t j = i + 1; j < array_.size(); j++) {
 			array_[i]->areIntersected(*array_[j]);
 		}
 	}

@@ -8,11 +8,17 @@
  **************************************************************/
 #include "window.h"
 #include "shape-childs.h"
+#include <chrono>
+#include <thread>
 
-template<class T>
-class Interface {
+Timer::Timer(Glib::Dispatcher& dispatcher) : dispatcher_(dispatcher) {}
 
-};
+void Timer::do_work() {
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		dispatcher_.emit();
+	}
+}
 
 template<class T>
 void getObject(
@@ -30,7 +36,8 @@ void getObject(
 Window::Window(
 	BaseObjectType* cobject,
 	const Glib::RefPtr<Gtk::Builder>& builder
-) : Gtk::ApplicationWindow(cobject), builder_(builder) {
+) : Gtk::ApplicationWindow(cobject), builder_(builder),
+shapes_(), dispatcher(), timer(dispatcher) {
 	{
 		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
 			builder_->get_object("add_rectangle_button")
@@ -134,6 +141,9 @@ Window::Window(
 	drawingArea_->signal_button_release_event().connect(sigc::mem_fun(
 		*this, &Window::release
 	));
+
+	dispatcher.connect(sigc::mem_fun(*this, &Window::update));
+	new std::thread(&Timer::do_work, &timer);
 }
 
 Window::~Window() {
@@ -143,8 +153,15 @@ void Window::quit() {
 	exit(0);
 }
 
+void Window::update() {
+	drawingArea_->queue_draw();
+}
+
 bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 	Gtk::Allocation allocation = drawingArea_->get_allocation();
+	context->set_antialias(Cairo::ANTIALIAS_NONE);
+	context->set_line_width(3);
+	context->set_line_cap(Cairo::LINE_CAP_ROUND);
 	shapes_.draw(context, allocation);
 	return true;
 }
@@ -154,7 +171,7 @@ void Window::addRectangle() {
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Rectangle::create());
 	}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::addTriangle() {
@@ -162,7 +179,7 @@ void Window::addTriangle() {
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Triangle::create());
 	}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::addCircle() {
@@ -170,65 +187,68 @@ void Window::addCircle() {
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Circle::create());
 	}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::toggleTrace() {
 	try {
 		shapes_.getActive().toggleTrace();
 	} catch(const gauraException&) {}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::reset() {
 	try {
 		shapes_.getActive().resetColor();
 	} catch(const gauraException&) {}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::changeColor() {
 	try {
 		shapes_.getActive().changeColor();
 	} catch(const gauraException&) {}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::toggleVisibility() {
 	try {
 		shapes_.getActive().toggleVisibility();
 	} catch(const gauraException&) {}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::cloneShape() {
 	try {
-		shapes_.add(shapes_.getActive().clone());
+		int n = adjustment_->get_value();
+		for (int i = 0; i < n; i++) {
+			shapes_.add(shapes_.getActive().clone());
+		}
 	} catch(const gauraException&) {}
-	drawingArea_->queue_draw();
+	update();
 }
 
 void Window::deleteShape() {
 	shapes_.erase(shapes_.getActiveId());
-	drawingArea_->queue_draw();
+	update();
 }
 
 bool Window::activate(GdkEventButton* event) {
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1)) {
 		shapes_.activate(Point(event->x, event->y));
-		drawingArea_->queue_draw();
+		update();
 	}
 	return true;
 }
 
 bool Window::moveActive(GdkEventMotion* event) {
 	shapes_.moveActive(Point(event->x, event->y));
-	drawingArea_->queue_draw();
+	update();
 	return true;
 }
 
 bool Window::release(GdkEventButton* event) {
 	shapes_.release();
-	drawingArea_->queue_draw();
+	update();
 	return true;
 }

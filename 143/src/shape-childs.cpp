@@ -27,12 +27,18 @@ void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 }
 
 bool Triangle::isInShapeVirtual(const Point& p) {
-	//~ Point size = (getPoint2() - getPoint1()) / 2;
-	//~ Point pr = p - (getPoint1() + getPoint2()) / 2;
-	//~ if (calulateVectorLength(pr) < size.get_x())
-		//~ return true;
-	//~ else return false;
-	return true;
+	Point size = getFrame().getSize();
+	Point pos = getFrame().getPosition() * 2;
+	Point a = Point(-1,  1) * size + pos,
+	      b = Point( 0, -1) * size + pos,
+	      c = Point( 1,  1) * size + pos,
+	      d = p * 2;
+	if (
+		isOneSizePointsToStraight(a, b, c, d) &&
+		isOneSizePointsToStraight(b, c, a, d) &&
+		isOneSizePointsToStraight(c, a, b, d)
+	) return true;
+	else return false;
 }
 
 
@@ -71,9 +77,9 @@ void Circle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 }
 
 bool Circle::isInShapeVirtual(const Point& p) {
-	Point size = (getPoint2() - getPoint1()) / 2;
-	Point pr = p - (getPoint1() + getPoint2()) / 2;
-	if (calulateVectorLength(pr) < size.get_x())
+	Point size = (getFrame().getSize()) / 2;
+	Point pr = p - getFrame().getPosition();
+	if (calulateVectorLengthSqruare(pr) < size.get_x() * size.get_x())
 		return true;
 	else return false;
 }

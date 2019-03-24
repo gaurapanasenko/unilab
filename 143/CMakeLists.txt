@@ -42,8 +42,11 @@ pkg_check_modules(GTKMM gtkmm-3.0)
 #find_package(GTKMM REQUIRED)
 include_directories(${GTKMM_INCLUDE_DIRS})
 
+find_package(Threads)
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ${GTKMM_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
 )
 
 ###############################################################################

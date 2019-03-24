@@ -12,6 +12,16 @@
 #include <gtkmm.h>
 #include "shapes.h"
 
+class Timer
+{
+public:
+	Timer(Glib::Dispatcher& dispatcher);
+	void do_work();
+
+private:
+	Glib::Dispatcher& dispatcher_;
+};
+
 class Window : public Gtk::ApplicationWindow {
 public:
 	Window(
@@ -23,6 +33,7 @@ public:
 	void quit();
 
 private:
+	void update();
 	bool draw(const Cairo::RefPtr<Cairo::Context>& context);
 	void addRectangle();
 	void addTriangle();
@@ -42,6 +53,8 @@ private:
 	Glib::RefPtr<Gtk::DrawingArea> drawingArea_;
 	Glib::RefPtr<Gtk::Statusbar> statusbar_;
 	Shapes shapes_;
+	Glib::Dispatcher dispatcher;
+	Timer timer;
 };
 
 #endif //WINDOW_H

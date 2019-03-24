@@ -16,6 +16,10 @@
 #include <math.h>
 #include <time.h>
 
+/// \brief default x coordinate of shape
+const           int SHAPE_DEFAULT_X      = 10;
+/// \brief default y coordinate of shape
+const           int SHAPE_DEFAULT_Y      = 10;
 /// \brief default width of shape
 const           int SHAPE_DEFAULT_WIDTH  = 100;
 /// \brief default height of shape
@@ -36,9 +40,32 @@ public:
 
 Point operator+(const Point& lhs, const Point& rhs);
 Point operator-(const Point& lhs, const Point& rhs);
+Point operator*(const Point& lhs, const Point& rhs);
+Point operator/(const Point& lhs, const Point& rhs);
 Point operator*(const Point& lhs, const int    rhs);
 Point operator/(const Point& lhs, const int    rhs);
-const double calulateVectorLength(const Point& point);
+const double calulateVectorLengthSqruare(const Point& point);
+const Point abs(const Point& point);
+
+/// \brief Calculates pseudo-scalar product of vectors AB and AC
+/// \param a point A
+/// \param b point B
+/// \param c point C
+/// \return Pseudo-scalar product
+double calculatePseudoscalarProduct(
+	const Point& a, const Point& b, const Point& c
+);
+
+/// \brief Detects that points C and D is on one side
+/// relatively to straight line AB
+/// \param a point A
+/// \param b point B
+/// \param c point C
+/// \param d point D
+/// \return True if points on one side, else false
+bool isOneSizePointsToStraight(
+	const Point& a, const Point& b, const Point& c, const Point& d
+);
 
 class Color {
 public:
@@ -80,6 +107,54 @@ private:
 	clock_t time_;
 };
 
+/// Frame for shape
+class Frame {
+public:
+	/// \brief Constructor to create empty frame
+	Frame();
+	/// \brief Constructor with parameters
+	Frame(const Point& point1, const Point& point2);
+
+	/// \brief Function call operator to set new frame by these points
+	/// \param point1 any point
+	/// \param point2 any point
+	void operator()(const Point& point1, const Point& point2);
+
+	/// \brief Checks is point is in frame
+	/// \param point checking point
+	/// \return true if point in frame, else false
+	const bool isInFrame(const Point& point) const;
+	/// \brief Calculates position of frame
+	/// \return point of center of frame
+	const Point getPosition() const;
+	/// \brief Sets position of frame
+	/// \param point point of center of frame
+	void setPosition(const Point& point);
+	/// \brief Calculates size of frame
+	/// \return point with size in coordinates
+	const Point getSize() const;
+	/// \brief Sets size of frame
+	/// \param point point with size in coordinates
+	void setSize(const Point& point);
+	/// \brief Getter for point1_
+	/// \return Field point1_
+	const Point& getPoint1() const;
+	/// \brief Getter for point2_
+	/// \return Field point2_
+	const Point& getPoint2() const;
+
+private:
+	/// \brief Top left corner of shape frame
+	Point point1_;
+	/// \brief Bottom right corner of shape frame
+	Point point2_;
+};
+
+/// \brief Checks that point is in circle limited by frame
+/// \param point checking point
+/// \param frame circle frame
+bool isPointInCircle(const Point& point, const Frame& frame);
+
 /// Processes one shape on paining
 class Shape {
 public:
@@ -120,6 +195,9 @@ public:
 	/// the position will be center of shape
 	/// \return position point
 	const Point& getPosition();
+	/// \brief Gets current frame
+	/// \return filed frame_
+	const Frame& getFrame();
 	/// \brief Checks is point is in shape
 	/// \param p checking point
 	/// \return true if point in shape, else false
@@ -139,24 +217,15 @@ public:
 	/// \brief Checks that two shape objects are intersected
 	void areIntersected(Shape& shape);
 
-	/// \brief Gets top left point of shape frame
-	/// \return Point class
-	const Point& getPoint1() const;
-	/// \brief Gets bottom right point of shape frame
-	/// \return Point class
-	const Point& getPoint2() const;
-
 private:
-	/// \brief Top left corner of shape frame
-	Point point1;
-	/// \brief Bottom right corner of shape frame
-	Point point2;
+	/// \brief Default frame of object
+	Frame defaultFrame_;
+	/// \brief Current frame of object
+	Frame frame_;
 	/// \brief Position of object, can be changed with moveTo method and
 	/// automatically computed in setFrame method by finding
 	/// center of frame
 	Point position_;
-	/// \brief Default size of object, can be changed with setFrame
-	Point defaultSize_;
 	/// \brief Color, that is generating in constructor
 	Color defaultColor_;
 	/// \brief Current color of shape
