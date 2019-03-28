@@ -20,7 +20,7 @@ public:
 	static const Pointer<Shape> create();
 	const Pointer<Shape> clone();
 	void drawShape(const Cairo::RefPtr<Cairo::Context>& context);
-	bool isInShapeVirtual(const Point& p);
+	const bool isInShapeVirtual(const Point& p) const;
 };
 
 
@@ -30,17 +30,17 @@ public:
 	static const Pointer<Shape> create();
 	const Pointer<Shape> clone();
 	void drawShape(const Cairo::RefPtr<Cairo::Context>& context);
-	bool isInShapeVirtual(const Point& p);
+	const bool isInShapeVirtual(const Point& p) const;
 };
 
 
-class Circle : public Shape {
+class Ellipse : public Shape {
 public:
-	Circle() {}
+	Ellipse() {}
 	static const Pointer<Shape> create();
 	const Pointer<Shape> clone();
 	void drawShape(const Cairo::RefPtr<Cairo::Context>& context);
-	bool isInShapeVirtual(const Point& p);
+	const bool isInShapeVirtual(const Point& p) const;
 };
 
 }

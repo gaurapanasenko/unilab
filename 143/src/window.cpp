@@ -58,11 +58,11 @@ shapes_(), dispatcher(), timer(dispatcher) {
 	}
 	{
 		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("add_circle_button")
+			builder_->get_object("add_ellipse_button")
 		);
 		if (tmp) {
 			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::addCircle));
+				.connect(sigc::mem_fun(*this, &Window::addEllipse));
 		}
 	}
 	{
@@ -103,6 +103,15 @@ shapes_(), dispatcher(), timer(dispatcher) {
 	}
 	{
 		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
+			builder_->get_object("zoom_button")
+		);
+		if (tmp) {
+			tmp->signal_clicked()
+				.connect(sigc::mem_fun(*this, &Window::zoomShape));
+		}
+	}
+	{
+		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
 			builder_->get_object("clone_button")
 		);
 		if (tmp) {
@@ -120,9 +129,39 @@ shapes_(), dispatcher(), timer(dispatcher) {
 		}
 	}
 
-	getObject(builder_, adjustment_, "adjustment1");
+	getObject(builder_, nAdjustment_, "n_adjustment");
 	getObject(builder_, drawingArea_, "drawing_area");
 	getObject(builder_, statusbar_, "statusbar");
+
+
+	getObject(builder_, xAdjustment_, "x_adjustment");
+	xAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+		*this, &Window::parametersChanged
+	));
+	getObject(builder_, yAdjustment_, "y_adjustment");
+	yAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+		*this, &Window::parametersChanged
+	));
+	getObject(builder_, widthAdjustment_, "width_adjustment");
+	widthAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+		*this, &Window::parametersChanged
+	));
+	getObject(builder_, heightAdjustment_, "height_adjustment");
+	heightAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+		*this, &Window::parametersChanged
+	));
+	getObject(builder_, minimumZoomAdjustment_, "minimum_zoom_adjustment");
+	minimumZoomAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+		*this, &Window::parametersChanged
+	));
+	getObject(builder_, traceSizeAdjustment_, "trace_size_adjustment");
+	traceSizeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+		*this, &Window::parametersChanged
+	));
+	getObject(builder_, traceTimeAdjustment_, "trace_time_adjustment");
+	traceTimeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+		*this, &Window::parametersChanged
+	));
 
 	drawingArea_->add_events(
 		Gdk::BUTTON_PRESS_MASK |
@@ -144,6 +183,7 @@ shapes_(), dispatcher(), timer(dispatcher) {
 
 	dispatcher.connect(sigc::mem_fun(*this, &Window::update));
 	new std::thread(&Timer::do_work, &timer);
+	parametersChanged();
 }
 
 Window::~Window() {
@@ -166,8 +206,19 @@ bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 	return true;
 }
 
+void Window::parametersChanged() {
+	SHAPE.setX(xAdjustment_->get_value());
+	SHAPE.setY(yAdjustment_->get_value());
+	SHAPE.setWidth(widthAdjustment_->get_value());
+	SHAPE.setHeight(heightAdjustment_->get_value());
+	SHAPE.setMinimumZoom(minimumZoomAdjustment_->get_value());
+	SHAPE.setTraceSize(traceSizeAdjustment_->get_value());
+	SHAPE.setTraceTime(traceTimeAdjustment_->get_value());
+	update();
+}
+
 void Window::addRectangle() {
-	int n = adjustment_->get_value();
+	int n = nAdjustment_->get_value();
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Rectangle::create());
 	}
@@ -175,17 +226,17 @@ void Window::addRectangle() {
 }
 
 void Window::addTriangle() {
-	int n = adjustment_->get_value();
+	int n = nAdjustment_->get_value();
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Triangle::create());
 	}
 	update();
 }
 
-void Window::addCircle() {
-	int n = adjustment_->get_value();
+void Window::addEllipse() {
+	int n = nAdjustment_->get_value();
 	for (int i = 0; i < n; i++) {
-		shapes_.add(ShapeChilds::Circle::create());
+		shapes_.add(ShapeChilds::Ellipse::create());
 	}
 	update();
 }
@@ -199,7 +250,7 @@ void Window::toggleTrace() {
 
 void Window::reset() {
 	try {
-		shapes_.getActive().resetColor();
+		shapes_.getActive().reset();
 	} catch(const gauraException&) {}
 	update();
 }
@@ -218,9 +269,16 @@ void Window::toggleVisibility() {
 	update();
 }
 
+void Window::zoomShape() {
+	try {
+		shapes_.getActive().toggleZoom();
+	} catch(const gauraException&) {}
+	update();
+}
+
 void Window::cloneShape() {
 	try {
-		int n = adjustment_->get_value();
+		int n = nAdjustment_->get_value();
 		for (int i = 0; i < n; i++) {
 			shapes_.add(shapes_.getActive().clone());
 		}

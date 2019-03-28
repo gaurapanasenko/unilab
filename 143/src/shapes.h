@@ -16,21 +16,6 @@
 #include <math.h>
 #include <time.h>
 
-/// \brief default x coordinate of shape
-const           int SHAPE_DEFAULT_X      = 10;
-/// \brief default y coordinate of shape
-const           int SHAPE_DEFAULT_Y      = 10;
-/// \brief default width of shape
-const           int SHAPE_DEFAULT_WIDTH  = 100;
-/// \brief default height of shape
-const           int SHAPE_DEFAULT_HEIGHT = 100;
-
-/// \brief number of cloned objects when doing trace
-const unsigned char SHAPE_TRACE_SIZE     = 16;
-/// \brief interval between saving state of Shape object
-/// when doing trace
-const        double SHAPE_TRACE_TIME     = 0.001;
-
 class Point : public Gdk::Point {
 public:
 	Point();
@@ -42,8 +27,10 @@ Point operator+(const Point& lhs, const Point& rhs);
 Point operator-(const Point& lhs, const Point& rhs);
 Point operator*(const Point& lhs, const Point& rhs);
 Point operator/(const Point& lhs, const Point& rhs);
-Point operator*(const Point& lhs, const int    rhs);
-Point operator/(const Point& lhs, const int    rhs);
+Point operator+(const Point& lhs, const double rhs);
+Point operator-(const Point& lhs, const double rhs);
+Point operator*(const Point& lhs, const double rhs);
+Point operator/(const Point& lhs, const double rhs);
 const double calulateVectorLengthSqruare(const Point& point);
 const Point abs(const Point& point);
 
@@ -79,6 +66,87 @@ private:
 	unsigned char color_[4];
 };
 
+/// Frame for shape
+class Frame {
+public:
+	/// \brief Constructor to create empty frame
+	Frame();
+	/// \brief Constructor with parameters
+	Frame(const Point& point1, const Point& point2);
+
+	/// \brief Function call operator to set new frame by these parameters.
+	/// If size has negative values then operator does nothing
+	void operator()(const Point& position, const Point& size);
+
+	/// \brief Checks is point is in frame
+	/// \param point checking point
+	/// \return true if point in frame, else false
+	const bool isInFrame(const Point& point) const;
+
+	/// \brief Getter for position of frame center
+	Point& getPosition();
+	/// \brief Constant getter for position of frame center
+	const Point& getPosition() const;
+	/// \brief Setter for position of frame center
+	void setPosition(const Point& position);
+	/// \brief Getter for size of frame
+	Point& getSize();
+	/// \brief Constant getter for size of frame
+	const Point& getSize() const;
+	/// \brief Setter for size of frame
+	/// \return true if size was changed, else false
+	void setSize(const Point& size);
+	/// \brief Calculates top left corner of frame
+	const Point getPoint1() const;
+	/// \brief Calculates bottom right corner of frame
+	const Point getPoint2() const;
+
+private:
+	Point position_, size_;
+};
+
+/// \brief The function converts the plane so that the ellipse turns into
+/// a circle of radius 1 in the center of the coordinate grid, and then the
+/// function gives the distance to the center of the coordinate grid
+/// \param point checking point
+/// \param frame ellipse
+/// \return distance
+const double calculateDistanceToEllipse(const Point& point, const Frame& frame);
+
+class ShapeParameters {
+public:
+	ShapeParameters();
+	Frame& getFrame();
+	const Frame& getFrame() const;
+	const int getX();
+	void setX(const int x);
+	const int getY();
+	void setY(const int y);
+	const int getWidth();
+	void setWidth(const int width);
+	const int getHeight();
+	void setHeight(const int height);
+	const double getMinimumZoom();
+	void setMinimumZoom(const double minimumZoom);
+	const unsigned char getTraceSize();
+	void setTraceSize(const unsigned char traceSize);
+	const double getTraceTime();
+	void setTraceTime(const double traceTime);
+
+private:
+	/// \brief default frame
+	Frame frame_;
+	/// \brief minimum zoom
+	double minimumZoom_;
+	/// \brief number of cloned objects when doing trace
+	unsigned char traceSize_;
+	/// \brief interval between saving state of Shape object
+	/// when doing trace
+	double traceTime_;
+};
+
+extern ShapeParameters SHAPE;
+
 class Shape;
 
 /// \brief Stores and draws trace for Shape object.
@@ -100,60 +168,12 @@ private:
 	/// \brief pointer to Shape object that being traced
 	Shape* shape_;
 	/// \brief queue of Shape objects to create trace
-	Pointer<Shape> queue_[SHAPE_TRACE_SIZE];
+	Array< Pointer<Shape> > queue_;
 	/// \brief index to last added element
 	unsigned char tail_;
 	/// \brief time when last element was added
 	clock_t time_;
 };
-
-/// Frame for shape
-class Frame {
-public:
-	/// \brief Constructor to create empty frame
-	Frame();
-	/// \brief Constructor with parameters
-	Frame(const Point& point1, const Point& point2);
-
-	/// \brief Function call operator to set new frame by these points
-	/// \param point1 any point
-	/// \param point2 any point
-	void operator()(const Point& point1, const Point& point2);
-
-	/// \brief Checks is point is in frame
-	/// \param point checking point
-	/// \return true if point in frame, else false
-	const bool isInFrame(const Point& point) const;
-	/// \brief Calculates position of frame
-	/// \return point of center of frame
-	const Point getPosition() const;
-	/// \brief Sets position of frame
-	/// \param point point of center of frame
-	void setPosition(const Point& point);
-	/// \brief Calculates size of frame
-	/// \return point with size in coordinates
-	const Point getSize() const;
-	/// \brief Sets size of frame
-	/// \param point point with size in coordinates
-	void setSize(const Point& point);
-	/// \brief Getter for point1_
-	/// \return Field point1_
-	const Point& getPoint1() const;
-	/// \brief Getter for point2_
-	/// \return Field point2_
-	const Point& getPoint2() const;
-
-private:
-	/// \brief Top left corner of shape frame
-	Point point1_;
-	/// \brief Bottom right corner of shape frame
-	Point point2_;
-};
-
-/// \brief Checks that point is in circle limited by frame
-/// \param point checking point
-/// \param frame circle frame
-bool isPointInCircle(const Point& point, const Frame& frame);
 
 /// Processes one shape on paining
 class Shape {
@@ -170,17 +190,11 @@ public:
 	/// \brief Checks is point is in shape by shape parameters
 	/// \param p checking point
 	/// \return true if point in shape, else false
-	virtual bool isInShapeVirtual(const Point& p);
-
-	/// \brief Sets shape between two points, automatically computes
-	/// position and size of shape
-	/// \param one some point on paining
-	/// \param two some point on paining
-	void setFrame(const Point& one, const Point& two);
+	virtual const bool isInShapeVirtual(const Point& p) const;
 
 	/// \brief Checks that object fields are valid for device size
 	/// \param allocation position and size of drawing widget
-	void render(const Gtk::Allocation& allocation);
+	const double render(const Gtk::Allocation& allocation);
 	/// \brief Drawing shape on painting
 	/// \param context class used to draw
 	/// \param alpha sets transparency for shape
@@ -188,44 +202,54 @@ public:
 		const Cairo::RefPtr<Cairo::Context>& context,
 		double alpha = 1
 	);
-	/// \brief Moves shape to a new position
-	/// \param p new position point
-	void moveTo(const Point& p);
-	/// \brief Gets current position, if shape is not deformed,
-	/// the position will be center of shape
-	/// \return position point
-	const Point& getPosition();
-	/// \brief Gets current frame
-	/// \return filed frame_
-	const Frame& getFrame();
 	/// \brief Checks is point is in shape
 	/// \param p checking point
 	/// \return true if point in shape, else false
-	bool isInShape(const Point& p);
+	const bool isInShape(const Point& p) const;
+
+	/// \brief Getter for default frame for shape
+	const Frame& getDefaultFrame() const;
+	/// \brief Getter for current frame for shape
+	const Frame& getFrame() const;
+	/// \brief Setter for new frame for shape
+	void setFrame(const Frame& frame);
+	/// \brief Getter for current position, if shape is not deformed,
+	/// the position will be center of shape
+	/// \return position point
+	const Point& getPosition() const;
+	/// \brief Setter for position of shape
+	/// \param point point of center of shape
+	void setPosition(const Point& point);
+	/// \brief Calculates size of shape
+	/// \return point with size in coordinates
+	const Point& getSize() const;
+	/// \brief Setter for size of shape
+	/// \param point point with size in coordinates
+	const bool setSize(const Point& point);
+	/// \brief Getter for default zoom
+	const float getZoom() const;
+	/// \brief Toggle zoom
+	void toggleZoom();
 
 	/// \brief Toggles visibility of shape
 	void toggleVisibility();
 	/// \brief Sets random color to shape
 	void changeColor();
 	/// \brief Sets default color to shape
-	void resetColor();
+	void reset();
 	/// \brief Checks if shape has trace
 	/// \return true if has trace, else false
 	bool hasTrace();
 	/// \brief Toggles trace of shape
 	void toggleTrace();
 	/// \brief Checks that two shape objects are intersected
-	void areIntersected(Shape& shape);
+	const double areIntersected(Shape& shape);
 
 private:
-	/// \brief Default frame of object
-	Frame defaultFrame_;
 	/// \brief Current frame of object
 	Frame frame_;
-	/// \brief Position of object, can be changed with moveTo method and
-	/// automatically computed in setFrame method by finding
-	/// center of frame
-	Point position_;
+	/// \brief Default zoom
+	float zoom_;
 	/// \brief Color, that is generating in constructor
 	Color defaultColor_;
 	/// \brief Current color of shape
@@ -239,6 +263,8 @@ private:
 	/// \brief Defines visibility of shape
 	bool trace_;
 };
+
+void updateGlobalDefaultFrame();
 
 /// \brief Container for Shape objects, also stores trace for object
 class Shapes {

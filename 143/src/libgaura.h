@@ -79,6 +79,9 @@ public:
       }
     return false;
   }
+  void resize(const size_t& size) {
+    reallocateBySize(size);
+  }
   void add(const T& element) {
     if (!reallocateBySize(size_ + 1)) return;
     array_[size_ - 1] = element;
@@ -134,6 +137,9 @@ public:
   Pointer& operator=(const Pointer& rhs) throw() {
     reset(rhs.release());
     return *this;
+  }
+  operator bool() {
+    return pointer_;
   }
 
   T* operator->() {return pointer_;}

@@ -39,11 +39,19 @@ Point operator/(const Point& lhs, const Point& rhs) {
 }
 
 
-Point operator*(const Point& lhs, const int    rhs) {
+Point operator+(const Point& lhs, const double rhs) {
+	return Point(lhs.get_x() + rhs, lhs.get_y() + rhs);
+}
+
+Point operator-(const Point& lhs, const double rhs) {
+	return Point(lhs.get_x() - rhs, lhs.get_y() - rhs);
+}
+
+Point operator*(const Point& lhs, const double rhs) {
 	return Point(lhs.get_x() * rhs, lhs.get_y() * rhs);
 }
 
-Point operator/(const Point& lhs, const int    rhs) {
+Point operator/(const Point& lhs, const double rhs) {
 	return Point(lhs.get_x() / rhs, lhs.get_y() / rhs);
 }
 
@@ -95,111 +103,201 @@ Color randomColor() {
 	return Color(rand() % 256, rand() % 256, rand() % 256);
 }
 
+/********
+* Frame *
+********/
+Frame::Frame() : position_(0, 0), size_(0, 0) {}
+
+Frame::Frame(const Point& point1, const Point& point2) {
+	(*this)(point1, point2);
+}
+
+void Frame::operator()(const Point& position, const Point& size) {
+	if (size.get_x() < 0 || size.get_y() < 0) return;
+	setPosition(position);
+	setSize(size);
+}
+
+const bool Frame::isInFrame(const Point& point) const {
+	Point p1 = getPoint1(), p2 = getPoint2();
+	return (
+		p1.get_x() <= point.get_x() &&
+		point.get_x() <= p2.get_x() &&
+		p1.get_y() <= point.get_y() &&
+		point.get_y() <= p2.get_y()
+	);
+}
+
+Point& Frame::getPosition() {
+	return position_;
+}
+
+const Point& Frame::getPosition() const {
+	return position_;
+}
+
+void Frame::setPosition(const Point& position) {
+	position_ = position;
+}
+
+Point& Frame::getSize() {
+	return size_;
+}
+
+const Point& Frame::getSize() const {
+	return size_;
+}
+
+void Frame::setSize(const Point& size) {
+	if (size.get_x() < 0 || size.get_y() < 0) return;
+	size_ = size;
+}
+
+const Point Frame::getPoint1() const {
+	return position_ - size_ / 2;
+}
+
+const Point Frame::getPoint2() const {
+	return position_ + size_ / 2;
+}
+
+const double calculateDistanceToEllipse(
+	const Point& point, const Frame& frame
+) {
+	Point size(frame.getSize()), p(point - frame.getPosition());
+	if (size.get_x() <= 0 || size.get_y() <= 0) return 0;
+	return pow(p.get_x(), 2.0) / pow(double(size.get_x()) / 2.0, 2.0) +
+	       pow(p.get_y(), 2.0) / pow(double(size.get_y()) / 2.0, 2.0);
+}
+
+/******************
+* ShapeParameters *
+******************/
+
+ShapeParameters::ShapeParameters()
+: frame_(Point(0, 0), Point(10, 10)),
+minimumZoom_(1), traceSize_(0), traceTime_(0.1) {}
+
+Frame& ShapeParameters::getFrame() {
+	return frame_;
+}
+
+const Frame& ShapeParameters::getFrame() const {
+	return frame_;
+}
+
+const int ShapeParameters::getX() {
+	return getFrame().getPosition().get_x();
+}
+
+void ShapeParameters::setX(const int x) {
+	getFrame().getPosition().set_x(x);
+}
+
+const int ShapeParameters::getY() {
+	return getFrame().getPosition().get_y();
+}
+
+void ShapeParameters::setY(const int y) {
+	getFrame().getPosition().set_y(y);
+}
+
+const int ShapeParameters::getWidth() {
+	return getFrame().getSize().get_x();
+}
+
+void ShapeParameters::setWidth(const int width) {
+	if (width <= 0) return;
+	getFrame().getSize().set_x(width);
+}
+
+const int ShapeParameters::getHeight() {
+	return getFrame().getSize().get_y();
+}
+
+void ShapeParameters::setHeight(const int height) {
+	if (height <= 0) return;
+	getFrame().getSize().set_y(height);
+}
+
+const double ShapeParameters::getMinimumZoom() {
+	return minimumZoom_;
+}
+
+void ShapeParameters::setMinimumZoom(const double minimumZoom) {
+	if (minimumZoom <= 0) return;
+	minimumZoom_ = minimumZoom;
+}
+
+const unsigned char ShapeParameters::getTraceSize() {
+	return traceSize_;
+}
+
+void ShapeParameters::setTraceSize(const unsigned char traceSize) {
+	traceSize_ = traceSize;
+}
+
+const double ShapeParameters::getTraceTime() {
+	return traceTime_;
+}
+
+void ShapeParameters::setTraceTime(const double traceTime) {
+	traceTime_ = traceTime;
+}
+
+ShapeParameters SHAPE;
+
 /*************
 * ShapeTrace *
 *************/
-ShapeTrace::ShapeTrace() : shape_(0), tail_(0), time_(0) {}
+ShapeTrace::ShapeTrace() : shape_(0), queue_(), tail_(0), time_(0) {}
 
 ShapeTrace& ShapeTrace::operator=(Shape& pointer) {
 	if (shape_ == &pointer) return *this;
 	shape_ = &pointer;
 	tail_ = 0;
 	time_ = 0;
-	for (unsigned char i = 0; i < SHAPE_TRACE_SIZE; i++) {
+	for (unsigned char i = 0; i < queue_.size(); i++) {
 		queue_[i] = pointer.clone();
-		queue_[i]->setFrame(Point(-2,-2), Point(-2,-2));
+		queue_[i]->setFrame(Frame(Point(-2, -2), Point(0, 0)));
 	}
 	return *this;
 }
 
 void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 	if (shape_->hasTrace()) {
-		if (((double)(clock() - time_)) /
-				CLOCKS_PER_SEC > SHAPE_TRACE_TIME) {
+		const unsigned char& size = SHAPE.getTraceSize();
+		if (size != queue_.size()) {
+			queue_.resize(0);
+			queue_.resize(size);
+			tail_ = 0;
+		}
+		if (
+			(clock() - time_) * 1000.0 / CLOCKS_PER_SEC > SHAPE.getTraceTime() &&
+			queue_.size() > 0
+		) {
 			time_ = clock();
-			*queue_[tail_] = *shape_;
+			printf("%i\n",int(size));
+			queue_[tail_] = shape_->clone();
 			tail_++;
-			if (tail_ >= SHAPE_TRACE_SIZE) tail_ = 0;
+			while (tail_ >= size) tail_ -= size;
 		}
-		for (unsigned char i = 0; i < SHAPE_TRACE_SIZE; i++) {
+		for (unsigned char i = 0; i < size; i++) {
 			unsigned char index = tail_ + i;
-			while (index >= SHAPE_TRACE_SIZE) index -= SHAPE_TRACE_SIZE;
-			queue_[index]->draw(context, 0.75 / (SHAPE_TRACE_SIZE - i));
+			while (index >= size) index -= size;
+			if (queue_[index])
+				queue_[index]->draw(context, 0.75 / (size - i));
 		}
+	} else if (queue_.size() != 0) {
+		queue_.resize(0);
+		tail_ = 0;
 	}
-}
-
-/********
-* Frame *
-********/
-Frame::Frame() : point1_(0, 0), point2_(0, 0) {}
-
-Frame::Frame(const Point& point1, const Point& point2) {
-	(*this)(point1, point2);
-}
-
-void Frame::operator()(const Point& point1, const Point& point2) {
-	point1_ = Point(
-		min(point1.get_x(), point2.get_x()), min(point1.get_y(), point2.get_y())
-	);
-	point2_ = Point(
-		max(point1.get_x(), point2.get_x()), max(point1.get_y(), point2.get_y())
-	);
-}
-
-const bool Frame::isInFrame(const Point& point) const {
-	return (
-		point1_.get_x() <= point.get_x() && point.get_x() <= point2_.get_x() &&
-		point1_.get_y() <= point.get_y() && point.get_y() <= point2_.get_y()
-	);
-}
-
-const Point Frame::getPosition() const {
-	return (point1_ + point2_) / 2;
-}
-
-void Frame::setPosition(const Point& point) {
-	Point size = getSize() / 2;
-	point1_ = point - size;
-	point2_ = point + size;
-}
-
-const Point Frame::getSize() const {
-	return point2_ - point1_;
-}
-
-void Frame::setSize(const Point& point) {
-	if (point.get_x() <= 0 || point.get_y() <= 0) return;
-	Point position = getPosition(), p = point / 2;
-	point1_ = position - p;
-	point2_ = position + p;
-}
-
-const Point& Frame::getPoint1() const {
-	return point1_;
-}
-
-const Point& Frame::getPoint2() const {
-	return point1_;
-}
-
-bool isPointInCircle(const Point& point, const Frame& frame) {
-	Point size = (frame.getSize()) / 2;
-	Point pr = point - frame.getPosition();
-	if (calulateVectorLengthSqruare(pr) < size.get_x() * size.get_x())
-		return true;
-	else return false;
 }
 
 /********
 * Shape *
 ********/
-Shape::Shape() : defaultFrame_(
-	Point(SHAPE_DEFAULT_X, SHAPE_DEFAULT_Y), Point(
-		SHAPE_DEFAULT_WIDTH  + SHAPE_DEFAULT_X,
-		SHAPE_DEFAULT_HEIGHT + SHAPE_DEFAULT_Y
-	)
-), frame_(defaultFrame_), position_(frame_.getPosition()),
+Shape::Shape() : frame_(SHAPE.getFrame()), zoom_(1.0),
 defaultColor_(randomColor()), color_(defaultColor_), visible_(1), trace_(0) {}
 
 Shape::~Shape() {}
@@ -210,36 +308,26 @@ const Pointer<Shape> Shape::clone() {
 	return Pointer<Shape>(new Shape(*this));
 }
 
-bool Shape::isInShapeVirtual(const Point& p) {
+const bool Shape::isInShapeVirtual(const Point& p) const {
 	return true;
 }
 
-void Shape::setFrame(const Point& one, const Point& two) {
-	frame_(one, two);
-	position_ = frame_.getPosition();
-}
+const double Shape::render(const Gtk::Allocation& allocation) {
+	const Point size = getDefaultFrame().getSize() * SHAPE.getMinimumZoom()/2 + 2;
+	const Point& ds = getDefaultFrame().getSize();
+	const int h = allocation.get_height(), w = allocation.get_width(),
+	minX = size.get_x(), minY = size.get_y();
+	int x = getPosition().get_x(), y = getPosition().get_y();
 
-void Shape::render(const Gtk::Allocation& allocation) {
-	const int h = allocation.get_height(), w = allocation.get_width();
-	int x = position_.get_x(), y = position_.get_y();
-
-	if (x < 20)     x = 20;
-	if (y < 20)     y = 20;
-	if (x > w - 20) x = w - 20;
-	if (y > h - 20) y = h - 20;
-	moveTo(Point(x, y));
-	auto sz = defaultFrame_.getSize();
-	int arr[] = {
-		(x - 2) * 2, (y - 2) * 2,
-		(w - 2 - x) * 2, (h - 2 - y) * 2,
-		sz.get_x(), sz.get_y()
-	}, min = 0;
-	auto n = sizeof(arr) / sizeof(int);
-	for (unsigned char i = 1; i < n; i++) {
-		if (arr[min] > arr[i]) min = i;
-	}
-	int a = arr[min];
-	frame_.setSize(Point(a, a));
+	if (x < minX)     x = minX;
+	if (y < minY)     y = minY;
+	if (x > w - minX) x = w - minX;
+	if (y > h - minY) y = h - minY;
+	setPosition(Point(x, y));
+	return min(min(
+		min((x - 2) * 2.0 / ds.get_x(), (w - 2 - x) * 2.0 / ds.get_x()),
+		min((y - 2) * 2.0 / ds.get_y(), (h - 2 - y) * 2.0 / ds.get_y())
+	), double(getZoom()));
 }
 
 void Shape::draw(
@@ -247,8 +335,8 @@ void Shape::draw(
   double alpha
 ) {
 	if (visible_) {
-		const Point size = frame_.getSize();
-		const Point position = frame_.getPosition();
+		const Point size = getSize();
+		const Point position = getPosition();
 		if (size.get_x() == 0 || size.get_y() == 0) return;
 		auto matrix = Cairo::Matrix(
 			double(size.get_x()) / 2, 0, 0, double(size.get_y()) / 2,
@@ -265,21 +353,47 @@ void Shape::draw(
 	}
 }
 
-void Shape::moveTo(const Point& p) {
-	position_ = p;
-	frame_.setPosition(p);
+const bool Shape::isInShape(const Point& p) const {
+	return (getFrame().isInFrame(p) && isInShapeVirtual(p));
 }
 
-const Point& Shape::getPosition() {
-	return position_;
+const Frame& Shape::getDefaultFrame() const {
+	return SHAPE.getFrame();
 }
 
-const Frame& Shape::getFrame() {
+const Frame& Shape::getFrame() const {
 	return frame_;
 }
 
-bool Shape::isInShape(const Point& p) {
-	return (getFrame().isInFrame(p) && isInShapeVirtual(p));
+void Shape::setFrame(const Frame& frame) {
+	if (setSize(frame.getSize())) {
+		setPosition(frame.getPosition());
+	}
+}
+
+const Point& Shape::getPosition() const {
+	return getFrame().getPosition();
+}
+
+void Shape::setPosition(const Point& point) {
+	frame_.setPosition(point);
+}
+
+const Point& Shape::getSize() const {
+	return getFrame().getSize();
+}
+
+const bool Shape::setSize(const Point& size) {
+	frame_.setSize(size);
+	return true;
+}
+
+const float Shape::getZoom() const {
+	return zoom_;
+}
+
+void Shape::toggleZoom() {
+	zoom_ = (int(zoom_) == 1) ? 2 : 1;
 }
 
 void Shape::toggleVisibility() {
@@ -290,8 +404,9 @@ void Shape::changeColor() {
 	color_ = randomColor();
 }
 
-void Shape::resetColor() {
+void Shape::reset() {
 	color_ = defaultColor_;
+	frame_ = SHAPE.getFrame();
 }
 
 bool Shape::hasTrace() {
@@ -302,37 +417,37 @@ void Shape::toggleTrace() {
 	trace_ = (trace_) ? 0 : 1;
 }
 
-void Shape::areIntersected(Shape& shape) {
-	if (this == &shape) return;
-	Frame f(defaultFrame_);
-	f.setPosition(getPosition());
+const double Shape::areIntersected(Shape& shape) {
+	if (this == &shape) return getZoom();
+	const Frame f = Frame(getPosition(), getDefaultFrame().getSize());
 	bool b = f.isInFrame(shape.getPosition());
-	Point pos1 = getPosition(),
-	      pos2 = shape.getPosition();
 	if (b) {
-		size_t index;
-		if (!intersected_.find(&shape, index)) {
-			color_ = randomColor();
-			shape.color_ = randomColor();
-			intersected_.add(&shape);
+		double zoom = calculateDistanceToEllipse(
+			shape.getPosition(), f
+		);
+		if (zoom <= 1) {
+			size_t index;
+			if (!intersected_.find(&shape, index)) {
+				color_ = randomColor();
+				intersected_.add(&shape);
+			}
+			if (zoom < SHAPE.getMinimumZoom()) {
+				return SHAPE.getMinimumZoom();
+			} else {
+				return zoom;
+			}
+			return getZoom();
 		}
-		Point p = abs(pos1 - pos2);
-		int len = sqrt(calulateVectorLengthSqruare(p));
-		if (len < 20) len = 20;
-		Point pl(len, len);
-		if (len < getFrame().getSize().get_x() / 2) {
-			frame_(pos1 - pl, pos1 + pl);
-		}
-		if (len < shape.getFrame().getSize().get_x() / 2) {
-			shape.frame_(pos2 - pl, pos2 + pl);
-		}
-	} else {
-		size_t index;
-		if (intersected_.find(&shape, index))
-			intersected_.erase(index);
 	}
+	size_t index;
+	if (intersected_.find(&shape, index))
+		intersected_.erase(index);
+	return getZoom();
 }
 
+/*********
+* Shapes *
+*********/
 Shapes::Shapes() :
 array_(), activeId_(0), activated_(0), activationPoint_(0, 0) {}
 
@@ -370,7 +485,7 @@ void Shapes::activate(const Point& p) {
 
 void Shapes::moveActive(const Point& p) {
 	if (activated_ && activeId_ < array_.size()) {
-		array_[activeId_]->moveTo(p - activationPoint_);
+		array_[activeId_]->setPosition(p - activationPoint_);
 	}
 }
 
@@ -383,12 +498,12 @@ void Shapes::draw(
 	const Gtk::Allocation& allocation
 ) {
 	for (size_t i = 0; i < array_.size(); i++) {
-		array_[i]->render(allocation);
-	}
-	for (size_t i = 0; i < array_.size(); i++) {
-		for (size_t j = i + 1; j < array_.size(); j++) {
-			array_[i]->areIntersected(*array_[j]);
+		double m = array_[i]->render(allocation);
+		for (size_t j = 0; j < array_.size(); j++) {
+			double x = array_[i]->areIntersected(*array_[j]);
+			if (x < m) m = x;
 		}
+		array_[i]->setSize(SHAPE.getFrame().getSize() * m);
 	}
 	for (size_t i = 0; i < array_.size(); i++) {
 		array_[i].draw(context);

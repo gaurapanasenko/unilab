@@ -26,19 +26,16 @@ void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 	context->line_to(-1.0,  1.0);
 }
 
-bool Triangle::isInShapeVirtual(const Point& p) {
+const bool Triangle::isInShapeVirtual(const Point& p) const {
 	Point size = getFrame().getSize();
 	Point pos = getFrame().getPosition() * 2;
 	Point a = Point(-1,  1) * size + pos,
 	      b = Point( 0, -1) * size + pos,
 	      c = Point( 1,  1) * size + pos,
 	      d = p * 2;
-	if (
-		isOneSizePointsToStraight(a, b, c, d) &&
-		isOneSizePointsToStraight(b, c, a, d) &&
-		isOneSizePointsToStraight(c, a, b, d)
-	) return true;
-	else return false;
+	return isOneSizePointsToStraight(a, b, c, d) &&
+	       isOneSizePointsToStraight(b, c, a, d) &&
+	       isOneSizePointsToStraight(c, a, b, d);
 }
 
 
@@ -58,30 +55,26 @@ void Rectangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 	context->line_to(-1.0, -1.0);
 }
 
-bool Rectangle::isInShapeVirtual(const Point& p) {
+const bool Rectangle::isInShapeVirtual(const Point& p) const {
 	return true;
 }
 
 
 
-const Pointer<Shape> Circle::create() {
-	return Pointer<Shape>(new Circle);
+const Pointer<Shape> Ellipse::create() {
+	return Pointer<Shape>(new Ellipse);
 }
 
-const Pointer<Shape> Circle::clone() {
-	return Pointer<Shape>(new Circle(*this));
+const Pointer<Shape> Ellipse::clone() {
+	return Pointer<Shape>(new Ellipse(*this));
 }
 
-void Circle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
+void Ellipse::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 	context->arc(0, 0, 1, 0, 2 * M_PI);
 }
 
-bool Circle::isInShapeVirtual(const Point& p) {
-	Point size = (getFrame().getSize()) / 2;
-	Point pr = p - getFrame().getPosition();
-	if (calulateVectorLengthSqruare(pr) < size.get_x() * size.get_x())
-		return true;
-	else return false;
+const bool Ellipse::isInShapeVirtual(const Point& p) const {
+	return calculateDistanceToEllipse(p, getFrame()) < 1;
 }
 
 }
