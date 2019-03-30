@@ -10,23 +10,10 @@
 #ifndef LIBGAURA_H
 #define LIBGAURA_H
 
-#include <cstddef>
 #include <exception>
 #include <cmath>
 
-const        size_t LIBGAURA_ARRAY_STEP = 16;
-const        size_t LIBGAURA_ARRAY_POW  = 1;
-
 struct GauraException : public std::exception {
-  const char * what () const noexcept override;
-};
-
-struct GauraExceptionMemfail : public GauraException {
-  const char * what () const noexcept override;
-};
-
-
-struct GauraExceptionAccess : public GauraException {
   const char * what () const noexcept override;
 };
 
@@ -67,12 +54,24 @@ public:
     return *this;
   }
 
-  T* operator->() {return pointer_;}
-  T* operator&() {return pointer_;}
-  T& operator*() {return *pointer_;}
-  T* operator->() const {return pointer_;}
-  T* operator&() const {return pointer_;}
-  T& operator*() const {return *pointer_;}
+  T* operator->() const {
+    if (pointer_ == nullptr) {
+      throw GauraException();
+    }
+    return pointer_;
+  }
+  T* operator&() const {
+    if (pointer_ == nullptr) {
+      throw GauraException();
+    }
+    return pointer_;
+  }
+  T& operator*() const {
+    if (pointer_ == nullptr) {
+      throw GauraException();
+    }
+    return *pointer_;
+  }
 
 private:
   T* release() const {

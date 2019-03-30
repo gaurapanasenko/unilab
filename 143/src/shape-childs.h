@@ -45,16 +45,16 @@ public:
 
 class Aggregator : public Shape {
 public:
-  Aggregator() : test(Ellipse::create()), defaultSize_(1, 1) {}
-	static const Pointer<Shape> create();
+  Aggregator(const std::vector< Pointer<Shape> >& array);
+  static const Pointer<Shape> create(
+    const std::vector< Pointer<Shape> >& array
+  );
   const Pointer<Shape> clone() override;
   void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
   bool isInShapeVirtual(const Point& p) const override;
-  const Size& getDefaultSize() const override;
 
 private:
-	Pointer<Shape> test;
-  Size defaultSize_;
+  std::vector< Pointer<Shape> > array_;
 };
 
 }

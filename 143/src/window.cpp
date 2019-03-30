@@ -27,12 +27,22 @@ void getObject(
   const Glib::RefPtr<Gtk::Builder>& builder, Glib::RefPtr<T>& pointer,
   const char* name
 ) {
-	pointer = Glib::RefPtr<T>::cast_dynamic(
+  pointer = Glib::RefPtr<T>::cast_dynamic(
 		builder->get_object(name)
 	);
   if (!pointer) {
 		exit(1);
-	}
+  }
+}
+
+template<class A, class B>
+void connectButton(
+  const Glib::RefPtr<Gtk::Builder>& builder, const char* name,
+    A& object, B function
+) {
+  Glib::RefPtr<Gtk::Button> tmp;
+  getObject(builder, tmp, name);
+  tmp->signal_clicked().connect(sigc::mem_fun(object, function));
 }
 
 Window::Window(
@@ -40,115 +50,36 @@ Window::Window(
   Glib::RefPtr<Gtk::Builder> builder
 ) : Gtk::ApplicationWindow(cobject), builder_(std::move(builder)),
 timer(dispatcher) {
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("add_rectangle_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::addRectangle));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("add_triangle_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::addTriangle));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("add_ellipse_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::addEllipse));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("trace_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::toggleTrace));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("reset_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::reset));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("color_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::changeColor));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("visibility_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::toggleVisibility));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("zoom_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::zoomShape));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("clone_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::cloneShape));
-		}
-	}
-	{
-		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
-			builder_->get_object("delete_button")
-		);
-		if (tmp) {
-			tmp->signal_clicked()
-				.connect(sigc::mem_fun(*this, &Window::deleteShape));
-		}
-	}
+  connectButton(builder_, "add_rectangle_button", *this, &Window::addRectangle);
+  connectButton(builder_, "add_triangle_button" , *this, &Window::addTriangle);
+  connectButton(builder_, "add_ellipse_button"  , *this, &Window::addEllipse);
 
-	getObject(builder_, nAdjustment_, "n_adjustment");
-	getObject(builder_, drawingArea_, "drawing_area");
-	getObject(builder_, statusbar_, "statusbar");
+  connectButton(builder_, "trace_button"        , *this, &Window::toggleTrace);
+  connectButton(builder_, "reset_button"        , *this, &Window::reset);
+  connectButton(builder_, "color_button"        , *this, &Window::changeColor);
+  connectButton(builder_, "visibility_button", *this,&Window::toggleVisibility);
+  connectButton(builder_, "aggregate_button"    , *this, &Window::aggregate);
+  connectButton(builder_, "clone_button"        , *this, &Window::cloneShape);
+  connectButton(builder_, "delete_button"       , *this, &Window::deleteShape);
+
+  getObject(builder_, nAdjustment_, "n_adjustment");
+  getObject(builder_, drawingArea_, "drawing_area");
+  getObject(builder_, statusbar_, "statusbar");
 
 
-	getObject(builder_, xAdjustment_, "x_adjustment");
+  getObject(builder_, xAdjustment_, "x_adjustment");
 	xAdjustment_->signal_value_changed().connect(sigc::mem_fun(
 		*this, &Window::parametersChanged
 	));
-	getObject(builder_, yAdjustment_, "y_adjustment");
+  getObject(builder_, yAdjustment_, "y_adjustment");
 	yAdjustment_->signal_value_changed().connect(sigc::mem_fun(
 		*this, &Window::parametersChanged
 	));
-	getObject(builder_, widthAdjustment_, "width_adjustment");
+  getObject(builder_, widthAdjustment_, "width_adjustment");
 	widthAdjustment_->signal_value_changed().connect(sigc::mem_fun(
 		*this, &Window::parametersChanged
 	));
-	getObject(builder_, heightAdjustment_, "height_adjustment");
+  getObject(builder_, heightAdjustment_, "height_adjustment");
 	heightAdjustment_->signal_value_changed().connect(sigc::mem_fun(
 		*this, &Window::parametersChanged
 	));
@@ -204,9 +135,10 @@ void Window::update() {
 
 bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 	Gtk::Allocation allocation = drawingArea_->get_allocation();
-	SHAPE.setContextWidth(allocation.get_width());
-	SHAPE.setContextHeight(allocation.get_height());
-	SHAPE.setDefaultMatrix(context->get_matrix());
+  SHAPE.setMaximumWidth(float(allocation.get_width()));
+  SHAPE.setMaximumHeight(float(allocation.get_height()));
+  SHAPE.setDefaultMatrix(context->get_matrix());
+  context->translate(2, 2);
 	context->set_antialias(Cairo::ANTIALIAS_NONE);
 	context->set_line_width(3);
 	context->set_line_cap(Cairo::LINE_CAP_ROUND);
@@ -217,8 +149,10 @@ bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 void Window::parametersChanged() {
   SHAPE.setX(float(xAdjustment_->get_value()));
   SHAPE.setY(float(yAdjustment_->get_value()));
-  SHAPE.setWidth(float(widthAdjustment_->get_value()));
-  SHAPE.setHeight(float(heightAdjustment_->get_value()));
+  SHAPE.setMaximumWidth(float(widthAdjustment_->get_value()));
+  SHAPE.setMaximumHeight(float(heightAdjustment_->get_value()));
+  SHAPE.setDefaultWidth(float(widthAdjustment_->get_value()));
+  SHAPE.setDefaultHeight(float(heightAdjustment_->get_value()));
   SHAPE.setMinimumZoom(float(minimumZoomAdjustment_->get_value()));
   SHAPE.setTraceSize(
     static_cast<unsigned char>(traceSizeAdjustment_->get_value())
@@ -246,7 +180,7 @@ void Window::addTriangle() {
 void Window::addEllipse() {
   int n = int(nAdjustment_->get_value());
 	for (int i = 0; i < n; i++) {
-		shapes_.add(ShapeChilds::Aggregator::create());
+    shapes_.add(ShapeChilds::Ellipse::create());
 	}
 	update();
 }
@@ -254,36 +188,36 @@ void Window::addEllipse() {
 void Window::toggleTrace() {
 	try {
 		shapes_.getActive().toggleTrace();
-  } catch(const GauraException&) {}
+  } catch(const std::out_of_range&) {}
 	update();
 }
 
 void Window::reset() {
 	try {
 		shapes_.getActive().reset();
-  } catch(const GauraException&) {}
+  } catch(const std::out_of_range&) {}
 	update();
 }
 
 void Window::changeColor() {
 	try {
 		shapes_.getActive().changeColor();
-  } catch(const GauraException&) {}
+  } catch(const std::out_of_range&) {}
 	update();
 }
 
 void Window::toggleVisibility() {
 	try {
 		shapes_.getActive().toggleVisibility();
-  } catch(const GauraException&) {}
+  } catch(const std::out_of_range&) {}
 	update();
 }
 
-void Window::zoomShape() {
-	try {
-		shapes_.getActive().toggleDefaultZoom();
-  } catch(const GauraException&) {}
-	update();
+void Window::aggregate() {
+  auto arr = shapes_.getSelected();
+  if (!arr.empty()) {
+    shapes_.add(ShapeChilds::Aggregator::create(arr));
+  }
 }
 
 void Window::cloneShape() {
@@ -292,7 +226,7 @@ void Window::cloneShape() {
 		for (int i = 0; i < n; i++) {
 			shapes_.add(shapes_.getActive().clone());
 		}
-  } catch(const GauraException&) {}
+  } catch(const std::out_of_range&) {}
 	update();
 }
 
@@ -314,7 +248,7 @@ bool Window::activate(GdkEventButton* event) {
 				update();
 			}
 		}
-  } catch(const GauraException&) {}
+  } catch(const std::out_of_range&) {}
 	return true;
 }
 
@@ -335,15 +269,26 @@ bool Window::scrollZoom(GdkEventScroll* event) {
     Shape& shape = shapes_.getTop(
       Point(float(event->x), float(event->y))
     );
-    float diff = 1000000.0f / event->time;
-		if (event->direction == GDK_SCROLL_UP) {
-		} else if (event->direction == GDK_SCROLL_DOWN) {
-			diff = -diff;
-		} else {
-			return true;
-		}
-		shape.setDefaultZoom(shape.getDefaultZoom() + diff);
-  } catch(const GauraException&) {}
+    float diff = 1000000000.0f / event->time;
+    Size size = shape.getSize();
+    switch (event->direction) {
+    case GDK_SCROLL_UP:
+      size.setY(size.getY() + diff);
+      break;
+    case GDK_SCROLL_DOWN:
+      size.setY(size.getY() - diff);
+      break;
+    case GDK_SCROLL_LEFT:
+      size.setX(size.getX() + diff);
+      break;
+    case GDK_SCROLL_RIGHT:
+      size.setX(size.getX() - diff);
+      break;
+    default:
+      break;
+    }
+    shape.setSize(size);
+  } catch(const std::out_of_range&) {}
 	update();
 	return true;
 }

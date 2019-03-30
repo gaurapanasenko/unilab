@@ -71,6 +71,7 @@ class Size : public Point {
 public:
 	Size();
   Size(float x, float y);
+  Size(const Point& point);
   void setX(float x);
   void setY(float y);
 	/// \brief Checks is point is in frame
@@ -102,27 +103,52 @@ float calculateDistanceToEllipse(
   const Point& point, const Point& size
 );
 
+class Sizes {
+public:
+  Sizes() = default;
+  const Size& getMinimumSize() const;
+  const Size& getDefaultSize() const;
+  void setDefaultSize(const Size& size);
+  void setDefaultSizeX(float x);
+  void setDefaultSizeY(float y);
+  const Size& getMaximumSize() const;
+  void setMaximumSize(const Size& size);
+  void setMaximumSizeX(float x);
+  void setMaximumSizeY(float y);
+  float getMinimumZoom() const;
+  void setMinimumZoom(float minimumZoom);
+
+  unsigned char checkSize(const Size& size) const;
+  Size validateSize(const Size& size) const;
+  float validateZoom(const Size& size, float zoom) const;
+
+private:
+  Size minimumSize_;
+  Size defaultSize_;
+  Size maximumSize_;
+  float minimumZoom_;
+};
+
 class ShapeParameters {
 public:
-	ShapeParameters();
-	Point& getPosition();
-	const Point& getPosition() const;
-  Size& getSize();
-  const Size& getSize() const;
+  ShapeParameters();
+  const Point& getPosition() const;
+  void setPosition(const Point& position);
   float getX();
   void setX(float x);
   float getY();
   void setY(float y);
-  float getWidth();
-  void setWidth(float width);
-  float getHeight();
-  void setHeight(float height);
-  int getContextWidth();
-  void setContextWidth(int width);
-  int getContextHeight();
-  void setContextHeight(int height);
-  float getMinimumZoom();
+  const Sizes& getSizes() const;
+  const Size& getDefaultSize() const;
   void setMinimumZoom(float minimumZoom);
+  float getDefaultWidth();
+  void setDefaultWidth(float width);
+  float getDefaultHeight();
+  void setDefaultHeight(float height);
+  float getMaximumWidth();
+  void setMaximumWidth(float width);
+  float getMaximumHeight();
+  void setMaximumHeight(float height);
   unsigned char getTraceSize();
   void setTraceSize(unsigned char traceSize);
   float getTraceTime();
@@ -133,14 +159,8 @@ public:
 private:
 	/// \brief default position
 	Point position_;
-	/// \brief default size
-	Size size_;
-	/// \brief context width
-	int contextWidth_;
-	/// \brief context Height
-	int contextHeight_;
-	/// \brief minimum zoom
-	float minimumZoom_;
+  /// \brief draw area sizes
+  Sizes sizes_;
 	/// \brief number of cloned objects when doing trace
 	unsigned char traceSize_;
 	/// \brief interval between saving state of Shape object
@@ -200,7 +220,6 @@ public:
 	/// \param p checking point
 	/// \return true if point in shape, else false
   virtual bool isInShapeVirtual(const Point& p) const;
-  virtual const Size& getDefaultSize() const;
 
 	/// \brief Checks that two shape objects are intersected
 	void areIntersected(Shape& shape);
@@ -225,15 +244,13 @@ public:
 	const Point& getPosition() const;
 	/// \brief Setter for position of shape
 	/// \param point point of center of shape
-	void setPosition(const Point& position);
-	/// \brief Getter for default zoom
-  float getDefaultZoom() const;
-	/// \brief Setter for default zoom
-  void setDefaultZoom(float zoom);
-	/// \brief Toggle zoom
-	void toggleDefaultZoom();
+  void setPosition(const Point& position);
+  const Size& getSize() const;
+  void setSize(const Size& size);
 	/// \brief Getter for current zoom
   float getZoom() const;
+  /// \brief Setter for current zoom
+  void setZoom(float zoom);
 	/// \brief Detects is shape is selected
   bool isSelected();
 	/// \brief Toggles selection of shape
@@ -255,7 +272,7 @@ private:
 	/// \brief Current frame of object
 	Point position_;
 	/// \brief Default zoom
-	float defaultZoom_;
+  Size size_;
 	/// \brief Current zoom
 	float zoom_;
 	/// \brief Color, that is generating in constructor
@@ -271,7 +288,7 @@ private:
 	/// \brief Defines visibility of shape
 	bool trace_;
 	/// \brief Variable to detect is shape selected
-	bool selected_;
+  bool selected_;
 };
 
 void updateGlobalDefaultFrame();
@@ -287,14 +304,14 @@ public:
 	Shape& getActive();
 	/// \brief Gets index of active shape
 	/// \return Reference to index
-	const size_t& getActiveId();
+  const size_t& getActiveId();
 
 	/// \brief Adds new Shape object to list of objects
 	/// \param item Wrapped pointer to Shape object in Pointer object
 	void add(const Pointer<Shape>& item);
 	/// \brief Deletes Shape object on index
 	/// \param index index of object that will be deleted
-  void erase(int index);
+  void erase(const size_t& index);
 	Shape& getTop(const Point& p);
 
 	/// \brief Activates Shape object if point in argument placed in Shape
@@ -312,6 +329,8 @@ public:
 	/// \param context class used to draw
 	void draw(const Cairo::RefPtr<Cairo::Context>& context);
 
+  const std::vector< Pointer<Shape> > getSelected();
+
 	/// \brief Element of object for correct processing Shape object and
 	/// ShapeTrace object
 	class Element {
@@ -326,12 +345,15 @@ public:
 		Shape& operator*();
 		/// \brief Member operator to access members of Shape object
 		/// \return Pointer to Shape object
-		Shape* operator->();
+    Shape* operator->();
 		/// \brief Draws Shape object and all traces
 		/// \param context class used to draw
 		void draw(const Cairo::RefPtr<Cairo::Context>& context);
 
 	private:
+    friend Shapes;
+    Pointer<Shape> release();
+
 		/// \brief Wrapped pointer to Shape object
 		Pointer<Shape> pointer_;
 		/// \brief ShapeTrace object to create trace of Shape object stored
@@ -345,7 +367,7 @@ private:
 	/// \brief Array of elements
   std::vector<Element> array_;
 	/// \brief Active Shape object index
-	size_t activeId_;
+  size_t activeId_;
 	/// \brief Detects that active id will be moved by mouse motion
 	bool activated_;
 	/// \brief Activation point of Shape object

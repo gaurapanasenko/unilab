@@ -27,12 +27,10 @@ void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 }
 
 bool Triangle::isInShapeVirtual(const Point& p) const {
-	Point size = SHAPE.getSize();
-	Point pos = SHAPE.getPosition() * 2;
-	Point a = Point(-1,  1) * size + pos,
-	      b = Point( 0, -1) * size + pos,
-	      c = Point( 1,  1) * size + pos,
-	      d = p * 2;
+  Point a = Point(-1,  1),
+        b = Point( 0, -1),
+        c = Point( 1,  1),
+        d = p;
 	return isOneSizePointsToStraight(a, b, c, d) &&
 	       isOneSizePointsToStraight(b, c, a, d) &&
 	       isOneSizePointsToStraight(c, a, b, d);
@@ -74,11 +72,20 @@ void Ellipse::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 }
 
 bool Ellipse::isInShapeVirtual(const Point& p) const {
-	return calculateDistanceToEllipse(p, SHAPE.getSize()) < 1;
+  return calculateDistanceToEllipse(p, Size(2, 2)) < 1;
 }
 
-const Pointer<Shape> Aggregator::create() {
-	return Pointer<Shape>(new Aggregator);
+Aggregator::Aggregator(const std::vector< Pointer<Shape> >& array)
+  : array_(array) {
+  for (auto& i : array_) {
+    i->setPosition(i->getPosition() * 0.02f - 0.5);
+  }
+}
+
+const Pointer<Shape> Aggregator::create(
+  const std::vector< Pointer<Shape> >& array
+) {
+  return Pointer<Shape>(new Aggregator(array));
 }
 
 const Pointer<Shape> Aggregator::clone() {
@@ -86,18 +93,13 @@ const Pointer<Shape> Aggregator::clone() {
 }
 
 void Aggregator::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
-	test->render();
-  test->setDefaultZoom(0.1);
-	test->draw(context);
+  for (auto& i : array_) {
+    i->draw(context);
+  }
 }
 
 bool Aggregator::isInShapeVirtual(const Point&) const {
 	return true;
 }
-
-const Size& Aggregator::getDefaultSize() const {
-  return defaultSize_;
-}
-
 
 }

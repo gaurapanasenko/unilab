@@ -46,8 +46,8 @@ private:
 	void toggleTrace();
 	void reset();
 	void changeColor();
-	void toggleVisibility();
-	void zoomShape();
+  void toggleVisibility();
+  void aggregate();
 	void cloneShape();
 	void deleteShape();
 	bool activate(GdkEventButton* event);

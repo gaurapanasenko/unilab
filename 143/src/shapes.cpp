@@ -94,14 +94,18 @@ bool isOneSizePointsToStraight(
 
 Size::Size() : Point(0, 0) {}
 
-Size::Size(float x, float y) : Point(x, y) {}
+Size::Size(float x, float y) : Point((x > 0) ? x : 0, (y > 0) ? y : 0) {}
+
+Size::Size(const Point& point) : Point(
+  (point.getX() > 0) ? point.getX() : 0, (point.getY() > 0) ? point.getY() : 0
+) {}
 
 void Size::setX(float x) {
-	Point::setX((x > 0) ? x : 0);
+  Point::setX((x > 0) ? x : 0);
 }
 
 void Size::setY(float y) {
-	Point::setY((y > 0) ? y : 0);
+  Point::setY((y > 0) ? y : 0);
 }
 
 bool Size::isInFrame(const Point& point) const {
@@ -147,88 +151,177 @@ float calculateDistanceToEllipse(
          pow(point.getY(), 2.0f) / pow(size.getY() / 2.0f, 2.0f);
 }
 
+/********
+* Sizes *
+********/
+
+const Size& Sizes::getMinimumSize() const {
+  return minimumSize_;
+}
+
+const Size& Sizes::getDefaultSize() const {
+  return defaultSize_;
+}
+
+void Sizes::setDefaultSize(const Size& size) {
+  setDefaultSizeX(size.getX());
+  setDefaultSizeY(size.getY());
+}
+
+void Sizes::setDefaultSizeX(float x) {
+  defaultSize_.setX((x > maximumSize_.getX()) ? maximumSize_.getX() : x);
+  minimumSize_.setX(defaultSize_.getX() * minimumZoom_);
+}
+
+void Sizes::setDefaultSizeY(float y) {
+  defaultSize_.setY((y > maximumSize_.getY()) ? maximumSize_.getY() : y);
+  minimumSize_.setY(defaultSize_.getY() * minimumZoom_);
+}
+
+const Size& Sizes::getMaximumSize() const {
+  return maximumSize_;
+}
+
+void Sizes::setMaximumSize(const Size& size) {
+  setMaximumSizeX(size.getX());
+  setMaximumSizeY(size.getY());
+}
+
+void Sizes::setMaximumSizeX(float x) {
+  maximumSize_.setX(x);
+  if (maximumSize_.getX() < defaultSize_.getX()) {
+    defaultSize_.setX(maximumSize_.getX());
+  }
+}
+
+void Sizes::setMaximumSizeY(float y) {
+  maximumSize_.setY(y);
+  if (maximumSize_.getY() < defaultSize_.getY()) {
+    defaultSize_.setY(maximumSize_.getY());
+  }
+}
+
+float Sizes::getMinimumZoom() const {
+  return minimumZoom_;
+}
+
+void Sizes::setMinimumZoom(float minimumZoom) {
+  minimumZoom_ = (minimumZoom < 0) ? 0 : (minimumZoom > 1) ? 1 : minimumZoom;
+  minimumSize_ = defaultSize_ * minimumZoom_;
+}
+
+unsigned char Sizes::checkSize(const Size& size) const {
+  return static_cast<unsigned char>(
+    (size.getX() < getMinimumSize().getX()) << 0 |
+    (size.getY() < getMinimumSize().getY()) << 1 |
+    (size.getX() > getMaximumSize().getX()) << 2 |
+    (size.getY() > getMaximumSize().getY()) << 3
+  );
+}
+
+Size Sizes::validateSize(const Size& size) const {
+  unsigned char b = checkSize(size);
+  return {
+    (b & 1 << 0) ? getMinimumSize().getX() :
+      (b & 1 << 2) ? getMaximumSize().getX() : size.getX(),
+    (b & 1 << 1) ? getMinimumSize().getY() :
+      (b & 1 << 3) ? getMaximumSize().getY() : size.getY()
+  };
+}
+
+float Sizes::validateZoom(const Size& size, float zoom) const {
+  if (checkSize(size)) return 1.0f;
+  float z = zoom;
+  if (checkSize(size * z) & 1 << 0) {
+    z = getMinimumSize().getX() / size.getX();
+  }
+  if (checkSize(size * z) & 1 << 1) {
+    z = getMinimumSize().getY() / size.getY();
+  }
+  if (checkSize(size * z) & 1 << 2) {
+    z = getMaximumSize().getX() / size.getX();
+  }
+  if (checkSize(size * z) & 1 << 3) {
+    z = getMaximumSize().getY() / size.getY();
+  }
+  return z;
+}
+
 /******************
 * ShapeParameters *
 ******************/
 
 ShapeParameters::ShapeParameters()
-: position_(Point(0, 0)), size_(Size(10, 10)),
-  contextWidth_(0), contextHeight_(0),
-  minimumZoom_(1), traceSize_(0), traceTime_(0.1f) {}
-
-Point& ShapeParameters::getPosition() {
-	return position_;
-}
+: position_(Point(0, 0)), sizes_(),
+traceSize_(0), traceTime_(0.1f) {}
 
 const Point& ShapeParameters::getPosition() const {
 	return position_;
 }
 
-Size& ShapeParameters::getSize() {
-	return size_;
-}
-
-const Size& ShapeParameters::getSize() const {
-	return size_;
+void ShapeParameters::setPosition(const Point& position) {
+  position_ = position;
 }
 
 float ShapeParameters::getX() {
-	return getPosition().getX();
+  return getPosition().getX();
 }
 
 void ShapeParameters::setX(float x) {
-	getPosition().setX(x);
+  position_.setX(x);
 }
 
 float ShapeParameters::getY() {
-	return getPosition().getY();
+  return getPosition().getY();
 }
 
 void ShapeParameters::setY(float y) {
-	getPosition().setY(y);
+  position_.setY(y);
 }
 
-float ShapeParameters::getWidth() {
-	return getSize().getX();
+
+const Sizes& ShapeParameters::getSizes() const {
+  return sizes_;
 }
 
-void ShapeParameters::setWidth(float width) {
-	if (width <= 0) return;
-	getSize().setX(width);
+const Size& ShapeParameters::getDefaultSize() const {
+  return getSizes().getDefaultSize();
 }
 
-float ShapeParameters::getHeight() {
-	return getSize().getY();
+float ShapeParameters::getDefaultWidth() {
+  return sizes_.getDefaultSize().getX();
 }
 
-void ShapeParameters::setHeight(float height) {
-	if (height <= 0) return;
-	getSize().setY(height);
+void ShapeParameters::setDefaultWidth(float width) {
+  sizes_.setDefaultSizeX(width);
 }
 
-int ShapeParameters::getContextWidth() {
-	return contextWidth_;
+float ShapeParameters::getDefaultHeight() {
+  return sizes_.getDefaultSize().getY();
 }
 
-void ShapeParameters::setContextWidth(const int width) {
-	contextWidth_ = width;
+void ShapeParameters::setDefaultHeight(float height) {
+  sizes_.setDefaultSizeY(height);
 }
 
-int ShapeParameters::getContextHeight() {
-	return contextHeight_;
+float ShapeParameters::getMaximumWidth() {
+  return getSizes().getMaximumSize().getX();
 }
 
-void ShapeParameters::setContextHeight(const int height) {
-	contextHeight_ = height;
+void ShapeParameters::setMaximumWidth(float width) {
+  sizes_.setMaximumSizeX(width - 4);
 }
 
-float ShapeParameters::getMinimumZoom() {
-	return minimumZoom_;
+float ShapeParameters::getMaximumHeight() {
+  return getSizes().getMaximumSize().getY();
+}
+
+void ShapeParameters::setMaximumHeight(float height) {
+  sizes_.setMaximumSizeY(height - 4);
 }
 
 void ShapeParameters::setMinimumZoom(float minimumZoom) {
-	if (minimumZoom <= 0 || minimumZoom > 1) return;
-	minimumZoom_ = minimumZoom;
+  sizes_.setMinimumZoom(minimumZoom);
 }
 
 unsigned char ShapeParameters::getTraceSize() {
@@ -287,9 +380,7 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 			tail_ = 0;
 		}
 		if (
-      (clock() - time_) * 1000.0f / CLOCKS_PER_SEC >
-      SHAPE.getTraceTime() &&
-      queue_.empty()
+      (clock() - time_) * 1000.0f / CLOCKS_PER_SEC > SHAPE.getTraceTime()
 		) {
 			time_ = clock();
 			queue_[tail_] = shape_->clone();
@@ -300,7 +391,7 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 			unsigned char index = tail_ + i;
 			while (index >= size) index -= size;
 			if (queue_[index])
-        queue_[index]->draw(context, 0.75f / (size - i));
+        queue_[index]->draw(context, 1.0f / (size - i));
 		}
   } else if (!queue_.empty()) {
 		queue_.resize(0);
@@ -311,7 +402,7 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 /********
 * Shape *
 ********/
-Shape::Shape() : defaultZoom_(1.0), zoom_(defaultZoom_),
+Shape::Shape() : size_(SHAPE.getDefaultSize()), zoom_(1.0),
 defaultColor_(randomColor()), color_(defaultColor_),
 visible_(true), trace_(false), selected_(false) {}
 
@@ -325,32 +416,33 @@ bool Shape::isInShapeVirtual(const Point&) const {
   return true;
 }
 
-const Size& Shape::getDefaultSize() const {
-  return SHAPE.getSize();
-}
-
 void Shape::render() {
-  const Size& ds = getDefaultSize();
-  Point size = ds * getDefaultZoom() / 2 + 2;
-	if (!isSelected()) {
-    size = ds * SHAPE.getMinimumZoom() / 2 + 2;
-  }
-  const int h = SHAPE.getContextHeight(), w = SHAPE.getContextWidth();
-  float minX = size.getX(), minY = size.getY();
-  float x = getPosition().getX(), y = getPosition().getY();
+  Point minSize = (
+    (isSelected()) ? getSize() :
+      getSize() * SHAPE.getSizes().validateZoom(
+        getSize(), SHAPE.getSizes().getMinimumZoom()
+      )
+  ) / 2;
+  const float h = SHAPE.getMaximumHeight(), w = SHAPE.getMaximumWidth();
 
-	if (x < minX)     x = minX;
-	if (y < minY)     y = minY;
-	if (x > w - minX) x = w - minX;
-	if (y > h - minY) y = h - minY;
+  float x = getPosition().getX(), y = getPosition().getY();
+  if (x < minSize.getX())     x = minSize.getX();
+  if (y < minSize.getY())     y = minSize.getY();
+  if (x > w - minSize.getX()) x = w - minSize.getX();
+  if (y > h - minSize.getY()) y = h - minSize.getY();
+
 	setPosition(Point(x, y));
 	if (!isSelected()) {
-		zoom_ = min(float(min(
-      min((x - 2) * 2.0f / ds.getX(), (w - 2 - x) * 2.0f / ds.getX()),
-      min((y - 2) * 2.0f / ds.getY(), (h - 2 - y) * 2.0f / ds.getY())
-		)), getDefaultZoom());
+    setZoom(min(float(min(
+      min(
+        x * 2.0f / getSize().getX(), (w - x) * 2.0f / getSize().getX()
+      ),
+      min(
+        y * 2.0f / getSize().getY(), (h - y) * 2.0f / getSize().getY()
+      )
+    )), 1.0f));
 	} else {
-		zoom_ = getDefaultZoom();
+    setZoom(1.0f);
 	}
 }
 
@@ -358,11 +450,11 @@ void Shape::areIntersected(Shape& shape) {
 	if (this == &shape) return;
 	const Point position = abs(
 		getPosition() - shape.getPosition()
-  ) * getDefaultZoom();
-  bool b = getDefaultSize().isInFrame(position);
+  );
+  bool b = getSize().isInFrame(position);
 	if (b) {
 		float zoom = calculateDistanceToEllipse(
-      position, getDefaultSize()
+      position, getSize()
 		);
     if (zoom < 1.0f) {
       auto it = std::find(intersected_.begin(), intersected_.end(), &shape);
@@ -370,13 +462,8 @@ void Shape::areIntersected(Shape& shape) {
 				color_ = randomColor();
         intersected_.emplace_back(&shape);
 			}
-			if (zoom < zoom_) {
-				if (zoom < SHAPE.getMinimumZoom()) {
-					zoom_ = SHAPE.getMinimumZoom();
-				} else {
-					zoom_ = zoom;
-				}
-			}
+      if (zoom < getZoom())
+        setZoom(zoom);
 			return;
 		}
 	}
@@ -391,7 +478,7 @@ void Shape::draw(
 	float alpha
 ) {
 	if (visible_) {
-    const Point size = getDefaultSize() * zoom_ / 2;
+    const Point size = getSize() * zoom_ / 2;
     if (int(size.getX()) == 0 || int(size.getY()) == 0) return;
 		Cairo::Matrix matrix(
       double(size.getX()), 0, 0, double(size.getY()),
@@ -417,8 +504,8 @@ void Shape::draw(
 }
 
 bool Shape::isInShape(const Point& point) const {
-	const Point p = (getPosition() - point) / getZoom();
-  return (getDefaultSize().isInFrame(p) && isInShapeVirtual(p));
+  const Point p = (point - getPosition()) / getSize() / getZoom() * 2;
+  return (Size(2, 2).isInFrame(p) && isInShapeVirtual(p));
 }
 
 const Point& Shape::getPosition() const {
@@ -426,27 +513,24 @@ const Point& Shape::getPosition() const {
 }
 
 void Shape::setPosition(const Point& position) {
-	position_ = position;
+  position_ = position;
 }
 
-float Shape::getDefaultZoom() const {
-	return defaultZoom_;
+const Size&Shape::getSize() const {
+  return size_;
 }
 
-void Shape::setDefaultZoom(float zoom) {
-	if (zoom >= SHAPE.getMinimumZoom()) {
-		defaultZoom_ = zoom;
-	} else {
-		defaultZoom_ = SHAPE.getMinimumZoom();
-	}
-}
-
-void Shape::toggleDefaultZoom() {
-	defaultZoom_ = (int(defaultZoom_) == 1) ? 2 : 1;
+void Shape::setSize(const Size& size) {
+  size_ = SHAPE.getSizes().validateSize(size);
+  setZoom(getZoom());
 }
 
 float Shape::getZoom() const {
 	return zoom_;
+}
+
+void Shape::setZoom(float zoom) {
+  zoom_ = SHAPE.getSizes().validateZoom(size_, zoom);
 }
 
 bool Shape::isSelected() {
@@ -467,7 +551,7 @@ void Shape::changeColor() {
 
 void Shape::reset() {
 	position_ = SHAPE.getPosition();
-	defaultZoom_ = 1.0;
+  size_ = SHAPE.getSizes().getDefaultSize();
 	zoom_ = 1.0;
 	color_ = defaultColor_;
   visible_ = true;
@@ -490,7 +574,7 @@ Shapes::Shapes() :
 activeId_(0), activated_(false), activationPoint_(0, 0) {}
 
 Shape& Shapes::getActive() {
-	return *array_[activeId_];
+  return *array_.at(activeId_);
 }
 
 const size_t& Shapes::getActiveId() {
@@ -499,18 +583,18 @@ const size_t& Shapes::getActiveId() {
 
 void Shapes::add(const Pointer<Shape>& item) {
   array_.emplace_back(Element());
-	array_[array_.size() - 1] = item;
+  array_.at(array_.size() - 1) = item;
 }
 
-void Shapes::erase(int index) {
+void Shapes::erase(const size_t& index) {
   activated_ = false;
   activeId_ = 0;
-  if (index >= 0 && index < int(array_.size()))
-    array_.erase(array_.begin() + index);
+  if (index < array_.size())
+    array_.erase(array_.begin() + int(index));
 }
 
 Shape& Shapes::getTop(const Point& p) {
-	return *array_[getTopIndex(p)];
+  return *array_.at(getTopIndex(p));
 }
 
 void Shapes::activate(const Point& p) {
@@ -518,13 +602,13 @@ void Shapes::activate(const Point& p) {
 	if (top != array_.size()) {
 		activeId_ = top;
     activated_ = true;
-		activationPoint_ = floor(p - array_[top]->getPosition());
+    activationPoint_ = floor(p - array_.at(top)->getPosition());
 	}
 }
 
 void Shapes::moveActive(const Point& p) {
 	if (activated_ && activeId_ < array_.size()) {
-		array_[activeId_]->setPosition(floor(p - activationPoint_));
+    array_.at(activeId_)->setPosition(floor(p - activationPoint_));
 	}
 }
 
@@ -542,8 +626,21 @@ void Shapes::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 		}
   }
   for (auto& i : array_) {
-    i->draw(context);
-	}
+    i.draw(context);
+  }
+}
+
+const std::vector< Pointer<Shape> > Shapes::getSelected() {
+  std::vector< Pointer<Shape> > array;
+  for (auto it = array_.begin(); it != array_.end();) {
+    if ((*it)->isSelected()) {
+      array.emplace_back(it->release());
+      array_.erase(it);
+    } else {
+      it++;
+    }
+  }
+  return array;
 }
 
 Shapes::Element&
@@ -558,7 +655,11 @@ Shape& Shapes::Element::operator*() {
 }
 
 Shape* Shapes::Element::operator->() {
-	return &pointer_;
+  return &pointer_;
+}
+
+Pointer<Shape> Shapes::Element::release() {
+  return pointer_;
 }
 
 void Shapes::Element::draw(
@@ -572,9 +673,10 @@ size_t Shapes::getTopIndex(const Point& p) {
 	size_t i = array_.size();
 	while(i > 0) {
 		i--;
-		if (array_[i]->isInShape(p)) {
+    if (array_.at(i)->isInShape(p)) {
       return i;
 		}
 	}
 	return array_.size();
 }
+
