@@ -8,66 +8,81 @@
  **************************************************************/
 
 #include "shapes.h"
+#include <algorithm>
 
 /********
 * Point *
 ********/
-Point::Point() : Gdk::Point(0, 0) {}
+Point::Point() : coordinates_{0, 0} {}
 
-Point::Point(int x, int y) : Gdk::Point(x, y) {}
+Point::Point(float x, float y) : coordinates_{x, y} {}
 
-Point& Point::operator=(const Point& rhs) {
-	set_x(rhs.get_x());
-	set_y(rhs.get_y());
-	return (*this);
+float Point::getX() const {
+	return coordinates_[0];
 }
 
-Point operator+(const Point& lhs, const Point& rhs) {
-	return Point(lhs.get_x() + rhs.get_x(), lhs.get_y() + rhs.get_y());
+void Point::setX(float x) {
+	coordinates_[0] = x;
 }
 
-Point operator-(const Point& lhs, const Point& rhs) {
-	return Point(lhs.get_x() - rhs.get_x(), lhs.get_y() - rhs.get_y());
+float Point::getY() const {
+	return coordinates_[1];
 }
 
-Point operator*(const Point& lhs, const Point& rhs) {
-	return Point(lhs.get_x() * rhs.get_x(), lhs.get_y() * rhs.get_y());
+void Point::setY(float y) {
+	coordinates_[1] = y;
 }
 
-Point operator/(const Point& lhs, const Point& rhs) {
-	return Point(lhs.get_x() / rhs.get_x(), lhs.get_y() / rhs.get_y());
+const Point operator+(const Point& lhs, const Point& rhs) {
+	return Point(lhs.getX() + rhs.getX(), lhs.getY() + rhs.getY());
+}
+
+const Point operator-(const Point& lhs, const Point& rhs) {
+	return Point(lhs.getX() - rhs.getX(), lhs.getY() - rhs.getY());
+}
+
+const Point operator*(const Point& lhs, const Point& rhs) {
+	return Point(lhs.getX() * rhs.getX(), lhs.getY() * rhs.getY());
+}
+
+const Point operator/(const Point& lhs, const Point& rhs) {
+	return Point(lhs.getX() / rhs.getX(), lhs.getY() / rhs.getY());
 }
 
 
-Point operator+(const Point& lhs, const double rhs) {
-	return Point(lhs.get_x() + rhs, lhs.get_y() + rhs);
+const Point operator+(const Point& lhs, float rhs) {
+	return Point(lhs.getX() + rhs, lhs.getY() + rhs);
 }
 
-Point operator-(const Point& lhs, const double rhs) {
-	return Point(lhs.get_x() - rhs, lhs.get_y() - rhs);
+const Point operator-(const Point& lhs, float rhs) {
+	return Point(lhs.getX() - rhs, lhs.getY() - rhs);
 }
 
-Point operator*(const Point& lhs, const double rhs) {
-	return Point(lhs.get_x() * rhs, lhs.get_y() * rhs);
+const Point operator*(const Point& lhs, float rhs) {
+	return Point(lhs.getX() * rhs, lhs.getY() * rhs);
 }
 
-Point operator/(const Point& lhs, const double rhs) {
-	return Point(lhs.get_x() / rhs, lhs.get_y() / rhs);
+const Point operator/(const Point& lhs, float rhs) {
+	return Point(lhs.getX() / rhs, lhs.getY() / rhs);
 }
 
-const double calulateVectorLengthSqruare(const Point& point) {
-	return pow(point.get_x(), 2.0) + pow(point.get_y(), 2.0);
+float calulateVectorLengthSqruare(const Point& point) {
+  return pow(point.getX(), 2.0f) + pow(point.getY(), 2.0f);
 }
 
 const Point abs(const Point& point) {
-	return Point(abs(point.get_x()), abs(point.get_y()));
+  return Point(std::abs(point.getX()), std::abs(point.getY()));
 }
 
-double calculatePseudoscalarProduct(
+const Point floor(const Point& point) {
+	return Point(floor(point.getX()), floor(point.getY()));
+}
+
+float calculatePseudoscalarProduct(
 	const Point& a, const Point& b, const Point& c
 ) {
 	Point ab = b - a, ac = c - a;
-	return ab.get_x() * ac.get_y() - ab.get_y() * ac.get_x();
+	return ab.getX() * ac.getY() - ab.getY() * ac.getX();
 }
 
 bool isOneSizePointsToStraight(
@@ -77,97 +92,59 @@ bool isOneSizePointsToStraight(
 	       calculatePseudoscalarProduct(d, a, b) > 0;
 }
 
+Size::Size() : Point(0, 0) {}
+
+Size::Size(float x, float y) : Point(x, y) {}
+
+void Size::setX(float x) {
+	Point::setX((x > 0) ? x : 0);
+}
+
+void Size::setY(float y) {
+	Point::setY((y > 0) ? y : 0);
+}
+
+bool Size::isInFrame(const Point& point) const {
+	Point p(abs(point) * 2);
+	return (p.getX() < getX() && p.getY() < getY());
+}
+
 /********
 * Color *
 ********/
-Color::Color() : color_{0, 0, 0} {}
+Color::Color() : r_(0), g_(0), b_(0) {}
 
 Color::Color(unsigned char r, unsigned char g, unsigned char b) :
-color_{r, g, b} {}
+r_(r), g_(g), b_(b) {}
 
-const double Color::operator[](unsigned char index) {
-	return double(color_[index]) / 255;
+double Color::getR() {
+  return double(r_) / 255;
 }
 
-unsigned char& Color::operator()(unsigned char index) {
-	return color_[index];
+double Color::getG() {
+  return double(r_) / 255;
 }
 
-void Color::applyToContext(const Cairo::RefPtr<Cairo::Context>& context) {
-	context->set_source_rgb((*this)[0], (*this)[1], (*this)[2]);
+double Color::getB() {
+  return double(r_) / 255;
 }
 
 /// \brief Creates random color
 /// \return colors
 Color randomColor() {
-	return Color(rand() % 256, rand() % 256, rand() % 256);
+  return {
+    static_cast<unsigned char>(rand() % 256),
+    static_cast<unsigned char>(rand() % 256),
+    static_cast<unsigned char>(rand() % 256)
+  };
 }
 
-/********
-* Frame *
-********/
-Frame::Frame() : position_(0, 0), size_(0, 0) {}
-
-Frame::Frame(const Point& point1, const Point& point2) {
-	(*this)(point1, point2);
-}
-
-void Frame::operator()(const Point& position, const Point& size) {
-	if (size.get_x() < 0 || size.get_y() < 0) return;
-	setPosition(position);
-	setSize(size);
-}
-
-const bool Frame::isInFrame(const Point& point) const {
-	Point p1 = getPoint1(), p2 = getPoint2();
-	return (
-		p1.get_x() <= point.get_x() &&
-		point.get_x() <= p2.get_x() &&
-		p1.get_y() <= point.get_y() &&
-		point.get_y() <= p2.get_y()
-	);
-}
-
-Point& Frame::getPosition() {
-	return position_;
-}
-
-const Point& Frame::getPosition() const {
-	return position_;
-}
-
-void Frame::setPosition(const Point& position) {
-	position_ = position;
-}
-
-Point& Frame::getSize() {
-	return size_;
-}
-
-const Point& Frame::getSize() const {
-	return size_;
-}
-
-void Frame::setSize(const Point& size) {
-	if (size.get_x() < 0 || size.get_y() < 0) return;
-	size_ = size;
-}
-
-const Point Frame::getPoint1() const {
-	return position_ - size_ / 2;
-}
-
-const Point Frame::getPoint2() const {
-	return position_ + size_ / 2;
-}
-
-const double calculateDistanceToEllipse(
-	const Point& point, const Frame& frame
+float calculateDistanceToEllipse(
+	const Point& point, const Point& size
 ) {
-	Point size(frame.getSize()), p(point - frame.getPosition());
-	if (size.get_x() <= 0 || size.get_y() <= 0) return 0;
-	return pow(p.get_x(), 2.0) / pow(double(size.get_x()) / 2.0, 2.0) +
-	       pow(p.get_y(), 2.0) / pow(double(size.get_y()) / 2.0, 2.0);
+	if (size.getX() <= 0 || size.getY() <= 0) return 0;
+  return pow(point.getX(), 2.0f) / pow(size.getX() / 2.0f, 2.0f) +
+         pow(point.getY(), 2.0f) / pow(size.getY() / 2.0f, 2.0f);
 }
 
 /******************
@@ -175,61 +152,86 @@ const double calculateDistanceToEllipse(
 ******************/
 
 ShapeParameters::ShapeParameters()
-: frame_(Point(0, 0), Point(10, 10)),
-minimumZoom_(1), traceSize_(0), traceTime_(0.1) {}
+: position_(Point(0, 0)), size_(Size(10, 10)),
+  contextWidth_(0), contextHeight_(0),
+  minimumZoom_(1), traceSize_(0), traceTime_(0.1f) {}
 
-Frame& ShapeParameters::getFrame() {
-	return frame_;
+Point& ShapeParameters::getPosition() {
+	return position_;
 }
 
-const Frame& ShapeParameters::getFrame() const {
-	return frame_;
+const Point& ShapeParameters::getPosition() const {
+	return position_;
 }
 
-const int ShapeParameters::getX() {
-	return getFrame().getPosition().get_x();
+Size& ShapeParameters::getSize() {
+	return size_;
 }
 
-void ShapeParameters::setX(const int x) {
-	getFrame().getPosition().set_x(x);
+const Size& ShapeParameters::getSize() const {
+	return size_;
 }
 
-const int ShapeParameters::getY() {
-	return getFrame().getPosition().get_y();
+float ShapeParameters::getX() {
+	return getPosition().getX();
 }
 
-void ShapeParameters::setY(const int y) {
-	getFrame().getPosition().set_y(y);
+void ShapeParameters::setX(float x) {
+	getPosition().setX(x);
 }
 
-const int ShapeParameters::getWidth() {
-	return getFrame().getSize().get_x();
+float ShapeParameters::getY() {
+	return getPosition().getY();
 }
 
-void ShapeParameters::setWidth(const int width) {
+void ShapeParameters::setY(float y) {
+	getPosition().setY(y);
+}
+
+float ShapeParameters::getWidth() {
+	return getSize().getX();
+}
+
+void ShapeParameters::setWidth(float width) {
 	if (width <= 0) return;
-	getFrame().getSize().set_x(width);
+	getSize().setX(width);
 }
 
-const int ShapeParameters::getHeight() {
-	return getFrame().getSize().get_y();
+float ShapeParameters::getHeight() {
+	return getSize().getY();
 }
 
-void ShapeParameters::setHeight(const int height) {
+void ShapeParameters::setHeight(float height) {
 	if (height <= 0) return;
-	getFrame().getSize().set_y(height);
+	getSize().setY(height);
 }
 
-const double ShapeParameters::getMinimumZoom() {
+int ShapeParameters::getContextWidth() {
+	return contextWidth_;
+}
+
+void ShapeParameters::setContextWidth(const int width) {
+	contextWidth_ = width;
+}
+
+int ShapeParameters::getContextHeight() {
+	return contextHeight_;
+}
+
+void ShapeParameters::setContextHeight(const int height) {
+	contextHeight_ = height;
+}
+
+float ShapeParameters::getMinimumZoom() {
 	return minimumZoom_;
 }
 
-void ShapeParameters::setMinimumZoom(const double minimumZoom) {
-	if (minimumZoom <= 0) return;
+void ShapeParameters::setMinimumZoom(float minimumZoom) {
+	if (minimumZoom <= 0 || minimumZoom > 1) return;
 	minimumZoom_ = minimumZoom;
 }
 
-const unsigned char ShapeParameters::getTraceSize() {
+unsigned char ShapeParameters::getTraceSize() {
 	return traceSize_;
 }
 
@@ -237,12 +239,22 @@ void ShapeParameters::setTraceSize(const unsigned char traceSize) {
 	traceSize_ = traceSize;
 }
 
-const double ShapeParameters::getTraceTime() {
+float ShapeParameters::getTraceTime() {
 	return traceTime_;
 }
 
-void ShapeParameters::setTraceTime(const double traceTime) {
+void ShapeParameters::setTraceTime(float traceTime) {
 	traceTime_ = traceTime;
+}
+
+const Cairo::Matrix& ShapeParameters::getDefaultMatrix() {
+	return defaultMatrix_;
+}
+
+void ShapeParameters::setDefaultMatrix(
+  const Cairo::Matrix& defaultMatrix
+) {
+	defaultMatrix_ = defaultMatrix;
 }
 
 ShapeParameters SHAPE;
@@ -250,17 +262,19 @@ ShapeParameters SHAPE;
 /*************
 * ShapeTrace *
 *************/
-ShapeTrace::ShapeTrace() : shape_(0), queue_(), tail_(0), time_(0) {}
+ShapeTrace::ShapeTrace()
+  : shape_(nullptr), tail_(0), time_(0) {}
 
 ShapeTrace& ShapeTrace::operator=(Shape& pointer) {
 	if (shape_ == &pointer) return *this;
 	shape_ = &pointer;
 	tail_ = 0;
 	time_ = 0;
-	for (unsigned char i = 0; i < queue_.size(); i++) {
-		queue_[i] = pointer.clone();
-		queue_[i]->setFrame(Frame(Point(-2, -2), Point(0, 0)));
-	}
+  queue_.resize(0);
+  /*for (auto& i : queue_) {
+    i = pointer.clone();
+    i->setPosition(SHAPE.getSize() * -1000);
+  }*/
 	return *this;
 }
 
@@ -273,11 +287,11 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 			tail_ = 0;
 		}
 		if (
-			(clock() - time_) * 1000.0 / CLOCKS_PER_SEC > SHAPE.getTraceTime() &&
-			queue_.size() > 0
+      (clock() - time_) * 1000.0f / CLOCKS_PER_SEC >
+      SHAPE.getTraceTime() &&
+      queue_.empty()
 		) {
 			time_ = clock();
-			printf("%i\n",int(size));
 			queue_[tail_] = shape_->clone();
 			tail_++;
 			while (tail_ >= size) tail_ -= size;
@@ -286,9 +300,9 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 			unsigned char index = tail_ + i;
 			while (index >= size) index -= size;
 			if (queue_[index])
-				queue_[index]->draw(context, 0.75 / (size - i));
+        queue_[index]->draw(context, 0.75f / (size - i));
 		}
-	} else if (queue_.size() != 0) {
+  } else if (!queue_.empty()) {
 		queue_.resize(0);
 		tail_ = 0;
 	}
@@ -297,107 +311,154 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 /********
 * Shape *
 ********/
-Shape::Shape() : frame_(SHAPE.getFrame()), zoom_(1.0),
-defaultColor_(randomColor()), color_(defaultColor_), visible_(1), trace_(0) {}
+Shape::Shape() : defaultZoom_(1.0), zoom_(defaultZoom_),
+defaultColor_(randomColor()), color_(defaultColor_),
+visible_(true), trace_(false), selected_(false) {}
 
-Shape::~Shape() {}
-
-void Shape::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {}
+void Shape::drawShape(const Cairo::RefPtr<Cairo::Context>&) {}
 
 const Pointer<Shape> Shape::clone() {
-	return Pointer<Shape>(new Shape(*this));
+  return Pointer<Shape>(new Shape());
 }
 
-const bool Shape::isInShapeVirtual(const Point& p) const {
-	return true;
+bool Shape::isInShapeVirtual(const Point&) const {
+  return true;
 }
 
-const double Shape::render(const Gtk::Allocation& allocation) {
-	const Point size = getDefaultFrame().getSize() * SHAPE.getMinimumZoom()/2 + 2;
-	const Point& ds = getDefaultFrame().getSize();
-	const int h = allocation.get_height(), w = allocation.get_width(),
-	minX = size.get_x(), minY = size.get_y();
-	int x = getPosition().get_x(), y = getPosition().get_y();
+const Size& Shape::getDefaultSize() const {
+  return SHAPE.getSize();
+}
+
+void Shape::render() {
+  const Size& ds = getDefaultSize();
+  Point size = ds * getDefaultZoom() / 2 + 2;
+	if (!isSelected()) {
+    size = ds * SHAPE.getMinimumZoom() / 2 + 2;
+  }
+  const int h = SHAPE.getContextHeight(), w = SHAPE.getContextWidth();
+  float minX = size.getX(), minY = size.getY();
+  float x = getPosition().getX(), y = getPosition().getY();
 
 	if (x < minX)     x = minX;
 	if (y < minY)     y = minY;
 	if (x > w - minX) x = w - minX;
 	if (y > h - minY) y = h - minY;
 	setPosition(Point(x, y));
-	return min(min(
-		min((x - 2) * 2.0 / ds.get_x(), (w - 2 - x) * 2.0 / ds.get_x()),
-		min((y - 2) * 2.0 / ds.get_y(), (h - 2 - y) * 2.0 / ds.get_y())
-	), double(getZoom()));
+	if (!isSelected()) {
+		zoom_ = min(float(min(
+      min((x - 2) * 2.0f / ds.getX(), (w - 2 - x) * 2.0f / ds.getX()),
+      min((y - 2) * 2.0f / ds.getY(), (h - 2 - y) * 2.0f / ds.getY())
+		)), getDefaultZoom());
+	} else {
+		zoom_ = getDefaultZoom();
+	}
 }
+
+void Shape::areIntersected(Shape& shape) {
+	if (this == &shape) return;
+	const Point position = abs(
+		getPosition() - shape.getPosition()
+  ) * getDefaultZoom();
+  bool b = getDefaultSize().isInFrame(position);
+	if (b) {
+		float zoom = calculateDistanceToEllipse(
+      position, getDefaultSize()
+		);
+    if (zoom < 1.0f) {
+      auto it = std::find(intersected_.begin(), intersected_.end(), &shape);
+      if (it == intersected_.end()) {
+				color_ = randomColor();
+        intersected_.emplace_back(&shape);
+			}
+			if (zoom < zoom_) {
+				if (zoom < SHAPE.getMinimumZoom()) {
+					zoom_ = SHAPE.getMinimumZoom();
+				} else {
+					zoom_ = zoom;
+				}
+			}
+			return;
+		}
+	}
+  auto it = std::find(intersected_.begin(), intersected_.end(), &shape);
+  if (it != intersected_.end())
+    intersected_.erase(it);
+}
+
 
 void Shape::draw(
-  const Cairo::RefPtr<Cairo::Context>& context,
-  double alpha
+	const Cairo::RefPtr<Cairo::Context>& context,
+	float alpha
 ) {
 	if (visible_) {
-		const Point size = getSize();
-		const Point position = getPosition();
-		if (size.get_x() == 0 || size.get_y() == 0) return;
-		auto matrix = Cairo::Matrix(
-			double(size.get_x()) / 2, 0, 0, double(size.get_y()) / 2,
-			position.get_x(), position.get_y()
+    const Point size = getDefaultSize() * zoom_ / 2;
+    if (int(size.getX()) == 0 || int(size.getY()) == 0) return;
+		Cairo::Matrix matrix(
+      double(size.getX()), 0, 0, double(size.getY()),
+      double(getPosition().getX()), double(getPosition().getY())
 		);
+		Cairo::Matrix oldMatrix = context->get_matrix();
 		context->transform(matrix);
 		drawShape(context);
-		matrix.invert();
-		context->transform(matrix);
-		context->set_source_rgba(color_[0], color_[1], color_[2], alpha);
+		context->set_matrix(SHAPE.getDefaultMatrix());
+		context->set_source_rgba(
+      double(color_.getR()) * 0.6 + 0.4, double(color_.getG()) * 0.4 + 0.6,
+      double(color_.getB()) * 0.6 + 0.4, double(alpha) * 0.8
+		);
 		context->fill_preserve();
-		context->set_source_rgba(0, 0, 0, alpha);
+		if (isSelected()) {
+      context->set_source_rgba(0.8, 0.2, 0.2, double(alpha) * 0.8);
+		} else {
+      context->set_source_rgba(0.2, 0.8, 0.2, double(alpha) * 0.8);
+		}
 		context->stroke();
+    context->set_matrix(oldMatrix);
 	}
 }
 
-const bool Shape::isInShape(const Point& p) const {
-	return (getFrame().isInFrame(p) && isInShapeVirtual(p));
-}
-
-const Frame& Shape::getDefaultFrame() const {
-	return SHAPE.getFrame();
-}
-
-const Frame& Shape::getFrame() const {
-	return frame_;
-}
-
-void Shape::setFrame(const Frame& frame) {
-	if (setSize(frame.getSize())) {
-		setPosition(frame.getPosition());
-	}
+bool Shape::isInShape(const Point& point) const {
+	const Point p = (getPosition() - point) / getZoom();
+  return (getDefaultSize().isInFrame(p) && isInShapeVirtual(p));
 }
 
 const Point& Shape::getPosition() const {
-	return getFrame().getPosition();
+	return position_;
 }
 
-void Shape::setPosition(const Point& point) {
-	frame_.setPosition(point);
+void Shape::setPosition(const Point& position) {
+	position_ = position;
 }
 
-const Point& Shape::getSize() const {
-	return getFrame().getSize();
+float Shape::getDefaultZoom() const {
+	return defaultZoom_;
 }
 
-const bool Shape::setSize(const Point& size) {
-	frame_.setSize(size);
-	return true;
+void Shape::setDefaultZoom(float zoom) {
+	if (zoom >= SHAPE.getMinimumZoom()) {
+		defaultZoom_ = zoom;
+	} else {
+		defaultZoom_ = SHAPE.getMinimumZoom();
+	}
 }
 
-const float Shape::getZoom() const {
+void Shape::toggleDefaultZoom() {
+	defaultZoom_ = (int(defaultZoom_) == 1) ? 2 : 1;
+}
+
+float Shape::getZoom() const {
 	return zoom_;
 }
 
-void Shape::toggleZoom() {
-	zoom_ = (int(zoom_) == 1) ? 2 : 1;
+bool Shape::isSelected() {
+	return selected_;
+}
+
+void Shape::toggleSelection() {
+  selected_ = !selected_;
 }
 
 void Shape::toggleVisibility() {
-	visible_ = (visible_) ? 0 : 1;
+  visible_ = !visible_;
 }
 
 void Shape::changeColor() {
@@ -405,8 +466,13 @@ void Shape::changeColor() {
 }
 
 void Shape::reset() {
+	position_ = SHAPE.getPosition();
+	defaultZoom_ = 1.0;
+	zoom_ = 1.0;
 	color_ = defaultColor_;
-	frame_ = SHAPE.getFrame();
+  visible_ = true;
+  trace_ = false;
+  selected_ = false;
 }
 
 bool Shape::hasTrace() {
@@ -414,42 +480,14 @@ bool Shape::hasTrace() {
 }
 
 void Shape::toggleTrace() {
-	trace_ = (trace_) ? 0 : 1;
-}
-
-const double Shape::areIntersected(Shape& shape) {
-	if (this == &shape) return getZoom();
-	const Frame f = Frame(getPosition(), getDefaultFrame().getSize());
-	bool b = f.isInFrame(shape.getPosition());
-	if (b) {
-		double zoom = calculateDistanceToEllipse(
-			shape.getPosition(), f
-		);
-		if (zoom <= 1) {
-			size_t index;
-			if (!intersected_.find(&shape, index)) {
-				color_ = randomColor();
-				intersected_.add(&shape);
-			}
-			if (zoom < SHAPE.getMinimumZoom()) {
-				return SHAPE.getMinimumZoom();
-			} else {
-				return zoom;
-			}
-			return getZoom();
-		}
-	}
-	size_t index;
-	if (intersected_.find(&shape, index))
-		intersected_.erase(index);
-	return getZoom();
+  trace_ = !trace_;
 }
 
 /*********
 * Shapes *
 *********/
 Shapes::Shapes() :
-array_(), activeId_(0), activated_(0), activationPoint_(0, 0) {}
+activeId_(0), activated_(false), activationPoint_(0, 0) {}
 
 Shape& Shapes::getActive() {
 	return *array_[activeId_];
@@ -460,53 +498,51 @@ const size_t& Shapes::getActiveId() {
 }
 
 void Shapes::add(const Pointer<Shape>& item) {
-	array_.add(Element());
+  array_.emplace_back(Element());
 	array_[array_.size() - 1] = item;
 }
 
-void Shapes::erase(const size_t index) {
-	activated_ = 0;
-	activeId_ = 0;
-	array_.erase(index);
+void Shapes::erase(int index) {
+  activated_ = false;
+  activeId_ = 0;
+  if (index >= 0 && index < int(array_.size()))
+    array_.erase(array_.begin() + index);
+}
+
+Shape& Shapes::getTop(const Point& p) {
+	return *array_[getTopIndex(p)];
 }
 
 void Shapes::activate(const Point& p) {
-	size_t i = array_.size();
-	while(i > 0) {
-		i--;
-		if (array_[i]->isInShape(p)) {
-			activeId_ = i;
-			activated_ = 1;
-			activationPoint_ = p - array_[i]->getPosition();
-			break;
-		}
+	const size_t top = getTopIndex(p);
+	if (top != array_.size()) {
+		activeId_ = top;
+    activated_ = true;
+		activationPoint_ = floor(p - array_[top]->getPosition());
 	}
 }
 
 void Shapes::moveActive(const Point& p) {
 	if (activated_ && activeId_ < array_.size()) {
-		array_[activeId_]->setPosition(p - activationPoint_);
+		array_[activeId_]->setPosition(floor(p - activationPoint_));
 	}
 }
 
 void Shapes::release() {
-	activated_ = 0;
+  activated_ = false;
 }
 
-void Shapes::draw(
-	const Cairo::RefPtr<Cairo::Context>& context,
-	const Gtk::Allocation& allocation
-) {
-	for (size_t i = 0; i < array_.size(); i++) {
-		double m = array_[i]->render(allocation);
-		for (size_t j = 0; j < array_.size(); j++) {
-			double x = array_[i]->areIntersected(*array_[j]);
-			if (x < m) m = x;
+void Shapes::draw(const Cairo::RefPtr<Cairo::Context>& context) {
+  for (auto& i : array_) {
+    i->render();
+    if (!i->isSelected()) {
+      for (auto& j : array_) {
+        i->areIntersected(*j);
+			}
 		}
-		array_[i]->setSize(SHAPE.getFrame().getSize() * m);
-	}
-	for (size_t i = 0; i < array_.size(); i++) {
-		array_[i].draw(context);
+  }
+  for (auto& i : array_) {
+    i->draw(context);
 	}
 }
 
@@ -525,8 +561,20 @@ Shape* Shapes::Element::operator->() {
 	return &pointer_;
 }
 
-
-void Shapes::Element::draw(const Cairo::RefPtr<Cairo::Context>& context) {
+void Shapes::Element::draw(
+  const Cairo::RefPtr<Cairo::Context>& context
+) {
 	shapeTrace_.draw(context);
 	pointer_->draw(context);
+}
+
+size_t Shapes::getTopIndex(const Point& p) {
+	size_t i = array_.size();
+	while(i > 0) {
+		i--;
+		if (array_[i]->isInShape(p)) {
+      return i;
+		}
+	}
+	return array_.size();
 }

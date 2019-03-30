@@ -16,31 +16,45 @@ namespace ShapeChilds {
 
 class Triangle : public Shape {
 public:
-	Triangle() {}
+  Triangle() = default;
 	static const Pointer<Shape> create();
-	const Pointer<Shape> clone();
-	void drawShape(const Cairo::RefPtr<Cairo::Context>& context);
-	const bool isInShapeVirtual(const Point& p) const;
+  const Pointer<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  bool isInShapeVirtual(const Point& p) const override;
 };
 
 
 class Rectangle : public Shape {
 public:
-	Rectangle() {}
+  Rectangle() = default;
 	static const Pointer<Shape> create();
-	const Pointer<Shape> clone();
-	void drawShape(const Cairo::RefPtr<Cairo::Context>& context);
-	const bool isInShapeVirtual(const Point& p) const;
+  const Pointer<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  bool isInShapeVirtual(const Point& p) const override;
 };
 
 
 class Ellipse : public Shape {
 public:
-	Ellipse() {}
+  Ellipse() = default;
 	static const Pointer<Shape> create();
-	const Pointer<Shape> clone();
-	void drawShape(const Cairo::RefPtr<Cairo::Context>& context);
-	const bool isInShapeVirtual(const Point& p) const;
+  const Pointer<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  bool isInShapeVirtual(const Point& p) const override;
+};
+
+class Aggregator : public Shape {
+public:
+  Aggregator() : test(Ellipse::create()), defaultSize_(1, 1) {}
+	static const Pointer<Shape> create();
+  const Pointer<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  bool isInShapeVirtual(const Point& p) const override;
+  const Size& getDefaultSize() const override;
+
+private:
+	Pointer<Shape> test;
+  Size defaultSize_;
 };
 
 }

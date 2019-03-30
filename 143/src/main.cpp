@@ -20,10 +20,10 @@ int main (int argc, char *argv[]) {
 		return 1;
 	}
 
-	Window* window = 0;
+  Window* window = nullptr;
 	builder->get_widget_derived("main_window", window);
 	if (window) {
-		kit.run(*window);
+    Gtk::Main::run(*window);
 	}
 	delete window;
 

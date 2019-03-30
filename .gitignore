@@ -6,6 +6,8 @@ Debug/
 build/
 *.geany
 doxygen
+CMakeLists.txt.user
+/build-*
 
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------

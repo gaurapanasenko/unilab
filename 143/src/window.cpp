@@ -8,8 +8,10 @@
  **************************************************************/
 #include "window.h"
 #include "shape-childs.h"
+#include "libgaura.h"
 #include <chrono>
 #include <thread>
+#include <utility>
 
 Timer::Timer(Glib::Dispatcher& dispatcher) : dispatcher_(dispatcher) {}
 
@@ -22,22 +24,22 @@ void Timer::do_work() {
 
 template<class T>
 void getObject(
-	Glib::RefPtr<Gtk::Builder> builder, Glib::RefPtr<T>& pointer, const char* name
+  const Glib::RefPtr<Gtk::Builder>& builder, Glib::RefPtr<T>& pointer,
+  const char* name
 ) {
 	pointer = Glib::RefPtr<T>::cast_dynamic(
 		builder->get_object(name)
 	);
-	if (!pointer) {
-		printf("No %s\n", name);
+  if (!pointer) {
 		exit(1);
 	}
 }
 
 Window::Window(
 	BaseObjectType* cobject,
-	const Glib::RefPtr<Gtk::Builder>& builder
-) : Gtk::ApplicationWindow(cobject), builder_(builder),
-shapes_(), dispatcher(), timer(dispatcher) {
+  Glib::RefPtr<Gtk::Builder> builder
+) : Gtk::ApplicationWindow(cobject), builder_(std::move(builder)),
+timer(dispatcher) {
 	{
 		auto tmp =  Glib::RefPtr<Gtk::Button>::cast_dynamic(
 			builder_->get_object("add_rectangle_button")
@@ -166,7 +168,8 @@ shapes_(), dispatcher(), timer(dispatcher) {
 	drawingArea_->add_events(
 		Gdk::BUTTON_PRESS_MASK |
 		Gdk::BUTTON_MOTION_MASK |
-		Gdk::BUTTON_RELEASE_MASK
+		Gdk::BUTTON_RELEASE_MASK |
+		Gdk::SCROLL_MASK
 	);
 	drawingArea_->signal_draw().connect(sigc::mem_fun(
 		*this, &Window::draw
@@ -180,16 +183,18 @@ shapes_(), dispatcher(), timer(dispatcher) {
 	drawingArea_->signal_button_release_event().connect(sigc::mem_fun(
 		*this, &Window::release
 	));
+	drawingArea_->signal_scroll_event().connect(sigc::mem_fun(
+		*this, &Window::scrollZoom
+	));
 
 	dispatcher.connect(sigc::mem_fun(*this, &Window::update));
 	new std::thread(&Timer::do_work, &timer);
 	parametersChanged();
 }
 
-Window::~Window() {
-}
+Window::~Window() = default;
 
-void Window::quit() {
+void Window::quit[[noreturn]]() {
 	exit(0);
 }
 
@@ -199,26 +204,31 @@ void Window::update() {
 
 bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 	Gtk::Allocation allocation = drawingArea_->get_allocation();
+	SHAPE.setContextWidth(allocation.get_width());
+	SHAPE.setContextHeight(allocation.get_height());
+	SHAPE.setDefaultMatrix(context->get_matrix());
 	context->set_antialias(Cairo::ANTIALIAS_NONE);
 	context->set_line_width(3);
 	context->set_line_cap(Cairo::LINE_CAP_ROUND);
-	shapes_.draw(context, allocation);
+	shapes_.draw(context);
 	return true;
 }
 
 void Window::parametersChanged() {
-	SHAPE.setX(xAdjustment_->get_value());
-	SHAPE.setY(yAdjustment_->get_value());
-	SHAPE.setWidth(widthAdjustment_->get_value());
-	SHAPE.setHeight(heightAdjustment_->get_value());
-	SHAPE.setMinimumZoom(minimumZoomAdjustment_->get_value());
-	SHAPE.setTraceSize(traceSizeAdjustment_->get_value());
-	SHAPE.setTraceTime(traceTimeAdjustment_->get_value());
+  SHAPE.setX(float(xAdjustment_->get_value()));
+  SHAPE.setY(float(yAdjustment_->get_value()));
+  SHAPE.setWidth(float(widthAdjustment_->get_value()));
+  SHAPE.setHeight(float(heightAdjustment_->get_value()));
+  SHAPE.setMinimumZoom(float(minimumZoomAdjustment_->get_value()));
+  SHAPE.setTraceSize(
+    static_cast<unsigned char>(traceSizeAdjustment_->get_value())
+  );
+  SHAPE.setTraceTime(float(traceTimeAdjustment_->get_value()));
 	update();
 }
 
 void Window::addRectangle() {
-	int n = nAdjustment_->get_value();
+  int n = int(nAdjustment_->get_value());
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Rectangle::create());
 	}
@@ -226,7 +236,7 @@ void Window::addRectangle() {
 }
 
 void Window::addTriangle() {
-	int n = nAdjustment_->get_value();
+  int n = int(nAdjustment_->get_value());
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Triangle::create());
 	}
@@ -234,9 +244,9 @@ void Window::addTriangle() {
 }
 
 void Window::addEllipse() {
-	int n = nAdjustment_->get_value();
+  int n = int(nAdjustment_->get_value());
 	for (int i = 0; i < n; i++) {
-		shapes_.add(ShapeChilds::Ellipse::create());
+		shapes_.add(ShapeChilds::Aggregator::create());
 	}
 	update();
 }
@@ -244,45 +254,45 @@ void Window::addEllipse() {
 void Window::toggleTrace() {
 	try {
 		shapes_.getActive().toggleTrace();
-	} catch(const gauraException&) {}
+  } catch(const GauraException&) {}
 	update();
 }
 
 void Window::reset() {
 	try {
 		shapes_.getActive().reset();
-	} catch(const gauraException&) {}
+  } catch(const GauraException&) {}
 	update();
 }
 
 void Window::changeColor() {
 	try {
 		shapes_.getActive().changeColor();
-	} catch(const gauraException&) {}
+  } catch(const GauraException&) {}
 	update();
 }
 
 void Window::toggleVisibility() {
 	try {
 		shapes_.getActive().toggleVisibility();
-	} catch(const gauraException&) {}
+  } catch(const GauraException&) {}
 	update();
 }
 
 void Window::zoomShape() {
 	try {
-		shapes_.getActive().toggleZoom();
-	} catch(const gauraException&) {}
+		shapes_.getActive().toggleDefaultZoom();
+  } catch(const GauraException&) {}
 	update();
 }
 
 void Window::cloneShape() {
 	try {
-		int n = nAdjustment_->get_value();
+    int n = int(nAdjustment_->get_value());
 		for (int i = 0; i < n; i++) {
 			shapes_.add(shapes_.getActive().clone());
 		}
-	} catch(const gauraException&) {}
+  } catch(const GauraException&) {}
 	update();
 }
 
@@ -292,21 +302,48 @@ void Window::deleteShape() {
 }
 
 bool Window::activate(GdkEventButton* event) {
-	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1)) {
-		shapes_.activate(Point(event->x, event->y));
-		update();
-	}
+	try {
+		if (event->type == GDK_BUTTON_PRESS) {
+			if (event->button == 1) {
+        shapes_.activate(Point(float(event->x), float(event->y)));
+				update();
+			} else if (event->button == 3) {
+        shapes_.getTop(
+              Point(float(event->x), float(event->y))
+        ).toggleSelection();
+				update();
+			}
+		}
+  } catch(const GauraException&) {}
 	return true;
 }
 
 bool Window::moveActive(GdkEventMotion* event) {
-	shapes_.moveActive(Point(event->x, event->y));
+  shapes_.moveActive(Point(float(event->x), float(event->y)));
 	update();
 	return true;
 }
 
-bool Window::release(GdkEventButton* event) {
+bool Window::release(GdkEventButton*) {
 	shapes_.release();
+	update();
+	return true;
+}
+
+bool Window::scrollZoom(GdkEventScroll* event) {
+	try {
+    Shape& shape = shapes_.getTop(
+      Point(float(event->x), float(event->y))
+    );
+    float diff = 1000000.0f / event->time;
+		if (event->direction == GDK_SCROLL_UP) {
+		} else if (event->direction == GDK_SCROLL_DOWN) {
+			diff = -diff;
+		} else {
+			return true;
+		}
+		shape.setDefaultZoom(shape.getDefaultZoom() + diff);
+  } catch(const GauraException&) {}
 	update();
 	return true;
 }

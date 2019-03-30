@@ -16,7 +16,7 @@ class Timer
 {
 public:
 	Timer(Glib::Dispatcher& dispatcher);
-	void do_work();
+  void do_work[[noreturn]]();
 
 private:
 	Glib::Dispatcher& dispatcher_;
@@ -26,13 +26,17 @@ class Window : public Gtk::ApplicationWindow {
 public:
 	Window(
 		BaseObjectType* cobject,
-		const Glib::RefPtr<Gtk::Builder>& builder
+    Glib::RefPtr<Gtk::Builder> builder
 	);
-	~Window();
+  ~Window() override;
 
-	void quit();
+  void quit[[noreturn]]();
 
 private:
+  Window(const Window&);
+  Window operator=(const Window&);
+  Window(const Window&&) noexcept;
+  Window operator=(const Window&&) noexcept;
 	void update();
 	bool draw(const Cairo::RefPtr<Cairo::Context>& context);
 	void parametersChanged();
@@ -49,6 +53,7 @@ private:
 	bool activate(GdkEventButton* event);
 	bool moveActive(GdkEventMotion* event);
 	bool release(GdkEventButton* event);
+	bool scrollZoom(GdkEventScroll* event);
 
 	Glib::RefPtr<Gtk::Builder> builder_;
 	Glib::RefPtr<Gtk::Adjustment> nAdjustment_;

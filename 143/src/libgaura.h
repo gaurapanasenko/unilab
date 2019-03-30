@@ -10,14 +10,24 @@
 #ifndef LIBGAURA_H
 #define LIBGAURA_H
 
-#include <stddef.h>
+#include <cstddef>
+#include <exception>
+#include <cmath>
 
 const        size_t LIBGAURA_ARRAY_STEP = 16;
 const        size_t LIBGAURA_ARRAY_POW  = 1;
 
-enum gauraException {
-  GAURA_EXCEPTION_MEMFAIL,
-  GAURA_EXCEPTION_ACCESSFAIL
+struct GauraException : public std::exception {
+  const char * what () const noexcept override;
+};
+
+struct GauraExceptionMemfail : public GauraException {
+  const char * what () const noexcept override;
+};
+
+
+struct GauraExceptionAccess : public GauraException {
+  const char * what () const noexcept override;
 };
 
 template <typename T> const T& min (const T& a, const T& b) {
@@ -28,104 +38,13 @@ template <typename T> const T& max (const T& a, const T& b) {
   return (a < b) ? b : a;
 }
 
-template<typename T>
-class Array {
-public:
-  Array()  : array_(0), size_(0), realsize_(LIBGAURA_ARRAY_STEP) {
-    array_ = new T[realsize_];
-    if (!array_) {
-      throw GAURA_EXCEPTION_MEMFAIL;
-    }
-  }
-  ~Array() {
-    delete[] array_;
-    array_ = NULL;
-  }
-  Array(const Array& rhs) : size_(rhs.size_), realsize_(rhs.realsize_) {
-    array_ = new T[realsize_];
-    if (!array_) {
-      throw GAURA_EXCEPTION_MEMFAIL;
-    }
-    for (size_t i = 0; i < rhs.size_; i++) {
-      array_[i] = rhs.array_[i];
-    }
-  }
-  Array& operator=(const Array& rhs) throw() {
-    if (this == &rhs) return *this;
-    T* tmp = new T[rhs.realsize_];
-    if (!tmp) {
-      throw GAURA_EXCEPTION_MEMFAIL;
-    }
-    for (size_t i = 0; i < rhs.size_; i++) {
-      tmp[i] = rhs.array_[i];
-    }
-    delete[] array_;
-    size_ = rhs.size_;
-    realsize_ = rhs.realsize_;
-    array_ = tmp;
-    return *this;
-  }
-  T& operator[] (const size_t& index) {
-    if (index >= size_) {
-      throw GAURA_EXCEPTION_ACCESSFAIL;
-    }
-    return array_[index];
-  }
-  bool find(const T& element, size_t& index) {
-    for (size_t i = 0; i < size_; i++)
-      if (array_[i] == element) {
-        index = i;
-        return true;
-      }
-    return false;
-  }
-  void resize(const size_t& size) {
-    reallocateBySize(size);
-  }
-  void add(const T& element) {
-    if (!reallocateBySize(size_ + 1)) return;
-    array_[size_ - 1] = element;
-  }
-  void erase(const size_t& index) {
-    if (index >= size_) return;
-    for (size_t i = index + 1; i < size_; i++) {
-      array_[i - 1] = array_[i];
-    }
-    reallocateBySize(size_ - 1);
-  }
-  void erase(const T& element) {
-    size_t index;
-    if (find(element, index))
-      erase(index);
-  }
-  const size_t& size() {
-    return size_;
-  }
-  const size_t& size() const {
-    return size_;
-  }
+template <typename T> const T floor (const T& a) {
+  return T(std::floor(double(a)));
+}
 
-private:
-  T* array_;
-  size_t size_, realsize_;
-
-  bool reallocateBySize(const size_t& size) {
-    size_t ors = realsize_, minSize = min(size, size_);
-    size_ = size;
-
-    realsize_ = LIBGAURA_ARRAY_STEP;
-    while (size_ >= realsize_) realsize_ <<=LIBGAURA_ARRAY_POW;
-    if (ors == realsize_) return 1;
-    T* tmp = new T[realsize_];
-    if (tmp == 0) return 0;
-    for (size_t i = 0; i < minSize; i++) {
-      tmp[i] = array_[i];
-    }
-    delete[] array_;
-    array_ = tmp;
-    return 1;
-  }
-};
+template <typename T> const T pow (const T& a, const T& b) {
+  return T(std::pow(double(a), double(b)));
+}
 
 template<typename T>
 class Pointer {
@@ -133,13 +52,19 @@ public:
   explicit Pointer(T* pointer = 0) : pointer_(pointer) {}
   ~Pointer() {delete pointer_;}
 
-  Pointer(const Pointer& rhs) throw() : pointer_(rhs.release()) {}
-  Pointer& operator=(const Pointer& rhs) throw() {
+  Pointer(const Pointer& rhs) : pointer_(rhs.release()) {}
+  Pointer& operator=(const Pointer& rhs) {
     reset(rhs.release());
     return *this;
   }
   operator bool() {
     return pointer_;
+  }
+
+  Pointer(Pointer&& rhs) noexcept : pointer_(rhs.release()) {}
+  Pointer& operator=(Pointer&& rhs) noexcept {
+    reset(rhs.release());
+    return *this;
   }
 
   T* operator->() {return pointer_;}
