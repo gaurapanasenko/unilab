@@ -55,6 +55,7 @@ private:
 	bool moveActive(GdkEventMotion* event);
 	bool release(GdkEventButton* event);
 	bool scrollZoom(GdkEventScroll* event);
+  bool keyEvent(GdkEventKey* event);
 
 	Glib::RefPtr<Gtk::Builder> builder_;
 	Glib::RefPtr<Gtk::Adjustment> nAdjustment_;
@@ -70,6 +71,7 @@ private:
 	Shapes shapes_;
 	Glib::Dispatcher dispatcher;
 	Timer timer;
+  bool isCtrl_;
 };
 
 #endif //WINDOW_H

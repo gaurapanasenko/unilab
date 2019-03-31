@@ -12,6 +12,7 @@
 #include <chrono>
 #include <thread>
 #include <utility>
+#include <time.h>
 
 Timer::Timer(Glib::Dispatcher& dispatcher) : dispatcher_(dispatcher) {}
 
@@ -48,8 +49,8 @@ void connectButton(
 Window::Window(
 	BaseObjectType* cobject,
   Glib::RefPtr<Gtk::Builder> builder
-) : Gtk::ApplicationWindow(cobject), builder_(std::move(builder)),
-timer(dispatcher) {
+) : Gtk::ApplicationWindow(cobject),
+  builder_(std::move(builder)), timer(dispatcher), isCtrl_(false) {
   connectButton(builder_, "add_rectangle_button", *this, &Window::addRectangle);
   connectButton(builder_, "add_triangle_button" , *this, &Window::addTriangle);
   connectButton(builder_, "add_ellipse_button"  , *this, &Window::addEllipse);
@@ -100,9 +101,14 @@ timer(dispatcher) {
 	drawingArea_->add_events(
 		Gdk::BUTTON_PRESS_MASK |
 		Gdk::BUTTON_MOTION_MASK |
-		Gdk::BUTTON_RELEASE_MASK |
+    Gdk::BUTTON_RELEASE_MASK |
 		Gdk::SCROLL_MASK
 	);
+  this->add_events(
+    Gdk::KEY_PRESS_MASK |
+    Gdk::KEY_RELEASE_MASK
+  );
+
 	drawingArea_->signal_draw().connect(sigc::mem_fun(
 		*this, &Window::draw
 	));
@@ -114,10 +120,17 @@ timer(dispatcher) {
 	));
 	drawingArea_->signal_button_release_event().connect(sigc::mem_fun(
 		*this, &Window::release
-	));
+  ));
 	drawingArea_->signal_scroll_event().connect(sigc::mem_fun(
 		*this, &Window::scrollZoom
 	));
+
+  this->signal_key_press_event().connect(sigc::mem_fun(
+    *this, &Window::keyEvent
+  ));
+  this->signal_key_release_event().connect(sigc::mem_fun(
+    *this, &Window::keyEvent
+  ));
 
 	dispatcher.connect(sigc::mem_fun(*this, &Window::update));
 	new std::thread(&Timer::do_work, &timer);
@@ -291,14 +304,22 @@ bool Window::scrollZoom(GdkEventScroll* event) {
     Shape& shape = shapes_.getTop(
       Point(float(event->x), float(event->y))
     );
-    float diff = 1000000000.0f / event->time;
+    float diff = 10.0f * CLOCKS_PER_SEC / event->time;
     Size size = shape.getSize();
     switch (event->direction) {
     case GDK_SCROLL_UP:
-      size.setY(size.getY() + diff);
+      if (!isCtrl_) {
+        size.setY(size.getY() + diff);
+      } else {
+        size.setX(size.getX() + diff);
+      }
       break;
     case GDK_SCROLL_DOWN:
-      size.setY(size.getY() - diff);
+      if (!isCtrl_) {
+        size.setY(size.getY() - diff);
+      } else {
+        size.setX(size.getX() - diff);
+      }
       break;
     case GDK_SCROLL_LEFT:
       size.setX(size.getX() + diff);
@@ -312,5 +333,16 @@ bool Window::scrollZoom(GdkEventScroll* event) {
     shape.setSize(size);
   } catch(const std::out_of_range&) {}
 	update();
-	return true;
+  return true;
+}
+
+bool Window::keyEvent(GdkEventKey* event) {
+  if (event->keyval == GDK_KEY_Control_L) {
+    if (event->type == GDK_KEY_PRESS) {
+      isCtrl_ = true;
+    } else {
+      isCtrl_ = false;
+    }
+  }
+  return true;
 }
