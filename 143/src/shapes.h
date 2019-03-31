@@ -32,7 +32,7 @@ public:
   void setY(float y);
 
 private:
-	float coordinates_[2];
+  float x_, y_;
 };
 
 const Point operator+(const Point& lhs, const Point& rhs);
@@ -220,6 +220,7 @@ public:
 	/// \param p checking point
 	/// \return true if point in shape, else false
   virtual bool isInShapeVirtual(const Point& p) const;
+  virtual void toggleSelectionVirtual();
 
 	/// \brief Checks that two shape objects are intersected
 	void areIntersected(Shape& shape);
@@ -247,6 +248,7 @@ public:
   void setPosition(const Point& position);
   const Size& getSize() const;
   void setSize(const Size& size);
+  void setSizeForce(const Size& size);
 	/// \brief Getter for current zoom
   float getZoom() const;
   /// \brief Setter for current zoom

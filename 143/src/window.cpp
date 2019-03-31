@@ -59,6 +59,7 @@ timer(dispatcher) {
   connectButton(builder_, "color_button"        , *this, &Window::changeColor);
   connectButton(builder_, "visibility_button", *this,&Window::toggleVisibility);
   connectButton(builder_, "aggregate_button"    , *this, &Window::aggregate);
+  connectButton(builder_, "deaggregate_button"  , *this, &Window::deaggregate);
   connectButton(builder_, "clone_button"        , *this, &Window::cloneShape);
   connectButton(builder_, "delete_button"       , *this, &Window::deleteShape);
 
@@ -135,8 +136,8 @@ void Window::update() {
 
 bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 	Gtk::Allocation allocation = drawingArea_->get_allocation();
-  SHAPE.setMaximumWidth(float(allocation.get_width()));
-  SHAPE.setMaximumHeight(float(allocation.get_height()));
+  SHAPE.setMaximumWidth(float(allocation.get_width() - 4));
+  SHAPE.setMaximumHeight(float(allocation.get_height() - 4));
   SHAPE.setDefaultMatrix(context->get_matrix());
   context->translate(2, 2);
 	context->set_antialias(Cairo::ANTIALIAS_NONE);
@@ -149,8 +150,8 @@ bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 void Window::parametersChanged() {
   SHAPE.setX(float(xAdjustment_->get_value()));
   SHAPE.setY(float(yAdjustment_->get_value()));
-  SHAPE.setMaximumWidth(float(widthAdjustment_->get_value()));
-  SHAPE.setMaximumHeight(float(heightAdjustment_->get_value()));
+  SHAPE.setMaximumWidth(float(widthAdjustment_->get_value()) + 4);
+  SHAPE.setMaximumHeight(float(heightAdjustment_->get_value()) + 4);
   SHAPE.setDefaultWidth(float(widthAdjustment_->get_value()));
   SHAPE.setDefaultHeight(float(heightAdjustment_->get_value()));
   SHAPE.setMinimumZoom(float(minimumZoomAdjustment_->get_value()));
@@ -216,7 +217,28 @@ void Window::toggleVisibility() {
 void Window::aggregate() {
   auto arr = shapes_.getSelected();
   if (!arr.empty()) {
-    shapes_.add(ShapeChilds::Aggregator::create(arr));
+    if (arr.size() > 1) {
+      shapes_.add(ShapeChilds::Aggregator::create(arr));
+    } else {
+      shapes_.add(arr[0]);
+    }
+  }
+}
+
+void Window::deaggregate() {
+  auto arr = shapes_.getSelected();
+  for (auto& i : arr) {
+    auto a = dynamic_cast<ShapeChilds::Aggregator*>(&i);
+    if (a) {
+      auto iarr = a->deaggregate();
+      for (auto& j : iarr) {
+        shapes_.add(j);
+      }
+    } else {
+      if (i->isSelected())
+        i->toggleSelection();
+      shapes_.add(i);
+    }
   }
 }
 

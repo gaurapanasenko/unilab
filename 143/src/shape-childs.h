@@ -52,6 +52,9 @@ public:
   const Pointer<Shape> clone() override;
   void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
   bool isInShapeVirtual(const Point& p) const override;
+  void toggleSelectionVirtual() override;
+
+  const std::vector< Pointer<Shape> > deaggregate();
 
 private:
   std::vector< Pointer<Shape> > array_;

@@ -48,7 +48,7 @@ const Pointer<Shape> Rectangle::clone() {
 void Rectangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
 	context->move_to(-1.0, -1.0);
 	context->line_to( 1.0, -1.0);
-	context->line_to( 1.0,  1.0);
+  context->line_to( 1.0,  1.0);
 	context->line_to(-1.0,  1.0);
 	context->line_to(-1.0, -1.0);
 }
@@ -77,8 +77,38 @@ bool Ellipse::isInShapeVirtual(const Point& p) const {
 
 Aggregator::Aggregator(const std::vector< Pointer<Shape> >& array)
   : array_(array) {
+  Point mp1(0, 0), mp2(0, 0);
+  bool first = 1;
   for (auto& i : array_) {
-    i->setPosition(i->getPosition() * 0.02f - 0.5);
+    Point p1 = i->getPosition() - i->getSize() / 2,
+          p2 = i->getPosition() + i->getSize() / 2;
+    if (first) {
+      mp1 = p1; mp2 = p2;
+      first = 0;
+    }
+    if (p1.getX() < mp1.getX()) {
+      mp1.setX(p1.getX());
+    }
+    if (p1.getY() < mp1.getY()) {
+      mp1.setY(p1.getY());
+    }
+    if (p2.getX() > mp2.getX()) {
+      mp2.setX(p2.getX());
+    }
+    if (p2.getY() > mp2.getY()) {
+      mp2.setY(p2.getY());
+    }
+  }
+  Point position = (mp1 + mp2) / 2,
+            size =  mp2 - mp1;
+
+  setSize(size);
+  setPosition(floor(position));
+  for (auto& i : array_) {
+    i->setSizeForce(i->getSize() * 2.0f / size);
+    i->setPosition((i->getPosition() - position) * 2.0f / size);
+    if (i->isSelected())
+      i->toggleSelection();
   }
 }
 
@@ -98,8 +128,29 @@ void Aggregator::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
   }
 }
 
-bool Aggregator::isInShapeVirtual(const Point&) const {
-	return true;
+bool Aggregator::isInShapeVirtual(const Point& point) const {
+  for (auto& i : array_) {
+    if (i->isInShape(point))
+      return true;
+  }
+  return false;
+}
+
+void Aggregator::toggleSelectionVirtual() {
+  for (auto& i : array_) {
+    i->toggleSelection();
+  }
+}
+
+const std::vector< Pointer<Shape> > Aggregator::deaggregate() {
+  auto arr(std::move(array_));
+  for (auto& i : arr) {
+    i->setSizeForce(i->getSize() * getSize() / 2.0f);
+    i->setPosition(i->getPosition() * getSize() / 2.0f + getPosition());
+    if (i->isSelected())
+      i->toggleSelection();
+  }
+  return arr;
 }
 
 }

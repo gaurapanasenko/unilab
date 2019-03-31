@@ -48,6 +48,7 @@ private:
 	void changeColor();
   void toggleVisibility();
   void aggregate();
+  void deaggregate();
 	void cloneShape();
 	void deleteShape();
 	bool activate(GdkEventButton* event);

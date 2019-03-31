@@ -13,24 +13,24 @@
 /********
 * Point *
 ********/
-Point::Point() : coordinates_{0, 0} {}
+Point::Point() : x_(0), y_(0) {}
 
-Point::Point(float x, float y) : coordinates_{x, y} {}
+Point::Point(float x, float y) : x_(x), y_(y) {}
 
 float Point::getX() const {
-	return coordinates_[0];
+  return x_;
 }
 
 void Point::setX(float x) {
-	coordinates_[0] = x;
+  x_ = x;
 }
 
 float Point::getY() const {
-	return coordinates_[1];
+  return y_;
 }
 
 void Point::setY(float y) {
-	coordinates_[1] = y;
+  y_ = y;
 }
 
 const Point operator+(const Point& lhs, const Point& rhs) {
@@ -92,6 +92,9 @@ bool isOneSizePointsToStraight(
 	       calculatePseudoscalarProduct(d, a, b) > 0;
 }
 
+/*******
+* Size *
+*******/
 Size::Size() : Point(0, 0) {}
 
 Size::Size(float x, float y) : Point((x > 0) ? x : 0, (y > 0) ? y : 0) {}
@@ -309,7 +312,7 @@ float ShapeParameters::getMaximumWidth() {
 }
 
 void ShapeParameters::setMaximumWidth(float width) {
-  sizes_.setMaximumSizeX(width - 4);
+  sizes_.setMaximumSizeX(width);
 }
 
 float ShapeParameters::getMaximumHeight() {
@@ -317,7 +320,7 @@ float ShapeParameters::getMaximumHeight() {
 }
 
 void ShapeParameters::setMaximumHeight(float height) {
-  sizes_.setMaximumSizeY(height - 4);
+  sizes_.setMaximumSizeY(height);
 }
 
 void ShapeParameters::setMinimumZoom(float minimumZoom) {
@@ -364,10 +367,6 @@ ShapeTrace& ShapeTrace::operator=(Shape& pointer) {
 	tail_ = 0;
 	time_ = 0;
   queue_.resize(0);
-  /*for (auto& i : queue_) {
-    i = pointer.clone();
-    i->setPosition(SHAPE.getSize() * -1000);
-  }*/
 	return *this;
 }
 
@@ -415,6 +414,8 @@ const Pointer<Shape> Shape::clone() {
 bool Shape::isInShapeVirtual(const Point&) const {
   return true;
 }
+
+void Shape::toggleSelectionVirtual() {}
 
 void Shape::render() {
   Point minSize = (
@@ -479,12 +480,12 @@ void Shape::draw(
 ) {
 	if (visible_) {
     const Point size = getSize() * zoom_ / 2;
-    if (int(size.getX()) == 0 || int(size.getY()) == 0) return;
+    if (size.getX() <= 0 || size.getY() <= 0) return;
 		Cairo::Matrix matrix(
       double(size.getX()), 0, 0, double(size.getY()),
       double(getPosition().getX()), double(getPosition().getY())
-		);
-		Cairo::Matrix oldMatrix = context->get_matrix();
+    );
+    context->save();
 		context->transform(matrix);
 		drawShape(context);
 		context->set_matrix(SHAPE.getDefaultMatrix());
@@ -498,8 +499,8 @@ void Shape::draw(
 		} else {
       context->set_source_rgba(0.2, 0.8, 0.2, double(alpha) * 0.8);
 		}
-		context->stroke();
-    context->set_matrix(oldMatrix);
+    context->stroke();
+    context->restore();
 	}
 }
 
@@ -525,6 +526,11 @@ void Shape::setSize(const Size& size) {
   setZoom(getZoom());
 }
 
+void Shape::setSizeForce(const Size& size) {
+  size_ = size;
+  zoom_ = 1.0;
+}
+
 float Shape::getZoom() const {
 	return zoom_;
 }
@@ -539,6 +545,7 @@ bool Shape::isSelected() {
 
 void Shape::toggleSelection() {
   selected_ = !selected_;
+  toggleSelectionVirtual();
 }
 
 void Shape::toggleVisibility() {
