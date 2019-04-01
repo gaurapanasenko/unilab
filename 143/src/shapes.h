@@ -213,7 +213,9 @@ public:
 	/// \brief Virtual destructor to support inheritance
   virtual ~Shape() = default;
 	/// \brief Virtual method to draw specific inherited shape
-	virtual void drawShape(const Cairo::RefPtr<Cairo::Context>& context);
+  virtual void drawShape(
+    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8
+  );
 	/// \brief Virtual cloning method to support inheritance
 	virtual const Pointer<Shape> clone();
 	/// \brief Checks is point is in shape by shape parameters
@@ -232,7 +234,7 @@ public:
 	/// \param alpha sets transparency for shape
 	void draw(
 		const Cairo::RefPtr<Cairo::Context>& context,
-		float alpha = 1
+    float alpha = 0.8
 	);
 	/// \brief Checks is point is in shape
 	/// \param p checking point

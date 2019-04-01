@@ -19,7 +19,7 @@ public:
   Triangle() = default;
 	static const Pointer<Shape> create();
   const Pointer<Shape> clone() override;
-  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8) override;
   bool isInShapeVirtual(const Point& p) const override;
 };
 
@@ -29,7 +29,7 @@ public:
   Rectangle() = default;
 	static const Pointer<Shape> create();
   const Pointer<Shape> clone() override;
-  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8) override;
   bool isInShapeVirtual(const Point& p) const override;
 };
 
@@ -39,18 +39,19 @@ public:
   Ellipse() = default;
 	static const Pointer<Shape> create();
   const Pointer<Shape> clone() override;
-  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8) override;
   bool isInShapeVirtual(const Point& p) const override;
 };
 
 class Aggregator : public Shape {
 public:
   Aggregator(const std::vector< Pointer<Shape> >& array);
+  Aggregator(const Aggregator& object);
   static const Pointer<Shape> create(
     const std::vector< Pointer<Shape> >& array
   );
   const Pointer<Shape> clone() override;
-  void drawShape(const Cairo::RefPtr<Cairo::Context>& context) override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8) override;
   bool isInShapeVirtual(const Point& p) const override;
   void toggleSelectionVirtual() override;
 

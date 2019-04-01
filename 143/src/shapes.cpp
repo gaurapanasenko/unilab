@@ -390,7 +390,7 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 			unsigned char index = tail_ + i;
 			while (index >= size) index -= size;
 			if (queue_[index])
-        queue_[index]->draw(context, 1.0f / (size - i));
+        queue_[index]->draw(context, 0.8f / (size - i));
 		}
   } else if (!queue_.empty()) {
 		queue_.resize(0);
@@ -405,7 +405,7 @@ Shape::Shape() : size_(SHAPE.getDefaultSize()), zoom_(1.0),
 defaultColor_(randomColor()), color_(defaultColor_),
 visible_(true), trace_(false), selected_(false) {}
 
-void Shape::drawShape(const Cairo::RefPtr<Cairo::Context>&) {}
+void Shape::drawShape(const Cairo::RefPtr<Cairo::Context>&, float) {}
 
 const Pointer<Shape> Shape::clone() {
   return Pointer<Shape>(new Shape());
@@ -487,17 +487,17 @@ void Shape::draw(
     );
     context->save();
 		context->transform(matrix);
-		drawShape(context);
+    drawShape(context, alpha);
 		context->set_matrix(SHAPE.getDefaultMatrix());
 		context->set_source_rgba(
       double(color_.getR()) * 0.6 + 0.4, double(color_.getG()) * 0.4 + 0.6,
-      double(color_.getB()) * 0.6 + 0.4, double(alpha) * 0.8
+      double(color_.getB()) * 0.6 + 0.4, double(alpha)
 		);
 		context->fill_preserve();
 		if (isSelected()) {
-      context->set_source_rgba(0.8, 0.2, 0.2, double(alpha) * 0.8);
+      context->set_source_rgba(0.8, 0.2, 0.2, double(alpha));
 		} else {
-      context->set_source_rgba(0.2, 0.8, 0.2, double(alpha) * 0.8);
+      context->set_source_rgba(0.2, 0.8, 0.2, double(alpha));
 		}
     context->stroke();
     context->restore();

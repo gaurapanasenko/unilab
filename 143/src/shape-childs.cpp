@@ -19,7 +19,7 @@ const Pointer<Shape> Triangle::clone() {
 	return Pointer<Shape>(new Triangle(*this));
 }
 
-void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
+void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha) {
 	context->move_to(-1.0,  1.0);
 	context->line_to( 0.0, -1.0);
 	context->line_to( 1.0,  1.0);
@@ -45,7 +45,7 @@ const Pointer<Shape> Rectangle::clone() {
 	return Pointer<Shape>(new Rectangle(*this));
 }
 
-void Rectangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
+void Rectangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha) {
 	context->move_to(-1.0, -1.0);
 	context->line_to( 1.0, -1.0);
   context->line_to( 1.0,  1.0);
@@ -67,7 +67,7 @@ const Pointer<Shape> Ellipse::clone() {
 	return Pointer<Shape>(new Ellipse(*this));
 }
 
-void Ellipse::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
+void Ellipse::drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha) {
 	context->arc(0, 0, 1, 0, 2 * M_PI);
 }
 
@@ -112,6 +112,12 @@ Aggregator::Aggregator(const std::vector< Pointer<Shape> >& array)
   }
 }
 
+Aggregator::Aggregator(const Aggregator& object) : Shape(object) {
+  for(auto& i : object.array_) {
+    array_.emplace_back(i->clone());
+  }
+}
+
 const Pointer<Shape> Aggregator::create(
   const std::vector< Pointer<Shape> >& array
 ) {
@@ -122,9 +128,9 @@ const Pointer<Shape> Aggregator::clone() {
 	return Pointer<Shape>(new Aggregator(*this));
 }
 
-void Aggregator::drawShape(const Cairo::RefPtr<Cairo::Context>& context) {
+void Aggregator::drawShape(const Cairo::RefPtr<Cairo::Context>& context, float alpha) {
   for (auto& i : array_) {
-    i->draw(context);
+    i->draw(context, alpha);
   }
 }
 
