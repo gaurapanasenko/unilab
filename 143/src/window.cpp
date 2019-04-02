@@ -1,6 +1,6 @@
 /***************************************************************
  * Name:      window.cpp
- * Purpose:   Implementation of window widget
+ * Purpose:   Definition of Window
  * Author:    Egor Panasenko (gaura.panasenko@gmail.com)
  * Created:   2019-01-20
  * Copyright: Egor Panasenko (elfiny.top)
@@ -8,11 +8,10 @@
  **************************************************************/
 #include "window.h"
 #include "shape-childs.h"
-#include "libgaura.h"
+#include "aggregator.h"
 #include <chrono>
 #include <thread>
-#include <utility>
-#include <time.h>
+#include <ctime>
 
 Timer::Timer(Glib::Dispatcher& dispatcher) : dispatcher_(dispatcher) {}
 
@@ -50,7 +49,7 @@ Window::Window(
 	BaseObjectType* cobject,
   Glib::RefPtr<Gtk::Builder> builder
 ) : Gtk::ApplicationWindow(cobject),
-  builder_(std::move(builder)), timer(dispatcher), isCtrl_(false) {
+  builder_(std::move(builder)), timer(dispatcher) {
   connectButton(builder_, "add_rectangle_button", *this, &Window::addRectangle);
   connectButton(builder_, "add_triangle_button" , *this, &Window::addTriangle);
   connectButton(builder_, "add_ellipse_button"  , *this, &Window::addEllipse);
@@ -125,13 +124,6 @@ Window::Window(
 		*this, &Window::scrollZoom
 	));
 
-  this->signal_key_press_event().connect(sigc::mem_fun(
-    *this, &Window::keyEvent
-  ));
-  this->signal_key_release_event().connect(sigc::mem_fun(
-    *this, &Window::keyEvent
-  ));
-
 	dispatcher.connect(sigc::mem_fun(*this, &Window::update));
 	new std::thread(&Timer::do_work, &timer);
 	parametersChanged();
@@ -148,15 +140,17 @@ void Window::update() {
 }
 
 bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
-	Gtk::Allocation allocation = drawingArea_->get_allocation();
-  SHAPE.setMaximumWidth(float(allocation.get_width() - 4));
-  SHAPE.setMaximumHeight(float(allocation.get_height() - 4));
-  SHAPE.setDefaultMatrix(context->get_matrix());
-  context->translate(2, 2);
-	context->set_antialias(Cairo::ANTIALIAS_NONE);
-	context->set_line_width(3);
-	context->set_line_cap(Cairo::LINE_CAP_ROUND);
-	shapes_.draw(context);
+  if (context) {
+    Gtk::Allocation allocation = drawingArea_->get_allocation();
+    SHAPE.setMaximumWidth(float(allocation.get_width() - 4));
+    SHAPE.setMaximumHeight(float(allocation.get_height() - 4));
+    SHAPE.setDefaultMatrix(context->get_matrix());
+    context->translate(2, 2);
+    context->set_antialias(Cairo::ANTIALIAS_NONE);
+    context->set_line_width(3);
+    context->set_line_cap(Cairo::LINE_CAP_ROUND);
+    shapes_.draw(context);
+  }
 	return true;
 }
 
@@ -200,38 +194,42 @@ void Window::addEllipse() {
 }
 
 void Window::toggleTrace() {
-	try {
-		shapes_.getActive().toggleTrace();
-  } catch(const std::out_of_range&) {}
-	update();
+  auto s = shapes_.getActive();
+  if (s) {
+    s->toggleTrace();
+    update();
+  }
 }
 
 void Window::reset() {
-	try {
-		shapes_.getActive().reset();
-  } catch(const std::out_of_range&) {}
-	update();
+  auto s = shapes_.getActive();
+  if (s) {
+    s->reset();
+    update();
+  }
 }
 
 void Window::changeColor() {
-	try {
-		shapes_.getActive().changeColor();
-  } catch(const std::out_of_range&) {}
-	update();
+  auto s = shapes_.getActive();
+  if (s) {
+    s->changeColor();
+    update();
+  }
 }
 
 void Window::toggleVisibility() {
-	try {
-		shapes_.getActive().toggleVisibility();
-  } catch(const std::out_of_range&) {}
-	update();
+  auto s = shapes_.getActive();
+  if (s) {
+    s->toggleVisibility();
+    update();
+  }
 }
 
 void Window::aggregate() {
   auto arr = shapes_.getSelected();
   if (!arr.empty()) {
     if (arr.size() > 1) {
-      shapes_.add(ShapeChilds::Aggregator::create(arr));
+      shapes_.add(Aggregator::create(arr));
     } else {
       shapes_.add(arr[0]);
     }
@@ -241,49 +239,52 @@ void Window::aggregate() {
 void Window::deaggregate() {
   auto arr = shapes_.getSelected();
   for (auto& i : arr) {
-    auto a = dynamic_cast<ShapeChilds::Aggregator*>(&i);
-    if (a) {
-      auto iarr = a->deaggregate();
-      for (auto& j : iarr) {
-        shapes_.add(j);
+    if (i) {
+      auto a = dynamic_cast<Aggregator*>(i.operator->());
+      if (a) {
+        auto iarr = a->deaggregate();
+        for (auto& j : iarr) {
+          shapes_.add(j);
+        }
+      } else {
+        if (i->isSelected())
+          i->toggleSelection();
+        shapes_.add(i);
       }
-    } else {
-      if (i->isSelected())
-        i->toggleSelection();
-      shapes_.add(i);
     }
   }
 }
 
 void Window::cloneShape() {
-	try {
+  auto s = shapes_.getActive();
+  if (s) {
     int n = int(nAdjustment_->get_value());
-		for (int i = 0; i < n; i++) {
-			shapes_.add(shapes_.getActive().clone());
-		}
-  } catch(const std::out_of_range&) {}
+    for (int i = 0; i < n; i++) {
+      shapes_.add(s->clone());
+    }
+  }
 	update();
 }
 
 void Window::deleteShape() {
-	shapes_.erase(shapes_.getActiveId());
+  shapes_.erase(shapes_.getActiveIterator());
 	update();
 }
 
 bool Window::activate(GdkEventButton* event) {
-	try {
-		if (event->type == GDK_BUTTON_PRESS) {
-			if (event->button == 1) {
-        shapes_.activate(Point(float(event->x), float(event->y)));
-				update();
-			} else if (event->button == 3) {
-        shapes_.getTop(
-              Point(float(event->x), float(event->y))
-        ).toggleSelection();
-				update();
-			}
-		}
-  } catch(const std::out_of_range&) {}
+  if (event->type == GDK_BUTTON_PRESS) {
+    if (event->button == 1) {
+      shapes_.activate(Point(float(event->x), float(event->y)));
+    } else if (event->button == 3) {
+      auto s = shapes_.getTop(
+            Point(float(event->x), float(event->y))
+      );
+      if (s) {
+        s->toggleSelection();
+      }
+    }
+    update();
+  }
 	return true;
 }
 
@@ -300,22 +301,22 @@ bool Window::release(GdkEventButton*) {
 }
 
 bool Window::scrollZoom(GdkEventScroll* event) {
-	try {
-    Shape& shape = shapes_.getTop(
-      Point(float(event->x), float(event->y))
-    );
-    float diff = 10.0f * CLOCKS_PER_SEC / event->time;
-    Size size = shape.getSize();
+  Glib::RefPtr<Shape> shape = shapes_.getTop(
+    Point(float(event->x), float(event->y))
+  );
+  if (shape) {
+    float diff = 2.0f;
+    Size size = shape->getSize();
     switch (event->direction) {
     case GDK_SCROLL_UP:
-      if (!isCtrl_) {
+      if (!(event->state & GDK_CONTROL_MASK)) {
         size.setY(size.getY() + diff);
       } else {
         size.setX(size.getX() + diff);
       }
       break;
     case GDK_SCROLL_DOWN:
-      if (!isCtrl_) {
+      if (!(event->state & GDK_CONTROL_MASK)) {
         size.setY(size.getY() - diff);
       } else {
         size.setX(size.getX() - diff);
@@ -330,19 +331,8 @@ bool Window::scrollZoom(GdkEventScroll* event) {
     default:
       break;
     }
-    shape.setSize(size);
-  } catch(const std::out_of_range&) {}
-	update();
-  return true;
-}
-
-bool Window::keyEvent(GdkEventKey* event) {
-  if (event->keyval == GDK_KEY_Control_L) {
-    if (event->type == GDK_KEY_PRESS) {
-      isCtrl_ = true;
-    } else {
-      isCtrl_ = false;
-    }
+    shape->setSize(size);
+    update();
   }
   return true;
 }

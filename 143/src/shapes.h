@@ -1,175 +1,21 @@
 /***************************************************************
  * Name:      shapes.h
- * Purpose:   Defines shapes
+ * Purpose:   Declaration of Shape and smart shape container
  * Author:    Egor Panasenko (gaura.panasenko@gmail.com)
  * Created:   2019-01-20
  * Copyright: Egor Panasenko (elfiny.top)
  * License:   GPLv3
  **************************************************************/
-
 #ifndef SHAPES_H
 #define SHAPES_H
 
-#include "libgaura.h"
+#include "graphics.h"
+#include "shape-parameters.h"
 
-#include <gtkmm.h>
+#include <cairomm/matrix.h>
+#include <cairomm/context.h>
+#include <glibmm/refptr.h>
 #include <vector>
-#include <cmath>
-#include <ctime>
-
-class Point {
-public:
-	Point();
-  Point(const Point&) = default;
-  Point(Point&&) = default;
-  Point(float x, float y);
-  ~Point() = default;
-  Point& operator=(const Point& rhs) = default;
-  Point& operator=(Point&& rhs) = default;
-  float getX() const;
-  void setX(float x);
-  float getY() const;
-  void setY(float y);
-
-private:
-  float x_, y_;
-};
-
-const Point operator+(const Point& lhs, const Point& rhs);
-const Point operator-(const Point& lhs, const Point& rhs);
-const Point operator*(const Point& lhs, const Point& rhs);
-const Point operator/(const Point& lhs, const Point& rhs);
-const Point operator+(const Point& lhs, float rhs);
-const Point operator-(const Point& lhs, float rhs);
-const Point operator*(const Point& lhs, float rhs);
-const Point operator/(const Point& lhs, float rhs);
-float calulateVectorLengthSqruare(const Point& point);
-const Point abs(const Point& point);
-const Point floor(const Point& point);
-
-/// \brief Calculates pseudo-scalar product of vectors AB and AC
-/// \param a point A
-/// \param b point B
-/// \param c point C
-/// \return Pseudo-scalar product
-float calculatePseudoscalarProduct(
-	const Point& a, const Point& b, const Point& c
-);
-
-/// \brief Detects that points C and D is on one side
-/// relatively to straight line AB
-/// \param a point A
-/// \param b point B
-/// \param c point C
-/// \param d point D
-/// \return True if points on one side, else false
-bool isOneSizePointsToStraight(
-	const Point& a, const Point& b, const Point& c, const Point& d
-);
-
-class Size : public Point {
-public:
-	Size();
-  Size(float x, float y);
-  Size(const Point& point);
-  void setX(float x);
-  void setY(float y);
-	/// \brief Checks is point is in frame
-	/// \param point checking point
-	/// \return true if point in frame, else false
-  bool isInFrame(const Point& point) const;
-};
-
-class Color {
-public:
-	Color();
-	Color(unsigned char r, unsigned char g, unsigned char b);
-  double getR();
-  double getG();
-  double getB();
-
-private:
-  unsigned char r_, g_, b_;
-};
-
-/// \brief The function converts the plane so that the
-/// ellipse turns into a circle of radius 1 in the center of the
-/// coordinate grid, and then the function gives the distance to the
-/// center of the coordinate grid
-/// \param point checking point
-/// \param size size of ellipse
-/// \return distance
-float calculateDistanceToEllipse(
-  const Point& point, const Point& size
-);
-
-class Sizes {
-public:
-  Sizes() = default;
-  const Size& getMinimumSize() const;
-  const Size& getDefaultSize() const;
-  void setDefaultSize(const Size& size);
-  void setDefaultSizeX(float x);
-  void setDefaultSizeY(float y);
-  const Size& getMaximumSize() const;
-  void setMaximumSize(const Size& size);
-  void setMaximumSizeX(float x);
-  void setMaximumSizeY(float y);
-  float getMinimumZoom() const;
-  void setMinimumZoom(float minimumZoom);
-
-  unsigned char checkSize(const Size& size) const;
-  Size validateSize(const Size& size) const;
-  float validateZoom(const Size& size, float zoom) const;
-
-private:
-  Size minimumSize_;
-  Size defaultSize_;
-  Size maximumSize_;
-  float minimumZoom_;
-};
-
-class ShapeParameters {
-public:
-  ShapeParameters();
-  const Point& getPosition() const;
-  void setPosition(const Point& position);
-  float getX();
-  void setX(float x);
-  float getY();
-  void setY(float y);
-  const Sizes& getSizes() const;
-  const Size& getDefaultSize() const;
-  void setMinimumZoom(float minimumZoom);
-  float getDefaultWidth();
-  void setDefaultWidth(float width);
-  float getDefaultHeight();
-  void setDefaultHeight(float height);
-  float getMaximumWidth();
-  void setMaximumWidth(float width);
-  float getMaximumHeight();
-  void setMaximumHeight(float height);
-  unsigned char getTraceSize();
-  void setTraceSize(unsigned char traceSize);
-  float getTraceTime();
-  void setTraceTime(float traceTime);
-  const Cairo::Matrix& getDefaultMatrix();
-	void setDefaultMatrix(const Cairo::Matrix& defaultMatrix);
-
-private:
-	/// \brief default position
-	Point position_;
-  /// \brief draw area sizes
-  Sizes sizes_;
-	/// \brief number of cloned objects when doing trace
-	unsigned char traceSize_;
-	/// \brief interval between saving state of Shape object
-	/// when doing trace
-	float traceTime_;
-	Cairo::Matrix defaultMatrix_;
-};
-
-extern ShapeParameters SHAPE;
 
 class Shape;
 
@@ -183,16 +29,16 @@ public:
 	ShapeTrace();
 	/// \brief Assignment operator that switches to a new Shape object
 	/// \param Reference to the new Shape object
-	ShapeTrace& operator=(Shape& pointer);
+  ShapeTrace& operator=(const Glib::RefPtr<Shape>& pointer);
 	/// \brief Draws all Shape objects that being stored in queue.
 	/// \param context class used to draw
 	void draw(const Cairo::RefPtr<Cairo::Context>& context);
 
 private:
-	/// \brief pointer to Shape object that being traced
-	Shape* shape_;
+  /// \brief Glib::RefPtr to Shape object that being traced
+  Glib::RefPtr<Shape> shape_;
 	/// \brief queue of Shape objects to create trace
-  std::vector< Pointer<Shape> > queue_;
+  std::vector< Glib::RefPtr<Shape> > queue_;
 	/// \brief index to last added element
 	unsigned char tail_;
 	/// \brief time when last element was added
@@ -210,31 +56,34 @@ public:
   Shape& operator=(const Shape&) = default;
   Shape& operator=(Shape&&) = default;
 
+  void reference();
+  void unreference();
+
 	/// \brief Virtual destructor to support inheritance
   virtual ~Shape() = default;
 	/// \brief Virtual method to draw specific inherited shape
   virtual void drawShape(
-    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8
+    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8f
   );
 	/// \brief Virtual cloning method to support inheritance
-	virtual const Pointer<Shape> clone();
+  virtual const Glib::RefPtr<Shape> clone();
 	/// \brief Checks is point is in shape by shape parameters
 	/// \param p checking point
 	/// \return true if point in shape, else false
   virtual bool isInShapeVirtual(const Point& p) const;
   virtual void toggleSelectionVirtual();
 
+  /// \brief Checks that object fields are valid for device size
+  /// \param allocation position and size of drawing widget
+  void render();
 	/// \brief Checks that two shape objects are intersected
-	void areIntersected(Shape& shape);
-	/// \brief Checks that object fields are valid for device size
-	/// \param allocation position and size of drawing widget
-	void render();
+  void areIntersected(const Glib::RefPtr<Shape>& shape);
 	/// \brief Drawing shape on painting
 	/// \param context class used to draw
 	/// \param alpha sets transparency for shape
 	void draw(
 		const Cairo::RefPtr<Cairo::Context>& context,
-    float alpha = 0.8
+    float alpha = 0.8f
 	);
 	/// \brief Checks is point is in shape
 	/// \param p checking point
@@ -273,6 +122,7 @@ public:
 	void toggleTrace();
 
 private:
+  size_t referenced_;
 	/// \brief Current frame of object
 	Point position_;
 	/// \brief Default zoom
@@ -284,7 +134,7 @@ private:
 	/// \brief Current color of shape
 	Color color_;
 	/// \brief List of Shape objects that intersects this object
-  std::vector<Shape*> intersected_;
+  std::vector<Glib::RefPtr<Shape>> intersected_;
 	/// \brief Saved path for automated motion
 	//Array<Point> path_;
 	/// \brief Defines visibility of shape
@@ -300,23 +150,25 @@ void updateGlobalDefaultFrame();
 /// \brief Container for Shape objects, also stores trace for object
 class Shapes {
 public:
+  class Element;
 	/// \brief Default construction that initializes fields
 	Shapes();
 
 	/// \brief Gets active shape
 	/// \return Reference to shape object
-	Shape& getActive();
+  Glib::RefPtr<Shape> getActive();
 	/// \brief Gets index of active shape
 	/// \return Reference to index
-  const size_t& getActiveId();
+  std::vector<Element>::iterator getActiveIterator();
+  std::vector<Element>::iterator getTopIterator(const Point& p);
 
 	/// \brief Adds new Shape object to list of objects
-	/// \param item Wrapped pointer to Shape object in Pointer object
-	void add(const Pointer<Shape>& item);
+  /// \param item Wrapped Glib::RefPtr to Shape object in Glib::RefPtr object
+  void add(const Glib::RefPtr<Shape>& item);
 	/// \brief Deletes Shape object on index
 	/// \param index index of object that will be deleted
-  void erase(const size_t& index);
-	Shape& getTop(const Point& p);
+  void erase(const std::vector<Element>::iterator& iterator);
+  Glib::RefPtr<Shape> getTop(const Point& p);
 
 	/// \brief Activates Shape object if point in argument placed in Shape
 	/// \param p point by which finding Shape object
@@ -333,50 +185,47 @@ public:
 	/// \param context class used to draw
 	void draw(const Cairo::RefPtr<Cairo::Context>& context);
 
-  const std::vector< Pointer<Shape> > getSelected();
-
-	/// \brief Element of object for correct processing Shape object and
-	/// ShapeTrace object
-	class Element {
-	public:
-		/// \brief sets new Shape object and prepare ShapeTrace
-		/// for new object
-		/// \param pointer Wrapped pointer of Shape object to Pointer object
-		/// \return reference to the current element
-		Element& operator=(const Pointer<Shape>& pointer);
-		/// \brief Member operator to access Shape object
-		/// \return Reference to Shape object
-		Shape& operator*();
-		/// \brief Member operator to access members of Shape object
-		/// \return Pointer to Shape object
-    Shape* operator->();
-		/// \brief Draws Shape object and all traces
-		/// \param context class used to draw
-		void draw(const Cairo::RefPtr<Cairo::Context>& context);
-
-	private:
-    friend Shapes;
-    Pointer<Shape> release();
-
-		/// \brief Wrapped pointer to Shape object
-		Pointer<Shape> pointer_;
-		/// \brief ShapeTrace object to create trace of Shape object stored
-		/// in pointer_
-		ShapeTrace shapeTrace_;
-	};
+  const std::vector< Glib::RefPtr<Shape> > getSelected();
 
 private:
-  size_t getTopIndex(const Point& p);
-
 	/// \brief Array of elements
   std::vector<Element> array_;
-	/// \brief Active Shape object index
-  size_t activeId_;
 	/// \brief Detects that active id will be moved by mouse motion
 	bool activated_;
 	/// \brief Activation point of Shape object
 	Point activationPoint_;
 
+};
+
+/// \brief Element of object for correct processing Shape object and
+/// ShapeTrace object
+class Shapes::Element {
+public:
+  /// \brief sets new Shape object and prepare ShapeTrace
+  /// for new object
+  /// \param Glib::RefPtr Wrapped Glib::RefPtr of Shape object to Glib::RefPtr object
+  /// \return reference to the current element
+  Element& operator=(const Glib::RefPtr<Shape>& pointer);
+  /// \brief Member operator to access Shape object
+  /// \return Reference to Shape object
+  const Glib::RefPtr<Shape>& operator*();
+  /// \brief Member operator to access members of Shape object
+  /// \return Glib::RefPtr to Shape object
+  Shape* operator->();
+  /// \brief Draws Shape object and all traces
+  /// \param context class used to draw
+  void draw(const Cairo::RefPtr<Cairo::Context>& context);
+  operator bool() const;
+
+private:
+  friend Shapes;
+  Glib::RefPtr<Shape> release();
+
+  /// \brief Wrapped Glib::RefPtr to Shape object
+  Glib::RefPtr<Shape> pointer_;
+  /// \brief ShapeTrace object to create trace of Shape object stored
+  /// in pointer_
+  ShapeTrace shapeTrace_;
 };
 
 #endif // SHAPES_H

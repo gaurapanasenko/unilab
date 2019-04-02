@@ -1,6 +1,6 @@
 /***************************************************************
  * Name:      window.h
- * Purpose:   Defines window widget
+ * Purpose:   Declaration of Window
  * Author:    Egor Panasenko (gaura.panasenko@gmail.com)
  * Created:   2019-01-20
  * Copyright: Egor Panasenko (elfiny.top)
@@ -9,8 +9,15 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <gtkmm.h>
 #include "shapes.h"
+
+#include <gtkmm/applicationwindow.h>
+#include <gtkmm/builder.h>
+#include <gtkmm/drawingarea.h>
+#include <gtkmm/statusbar.h>
+#include <gtkmm/button.h>
+#include <gtkmm/adjustment.h>
+#include <glibmm/dispatcher.h>
 
 class Timer
 {
@@ -54,8 +61,7 @@ private:
 	bool activate(GdkEventButton* event);
 	bool moveActive(GdkEventMotion* event);
 	bool release(GdkEventButton* event);
-	bool scrollZoom(GdkEventScroll* event);
-  bool keyEvent(GdkEventKey* event);
+  bool scrollZoom(GdkEventScroll* event);
 
 	Glib::RefPtr<Gtk::Builder> builder_;
 	Glib::RefPtr<Gtk::Adjustment> nAdjustment_;
@@ -70,8 +76,7 @@ private:
 	Glib::RefPtr<Gtk::Statusbar> statusbar_;
 	Shapes shapes_;
 	Glib::Dispatcher dispatcher;
-	Timer timer;
-  bool isCtrl_;
+  Timer timer;
 };
 
 #endif //WINDOW_H
