@@ -17,7 +17,7 @@ const std::shared_ptr<Shape> Triangle::create() {
   return std::make_shared<Triangle>();
 }
 
-const std::shared_ptr<Shape> Triangle::clone() {
+const std::shared_ptr<Shape> Triangle::cloneVirtual() {
   return std::make_shared<Shape>(*this);
 }
 
@@ -32,10 +32,8 @@ void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context,
 }
 
 bool Triangle::isInShapeVirtual(const Point& p) const {
-  Point a = Point(-1,  1),
-        b = Point( 0, -1),
-        c = Point( 1,  1),
-        d = p;
+  Point a = Point(-1,  1), b = Point( 0, -1),
+        c = Point( 1,  1), d = p;
   return isOneSizePointsToStraight(a, b, c, d) &&
          isOneSizePointsToStraight(b, c, a, d) &&
          isOneSizePointsToStraight(c, a, b, d);
@@ -48,7 +46,7 @@ const std::shared_ptr<Shape> Rectangle::create() {
   return std::make_shared<Rectangle>();
 }
 
-const std::shared_ptr<Shape> Rectangle::clone() {
+const std::shared_ptr<Shape> Rectangle::cloneVirtual() {
   return std::make_shared<Rectangle>(*this);
 }
 
@@ -70,7 +68,7 @@ const std::shared_ptr<Shape> Ellipse::create() {
   return std::make_shared<Ellipse>();
 }
 
-const std::shared_ptr<Shape> Ellipse::clone() {
+const std::shared_ptr<Shape> Ellipse::cloneVirtual() {
   return std::make_shared<Ellipse>(*this);
 }
 

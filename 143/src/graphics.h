@@ -44,9 +44,8 @@ const Point floor(const Point& point);
 /// \param b point B
 /// \param c point C
 /// \return Pseudo-scalar product
-float calculatePseudoscalarProduct(
-  const Point& a, const Point& b, const Point& c
-);
+float calculatePseudoscalarProduct(const Point& a, const Point& b,
+                                   const Point& c);
 
 /// \brief Detects that points C and D is on one side
 /// relatively to straight line AB
@@ -55,9 +54,8 @@ float calculatePseudoscalarProduct(
 /// \param c point C
 /// \param d point D
 /// \return True if points on one side, else false
-bool isOneSizePointsToStraight(
-  const Point& a, const Point& b, const Point& c, const Point& d
-);
+bool isOneSizePointsToStraight(const Point& a, const Point& b,
+                               const Point& c, const Point& d);
 
 class Size : public Point {
 public:
@@ -93,9 +91,7 @@ Color randomColor();
 /// \param point checking point
 /// \param size size of ellipse
 /// \return distance
-float calculateDistanceToEllipse(
-  const Point& point, const Point& size
-);
+float calculateDistanceToEllipse(const Point& point, const Point& size);
 
 class Sizes {
 public:

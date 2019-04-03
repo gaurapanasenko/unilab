@@ -78,16 +78,14 @@ const Point floor(const Point& point) {
   return Point(std::floor(point.getX()), std::floor(point.getY()));
 }
 
-float calculatePseudoscalarProduct(
-  const Point& a, const Point& b, const Point& c
-) {
+float calculatePseudoscalarProduct(const Point& a, const Point& b,
+                                   const Point& c) {
   Point ab = b - a, ac = c - a;
   return ab.getX() * ac.getY() - ab.getY() * ac.getX();
 }
 
-bool isOneSizePointsToStraight(
-  const Point& a, const Point& b, const Point& c, const Point& d
-) {
+bool isOneSizePointsToStraight(const Point& a, const Point& b,
+                               const Point& c, const Point& d) {
   return calculatePseudoscalarProduct(c, a, b) *
          calculatePseudoscalarProduct(d, a, b) > 0;
 }
@@ -151,10 +149,11 @@ float calculateDistanceToEllipse(
   const Point& point, const Point& size
 ) {
   if (size.getX() <= 0 || size.getY() <= 0) return 0;
-  return std::pow(point.getX(), 2.0f)
-           / std::pow(size.getX() / 2.0f, 2.0f) +
-         std::pow(point.getY(), 2.0f)
-           / std::pow(size.getY() / 2.0f, 2.0f);
+  float a = std::pow(point.getX(), 2.0f),
+        b = std::pow(size.getX() / 2.0f, 2.0f),
+        c = std::pow(point.getY(), 2.0f),
+        d = std::pow(size.getY() / 2.0f, 2.0f);
+  return a / b + c / d;
 }
 
 /********
@@ -177,14 +176,14 @@ void Sizes::setDefaultSize(const Size& size) {
 }
 
 void Sizes::setDefaultSizeX(float x) {
-  defaultSize_.setX
-      ((x > maximumSize_.getX()) ? maximumSize_.getX() : x);
+  auto a = (x > maximumSize_.getX()) ? maximumSize_.getX() : x;
+  defaultSize_.setX(a);
   minimumSize_.setX(defaultSize_.getX() * minimumZoom_);
 }
 
 void Sizes::setDefaultSizeY(float y) {
-  defaultSize_.setY
-      ((y > maximumSize_.getY()) ? maximumSize_.getY() : y);
+  auto a = (y > maximumSize_.getY()) ? maximumSize_.getY() : y;
+  defaultSize_.setY(a);
   minimumSize_.setY(defaultSize_.getY() * minimumZoom_);
 }
 
@@ -215,9 +214,8 @@ float Sizes::getMinimumZoom() const {
   return minimumZoom_;
 }
 
-void Sizes::setMinimumZoom(float minimumZoom) {
-  minimumZoom_
-      = (minimumZoom < 0) ? 0 : (minimumZoom > 1) ? 1 : minimumZoom;
+void Sizes::setMinimumZoom(float mz) {
+  minimumZoom_ = (mz < 0) ? 0 : (mz > 1) ? 1 : mz;
   minimumSize_ = defaultSize_ * minimumZoom_;
 }
 
@@ -232,12 +230,12 @@ unsigned char Sizes::checkSize(const Size& size) const {
 
 Size Sizes::validateSize(const Size& size) const {
   unsigned char b = checkSize(size);
-  return {
-    (b & 1 << 0) ? getMinimumSize().getX() :
-      (b & 1 << 2) ? getMaximumSize().getX() : size.getX(),
-    (b & 1 << 1) ? getMinimumSize().getY() :
-      (b & 1 << 3) ? getMaximumSize().getY() : size.getY()
-  };
+  Size out(size);
+  if (b & 1 << 0) out.setX(getMinimumSize().getX());
+  if (b & 1 << 1) out.setY(getMinimumSize().getY());
+  if (b & 1 << 2) out.setX(getMaximumSize().getX());
+  if (b & 1 << 3) out.setY(getMaximumSize().getY());
+  return out;
 }
 
 float Sizes::validateZoom(const Size& size, float zoom) const {

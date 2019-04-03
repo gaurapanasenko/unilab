@@ -13,7 +13,7 @@
 ******************/
 
 ShapeParameters::ShapeParameters()
-: position_(Point(0, 0)), traceSize_(0), traceTime_(0.1f) {}
+  : position_(Point(0, 0)), traceSize_(0), traceTime_(0.1f) {}
 
 const Point& ShapeParameters::getPosition() const {
   return position_;
@@ -105,8 +105,7 @@ const Cairo::Matrix& ShapeParameters::getDefaultMatrix() {
 }
 
 void ShapeParameters::setDefaultMatrix(
-  const Cairo::Matrix& defaultMatrix
-) {
+    const Cairo::Matrix& defaultMatrix) {
   defaultMatrix_ = defaultMatrix;
 }
 

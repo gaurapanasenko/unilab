@@ -50,21 +50,20 @@ Aggregator::Aggregator(std::vector< std::shared_ptr<Shape> > array)
   }
 }
 
-/*Aggregator::Aggregator(const Aggregator& object) : Shape(object) {
+Aggregator::Aggregator(const Aggregator& object) : Shape(object) {
   for(auto& i : object.array_) {
     if (i) {
       array_.emplace_back(i->clone());
     }
   }
-}*/
+}
 
-const std::shared_ptr<Shape> Aggregator::create(
-  const std::vector< std::shared_ptr<Shape> >& array
-) {
+const std::shared_ptr<Shape>
+Aggregator::create(const std::vector< std::shared_ptr<Shape> >& array) {
   return std::make_shared<Aggregator>(array);
 }
 
-const std::shared_ptr<Shape> Aggregator::clone() {
+const std::shared_ptr<Shape> Aggregator::cloneVirtual() {
   return std::make_shared<Aggregator>(*this);
 }
 
@@ -93,8 +92,8 @@ const std::vector< std::shared_ptr<Shape> > Aggregator::deaggregate() {
       auto s = i->clone();
       if (s) {
         s->setSizeForce(i->getSize() * getSize() / 2.0f);
-        s->setPosition
-            (i->getPosition() * getSize() / 2.0f + getPosition());
+        auto p = i->getPosition() * getSize() / 2.0f + getPosition();
+        s->setPosition(p);
         arr.emplace_back(s);
       }
     }

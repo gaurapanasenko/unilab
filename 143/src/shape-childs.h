@@ -16,7 +16,7 @@ namespace ShapeChilds {
 class Triangle : public Shape {
 public:
   static const std::shared_ptr<Shape> create();
-  const std::shared_ptr<Shape> clone() override;
+  const std::shared_ptr<Shape> cloneVirtual() override;
   void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
                  bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;
@@ -26,7 +26,7 @@ public:
 class Rectangle : public Shape {
 public:
   static const std::shared_ptr<Shape> create();
-  const std::shared_ptr<Shape> clone() override;
+  const std::shared_ptr<Shape> cloneVirtual() override;
   void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
                  bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;
@@ -36,7 +36,7 @@ public:
 class Ellipse : public Shape {
 public:
   static const std::shared_ptr<Shape> create();
-  const std::shared_ptr<Shape> clone() override;
+  const std::shared_ptr<Shape> cloneVirtual() override;
   void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
                  bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;

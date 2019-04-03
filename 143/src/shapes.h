@@ -76,11 +76,13 @@ public:
   virtual void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
                          bool selected, float alpha = 0.8f);
   /// \brief Virtual cloning method to support inheritance
-  virtual const std::shared_ptr<Shape> clone();
+  virtual const std::shared_ptr<Shape> cloneVirtual();
   /// \brief Checks is point is in shape by shape parameters
   /// \param p checking point
   /// \return true if point in shape, else false
   virtual bool isInShapeVirtual(const Point& p) const;
+
+  const std::shared_ptr<Shape> clone();
 
   /// \brief Checks that object fields are valid for device size
   /// \param allocation position and size of drawing widget

@@ -88,12 +88,20 @@ Shape::~Shape() {
 void Shape::drawShape(const Cairo::RefPtr<Cairo::Context>&,
                       bool, float) {}
 
-const std::shared_ptr<Shape> Shape::clone() {
+const std::shared_ptr<Shape> Shape::cloneVirtual() {
   return std::make_shared<Shape>(*this);
 }
 
 bool Shape::isInShapeVirtual(const Point&) const {
   return true;
+}
+
+const std::shared_ptr<Shape> Shape::clone() {
+  try {
+    return cloneVirtual();
+  } catch (const std::bad_alloc&) {
+    return {};
+  }
 }
 
 void Shape::render(bool selected) {

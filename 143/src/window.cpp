@@ -21,33 +21,24 @@ void Timer::do_work() {
 }
 
 template<class T>
-void getObject(
-  const Glib::RefPtr<Gtk::Builder>& builder, Glib::RefPtr<T>& pointer,
-  const char* name
-) {
-  pointer = Glib::RefPtr<T>::cast_dynamic(
-    builder->get_object(name)
-  );
-  if (!pointer) {
-    exit(1);
-  }
+void getObject(const Glib::RefPtr<Gtk::Builder>& builder,
+               Glib::RefPtr<T>& pointer, const char* name) {
+  pointer = Glib::RefPtr<T>::cast_dynamic(builder->get_object(name));
+  if (!pointer) exit(1);
 }
 
 template<class A, class B>
-void connectButton(
-  const Glib::RefPtr<Gtk::Builder>& builder, const char* name,
-    A& object, B function
-) {
+void connectButton(const Glib::RefPtr<Gtk::Builder>& builder,
+                   const char* name, A& object, B function) {
   Glib::RefPtr<Gtk::Button> tmp;
   getObject(builder, tmp, name);
   tmp->signal_clicked().connect(sigc::mem_fun(object, function));
 }
 
-Window::Window(
-  BaseObjectType* cobject,
-  Glib::RefPtr<Gtk::Builder> builder
-) : Gtk::ApplicationWindow(cobject),
-  builder_(std::move(builder)), timer(dispatcher), thread_(nullptr) {
+Window::Window(BaseObjectType* cobject,
+               Glib::RefPtr<Gtk::Builder> builder)
+  : Gtk::ApplicationWindow(cobject), builder_(std::move(builder)),
+    timer(dispatcher), thread_(nullptr) {
   connectButton(builder_, "add_rectangle_button", *this, &Window::addRectangle);
   connectButton(builder_, "add_triangle_button" , *this, &Window::addTriangle );
   connectButton(builder_, "add_ellipse_button"  , *this, &Window::addEllipse  );
@@ -55,72 +46,50 @@ Window::Window(
   connectButton(builder_, "trace_button"        , *this, &Window::toggleTrace );
   connectButton(builder_, "reset_button"        , *this, &Window::reset       );
   connectButton(builder_, "color_button"        , *this, &Window::changeColor );
-  connectButton(builder_, "visibility_button", *this,&Window::toggleVisibility);
+  connectButton(builder_, "visibility_button"   , *this, &Window::hideOrShow  );
   connectButton(builder_, "aggregate_button"    , *this, &Window::aggregate   );
   connectButton(builder_, "deaggregate_button"  , *this, &Window::deaggregate );
   connectButton(builder_, "clone_button"        , *this, &Window::cloneShape  );
   connectButton(builder_, "delete_button"       , *this, &Window::deleteShape );
 
-  getObject(builder_, nAdjustment_, "n_adjustment");
   getObject(builder_, drawingArea_, "drawing_area");
   getObject(builder_, statusbar_, "statusbar");
 
 
-  getObject(builder_, xAdjustment_, "x_adjustment");
-  xAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-    *this, &Window::parametersChanged
-  ));
-  getObject(builder_, yAdjustment_, "y_adjustment");
-  yAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-    *this, &Window::parametersChanged
-  ));
-  getObject(builder_, widthAdjustment_, "width_adjustment");
-  widthAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-    *this, &Window::parametersChanged
-  ));
-  getObject(builder_, heightAdjustment_, "height_adjustment");
-  heightAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-    *this, &Window::parametersChanged
-  ));
+  getObject(builder_, nAdjustment_          , "n_adjustment");
+  getObject(builder_, xAdjustment_          , "x_adjustment");
+  getObject(builder_, yAdjustment_          , "y_adjustment");
+  getObject(builder_, widthAdjustment_      , "width_adjustment");
+  getObject(builder_, heightAdjustment_     , "height_adjustment");
   getObject(builder_, minimumZoomAdjustment_, "minimum_zoom_adjustment");
-  minimumZoomAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-    *this, &Window::parametersChanged
-  ));
-  getObject(builder_, traceSizeAdjustment_, "trace_size_adjustment");
-  traceSizeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-    *this, &Window::parametersChanged
-  ));
-  getObject(builder_, traceTimeAdjustment_, "trace_time_adjustment");
-  traceTimeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-    *this, &Window::parametersChanged
-  ));
+  getObject(builder_, traceSizeAdjustment_  , "trace_size_adjustment");
+  getObject(builder_, traceTimeAdjustment_  , "trace_time_adjustment");
+
+  auto mfpc = sigc::mem_fun(*this, &Window::parametersChanged);
+            xAdjustment_->signal_value_changed().connect(mfpc);
+            yAdjustment_->signal_value_changed().connect(mfpc);
+        widthAdjustment_->signal_value_changed().connect(mfpc);
+       heightAdjustment_->signal_value_changed().connect(mfpc);
+  minimumZoomAdjustment_->signal_value_changed().connect(mfpc);
+    traceSizeAdjustment_->signal_value_changed().connect(mfpc);
+    traceTimeAdjustment_->signal_value_changed().connect(mfpc);
 
   drawingArea_->add_events(
-    Gdk::BUTTON_PRESS_MASK |
-    Gdk::BUTTON_MOTION_MASK |
-    Gdk::BUTTON_RELEASE_MASK |
-    Gdk::SCROLL_MASK
-  );
-  this->add_events(
-    Gdk::KEY_PRESS_MASK |
-    Gdk::KEY_RELEASE_MASK
-  );
+        Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_MOTION_MASK |
+        Gdk::BUTTON_RELEASE_MASK | Gdk::SCROLL_MASK);
+  this->add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
 
-  drawingArea_->signal_draw().connect(sigc::mem_fun(
-    *this, &Window::draw
-  ));
-  drawingArea_->signal_button_press_event().connect(sigc::mem_fun(
-    *this, &Window::activate
-  ));
-  drawingArea_->signal_motion_notify_event().connect(sigc::mem_fun(
-    *this, &Window::moveActive
-  ));
-  drawingArea_->signal_button_release_event().connect(sigc::mem_fun(
-    *this, &Window::release
-  ));
-  drawingArea_->signal_scroll_event().connect(sigc::mem_fun(
-    *this, &Window::scrollZoom
-  ));
+  auto mfd = sigc::mem_fun(*this, &Window::draw);
+  auto mfa = sigc::mem_fun(*this, &Window::activate);
+  auto mfm = sigc::mem_fun(*this, &Window::moveActive);
+  auto mfr = sigc::mem_fun(*this, &Window::release);
+  auto mfs = sigc::mem_fun(*this, &Window::scrollZoom);
+
+  drawingArea_->signal_draw().connect(mfd);
+  drawingArea_->signal_button_press_event().connect(mfa);
+  drawingArea_->signal_motion_notify_event().connect(mfm);
+  drawingArea_->signal_button_release_event().connect(mfr);
+  drawingArea_->signal_scroll_event().connect(mfs);
 
   dispatcher.connect(sigc::mem_fun(*this, &Window::thread));
   thread();
@@ -162,6 +131,7 @@ bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
 }
 
 void Window::parametersChanged() {
+  auto tsa = traceSizeAdjustment_;
   SHAPE.setX(float(xAdjustment_->get_value()));
   SHAPE.setY(float(yAdjustment_->get_value()));
   SHAPE.setMaximumWidth(float(widthAdjustment_->get_value()) + 4);
@@ -169,9 +139,7 @@ void Window::parametersChanged() {
   SHAPE.setDefaultWidth(float(widthAdjustment_->get_value()));
   SHAPE.setDefaultHeight(float(heightAdjustment_->get_value()));
   SHAPE.setMinimumZoom(float(minimumZoomAdjustment_->get_value()));
-  SHAPE.setTraceSize(
-    static_cast<unsigned char>(traceSizeAdjustment_->get_value())
-  );
+  SHAPE.setTraceSize(static_cast<unsigned char>(tsa->get_value()));
   SHAPE.setTraceTime(float(traceTimeAdjustment_->get_value()));
   update();
 }
@@ -224,7 +192,7 @@ void Window::changeColor() {
   }
 }
 
-void Window::toggleVisibility() {
+void Window::hideOrShow() {
   auto s = shapes_.getActive();
   if (s) {
     s->toggleVisibility();
@@ -282,11 +250,11 @@ void Window::deleteShape() {
 
 bool Window::activate(GdkEventButton* event) {
   if (event->type == GDK_BUTTON_PRESS) {
+    auto p = Point(float(event->x), float(event->y));
     if (event->button == 1) {
-      shapes_.activate(Point(float(event->x), float(event->y)));
+      shapes_.activate(p);
     } else if (event->button == 3) {
-      shapes_.toggleSelection
-      (shapes_.getTopIterator(Point(float(event->x), float(event->y))));
+      shapes_.toggleSelection(shapes_.getTopIterator(p));
     }
     update();
   }
@@ -306,9 +274,8 @@ bool Window::release(GdkEventButton*) {
 }
 
 bool Window::scrollZoom(GdkEventScroll* event) {
-  std::shared_ptr<Shape> shape = shapes_.getTop(
-    Point(float(event->x), float(event->y))
-  );
+  auto p = Point(float(event->x), float(event->y));
+  auto shape = shapes_.getTop(p);
   if (shape) {
     float diff = 2.0f;
     Size size = shape->getSize();
