@@ -13,28 +13,26 @@
 
 class Aggregator : public Shape {
 public:
-  Aggregator(std::vector< Glib::RefPtr<Shape> > array);
-  Aggregator(const Aggregator& object);
+  Aggregator(std::vector< std::shared_ptr<Shape> > array);
+  Aggregator(const Aggregator& object) = default;
   Aggregator(Aggregator&& object) = default;
   ~Aggregator() override = default;
 
   Aggregator& operator=(const Aggregator& object);
   Aggregator& operator=(Aggregator&& object) = default;
 
-  static const Glib::RefPtr<Shape> create(
-    const std::vector< Glib::RefPtr<Shape> >& array
+  static const std::shared_ptr<Shape> create(
+    const std::vector< std::shared_ptr<Shape> >& array
   );
-  const Glib::RefPtr<Shape> clone() override;
-  void drawShape(
-    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8f
-  ) override;
+  const std::shared_ptr<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                 bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;
-  void toggleSelectionVirtual() override;
 
-  const std::vector< Glib::RefPtr<Shape> > deaggregate();
+  const std::vector< std::shared_ptr<Shape> > deaggregate();
 
 private:
-  std::vector< Glib::RefPtr<Shape> > array_;
+  std::vector< std::shared_ptr<Shape> > array_;
 };
 
 #endif // AGGREGATOR_H

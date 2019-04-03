@@ -19,11 +19,13 @@
 #include <gtkmm/adjustment.h>
 #include <glibmm/dispatcher.h>
 
+#include <thread>
+
 class Timer
 {
 public:
 	Timer(Glib::Dispatcher& dispatcher);
-  void do_work[[noreturn]]();
+  void do_work();
 
 private:
 	Glib::Dispatcher& dispatcher_;
@@ -44,7 +46,8 @@ private:
   Window operator=(const Window&);
   Window(const Window&&) noexcept;
   Window operator=(const Window&&) noexcept;
-	void update();
+  void update();
+  void thread();
 	bool draw(const Cairo::RefPtr<Cairo::Context>& context);
 	void parametersChanged();
 	void addRectangle();
@@ -77,6 +80,7 @@ private:
 	Shapes shapes_;
 	Glib::Dispatcher dispatcher;
   Timer timer;
+  std::thread* thread_;
 };
 
 #endif //WINDOW_H

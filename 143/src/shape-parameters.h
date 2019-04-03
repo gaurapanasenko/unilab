@@ -12,6 +12,8 @@
 #include "graphics.h"
 #include <cairomm/context.h>
 
+class Shapes;
+
 class ShapeParameters {
 public:
   ShapeParameters();
@@ -37,11 +39,11 @@ public:
   float getTraceTime();
   void setTraceTime(float traceTime);
   const Cairo::Matrix& getDefaultMatrix();
-	void setDefaultMatrix(const Cairo::Matrix& defaultMatrix);
+  void setDefaultMatrix(const Cairo::Matrix& defaultMatrix);
 
 private:
-	/// \brief default position
-	Point position_;
+  /// \brief default position
+  Point position_;
   /// \brief draw area sizes
   Sizes sizes_;
 	/// \brief number of cloned objects when doing trace
@@ -49,7 +51,7 @@ private:
 	/// \brief interval between saving state of Shape object
 	/// when doing trace
 	float traceTime_;
-	Cairo::Matrix defaultMatrix_;
+  Cairo::Matrix defaultMatrix_;
 };
 
 extern ShapeParameters SHAPE;

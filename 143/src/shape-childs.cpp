@@ -13,15 +13,16 @@ namespace ShapeChilds {
 /***********
 * Triangle *
 ***********/
-const Glib::RefPtr<Shape> Triangle::create() {
-  return Glib::RefPtr<Shape>(new Triangle);
+const std::shared_ptr<Shape> Triangle::create() {
+  return std::make_shared<Triangle>();
 }
 
-const Glib::RefPtr<Shape> Triangle::clone() {
-  return Glib::RefPtr<Shape>(new Triangle(*this));
+const std::shared_ptr<Shape> Triangle::clone() {
+  return std::make_shared<Shape>(*this);
 }
 
-void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context, float) {
+void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                         bool, float) {
   if (context) {
     context->move_to(-1.0,  1.0);
     context->line_to( 0.0, -1.0);
@@ -43,15 +44,16 @@ bool Triangle::isInShapeVirtual(const Point& p) const {
 /************
 * Rectangle *
 ************/
-const Glib::RefPtr<Shape> Rectangle::create() {
-  return Glib::RefPtr<Shape>(new Rectangle);
+const std::shared_ptr<Shape> Rectangle::create() {
+  return std::make_shared<Rectangle>();
 }
 
-const Glib::RefPtr<Shape> Rectangle::clone() {
-  return Glib::RefPtr<Shape>(new Rectangle(*this));
+const std::shared_ptr<Shape> Rectangle::clone() {
+  return std::make_shared<Rectangle>(*this);
 }
 
-void Rectangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context, float) {
+void Rectangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                          bool, float) {
   if (context) {
     context->rectangle(-1, -1, 2, 2);
   }
@@ -64,15 +66,16 @@ bool Rectangle::isInShapeVirtual(const Point&) const {
 /**********
 * Ellipse *
 **********/
-const Glib::RefPtr<Shape> Ellipse::create() {
-  return Glib::RefPtr<Shape>(new Ellipse);
+const std::shared_ptr<Shape> Ellipse::create() {
+  return std::make_shared<Ellipse>();
 }
 
-const Glib::RefPtr<Shape> Ellipse::clone() {
-  return Glib::RefPtr<Shape>(new Ellipse(*this));
+const std::shared_ptr<Shape> Ellipse::clone() {
+  return std::make_shared<Ellipse>(*this);
 }
 
-void Ellipse::drawShape(const Cairo::RefPtr<Cairo::Context>& context, float) {
+void Ellipse::drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                        bool, float) {
   if (context) {
     context->arc(0, 0, 1, 0, 2 * M_PI);
   }

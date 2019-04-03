@@ -15,36 +15,30 @@ namespace ShapeChilds {
 
 class Triangle : public Shape {
 public:
-  Triangle() = default;
-  static const Glib::RefPtr<Shape> create();
-  const Glib::RefPtr<Shape> clone() override;
-  void drawShape(
-    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8f
-  ) override;
+  static const std::shared_ptr<Shape> create();
+  const std::shared_ptr<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                 bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;
 };
 
 
 class Rectangle : public Shape {
 public:
-  Rectangle() = default;
-  static const Glib::RefPtr<Shape> create();
-  const Glib::RefPtr<Shape> clone() override;
-  void drawShape(
-    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8f
-  ) override;
+  static const std::shared_ptr<Shape> create();
+  const std::shared_ptr<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                 bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;
 };
 
 
 class Ellipse : public Shape {
 public:
-  Ellipse() = default;
-  static const Glib::RefPtr<Shape> create();
-  const Glib::RefPtr<Shape> clone() override;
-  void drawShape(
-    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8f
-  ) override;
+  static const std::shared_ptr<Shape> create();
+  const std::shared_ptr<Shape> clone() override;
+  void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                 bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;
 };
 

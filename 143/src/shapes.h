@@ -16,6 +16,13 @@
 #include <cairomm/context.h>
 #include <glibmm/refptr.h>
 #include <vector>
+#include <memory>
+
+#ifndef DEBUG
+const bool SHAPE_DEBUG = false;
+#else
+const bool SHAPE_DEBUG = true;
+#endif
 
 class Shape;
 
@@ -25,20 +32,28 @@ class Shape;
 /// SHAPE_TRACE_TIME seconds.</p>
 class ShapeTrace {
 public:
-	/// \brief Constructor, initializes empty queue.
-	ShapeTrace();
-	/// \brief Assignment operator that switches to a new Shape object
-	/// \param Reference to the new Shape object
-  ShapeTrace& operator=(const Glib::RefPtr<Shape>& pointer);
+  /// \brief Constructor, initializes empty queue
+  /// \param Reference to the Shape object
+  ShapeTrace(std::shared_ptr<Shape> pointer);
+  ShapeTrace(const ShapeTrace&) = default;
+  ShapeTrace(ShapeTrace&&) noexcept = default;
+  ~ShapeTrace();
+  static std::shared_ptr<ShapeTrace>
+  create(const std::shared_ptr<Shape>& pointer);
+
+  ShapeTrace& operator=(const ShapeTrace&) = default;
+  ShapeTrace& operator=(ShapeTrace&&) = default;
+
 	/// \brief Draws all Shape objects that being stored in queue.
 	/// \param context class used to draw
-	void draw(const Cairo::RefPtr<Cairo::Context>& context);
+  void draw(const Cairo::RefPtr<Cairo::Context>& context,
+            bool selected);
 
 private:
   /// \brief Glib::RefPtr to Shape object that being traced
-  Glib::RefPtr<Shape> shape_;
+  std::shared_ptr<Shape> shape_;
 	/// \brief queue of Shape objects to create trace
-  std::vector< Glib::RefPtr<Shape> > queue_;
+  std::vector< std::shared_ptr<Shape> > queue_;
 	/// \brief index to last added element
 	unsigned char tail_;
 	/// \brief time when last element was added
@@ -48,43 +63,36 @@ private:
 /// Processes one shape on paining
 class Shape {
 public:
-	/// \brief Constructor to create empty shape with default size
-	Shape();
-  Shape(const Shape&) = default;
+  /// \brief Constructor to create empty shape with default size
+  Shape();
+  Shape(const Shape& shape);
   Shape(Shape&&) = default;
-
   Shape& operator=(const Shape&) = default;
   Shape& operator=(Shape&&) = default;
 
-  void reference();
-  void unreference();
-
 	/// \brief Virtual destructor to support inheritance
-  virtual ~Shape() = default;
+  virtual ~Shape();
 	/// \brief Virtual method to draw specific inherited shape
-  virtual void drawShape(
-    const Cairo::RefPtr<Cairo::Context>& context, float alpha = 0.8f
-  );
+  virtual void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                         bool selected, float alpha = 0.8f);
 	/// \brief Virtual cloning method to support inheritance
-  virtual const Glib::RefPtr<Shape> clone();
+  virtual const std::shared_ptr<Shape> clone();
 	/// \brief Checks is point is in shape by shape parameters
 	/// \param p checking point
 	/// \return true if point in shape, else false
   virtual bool isInShapeVirtual(const Point& p) const;
-  virtual void toggleSelectionVirtual();
 
   /// \brief Checks that object fields are valid for device size
   /// \param allocation position and size of drawing widget
-  void render();
+  void render(bool selected);
 	/// \brief Checks that two shape objects are intersected
-  void areIntersected(const Glib::RefPtr<Shape>& shape);
+  bool areIntersected(const std::shared_ptr<Shape>& shape,
+                      bool wasIntersected);
 	/// \brief Drawing shape on painting
 	/// \param context class used to draw
 	/// \param alpha sets transparency for shape
-	void draw(
-		const Cairo::RefPtr<Cairo::Context>& context,
-    float alpha = 0.8f
-	);
+  void draw(const Cairo::RefPtr<Cairo::Context>& context,
+            bool selected, float alpha = 0.8f);
 	/// \brief Checks is point is in shape
 	/// \param p checking point
 	/// \return true if point in shape, else false
@@ -104,10 +112,6 @@ public:
   float getZoom() const;
   /// \brief Setter for current zoom
   void setZoom(float zoom);
-	/// \brief Detects is shape is selected
-  bool isSelected();
-	/// \brief Toggles selection of shape
-	void toggleSelection();
 
 	/// \brief Toggles visibility of shape
 	void toggleVisibility();
@@ -122,7 +126,6 @@ public:
 	void toggleTrace();
 
 private:
-  size_t referenced_;
 	/// \brief Current frame of object
 	Point position_;
 	/// \brief Default zoom
@@ -132,20 +135,14 @@ private:
 	/// \brief Color, that is generating in constructor
 	Color defaultColor_;
 	/// \brief Current color of shape
-	Color color_;
-	/// \brief List of Shape objects that intersects this object
-  std::vector<Glib::RefPtr<Shape>> intersected_;
+  Color color_;
 	/// \brief Saved path for automated motion
 	//Array<Point> path_;
 	/// \brief Defines visibility of shape
 	bool visible_;
 	/// \brief Defines visibility of shape
-	bool trace_;
-	/// \brief Variable to detect is shape selected
-  bool selected_;
+  bool trace_;
 };
-
-void updateGlobalDefaultFrame();
 
 /// \brief Container for Shape objects, also stores trace for object
 class Shapes {
@@ -154,21 +151,20 @@ public:
 	/// \brief Default construction that initializes fields
 	Shapes();
 
-	/// \brief Gets active shape
-	/// \return Reference to shape object
-  Glib::RefPtr<Shape> getActive();
-	/// \brief Gets index of active shape
-	/// \return Reference to index
+  /// \brief Getter for iterator of active shape
+  /// \return Iterator to element with reference to Shape
   std::vector<Element>::iterator getActiveIterator();
-  std::vector<Element>::iterator getTopIterator(const Point& p);
+  std::shared_ptr<Shape> getActive();
+  std::vector<Element>::iterator getTopIterator(const Point& point);
+  std::shared_ptr<Shape> getTop(const Point& point);
 
 	/// \brief Adds new Shape object to list of objects
-  /// \param item Wrapped Glib::RefPtr to Shape object in Glib::RefPtr object
-  void add(const Glib::RefPtr<Shape>& item);
+  /// \param item Wrapped pointer to Shape object in pointer object
+  void add(const std::shared_ptr<Shape>& pointer);
 	/// \brief Deletes Shape object on index
 	/// \param index index of object that will be deleted
   void erase(const std::vector<Element>::iterator& iterator);
-  Glib::RefPtr<Shape> getTop(const Point& p);
+  void toggleSelection(const std::vector<Element>::iterator& iterator);
 
 	/// \brief Activates Shape object if point in argument placed in Shape
 	/// \param p point by which finding Shape object
@@ -181,15 +177,18 @@ public:
 	/// moved by moveActive.
 	void release();
 
+  void render();
 	/// \brief Draws all Shape objects that stored in list
 	/// \param context class used to draw
 	void draw(const Cairo::RefPtr<Cairo::Context>& context);
 
-  const std::vector< Glib::RefPtr<Shape> > getSelected();
+  const std::vector< std::shared_ptr<Shape> > getSelected();
 
 private:
 	/// \brief Array of elements
   std::vector<Element> array_;
+  std::vector< std::vector<bool> > intersected_;
+  std::vector< std::shared_ptr<Shape> > selected_;
 	/// \brief Detects that active id will be moved by mouse motion
 	bool activated_;
 	/// \brief Activation point of Shape object
@@ -203,12 +202,11 @@ class Shapes::Element {
 public:
   /// \brief sets new Shape object and prepare ShapeTrace
   /// for new object
-  /// \param Glib::RefPtr Wrapped Glib::RefPtr of Shape object to Glib::RefPtr object
-  /// \return reference to the current element
-  Element& operator=(const Glib::RefPtr<Shape>& pointer);
+  /// \param pointer Wrapped pointer of Shape object to pointer object
+  Element(std::shared_ptr<Shape> pointer);
   /// \brief Member operator to access Shape object
   /// \return Reference to Shape object
-  const Glib::RefPtr<Shape>& operator*();
+  const std::shared_ptr<Shape>& operator*();
   /// \brief Member operator to access members of Shape object
   /// \return Glib::RefPtr to Shape object
   Shape* operator->();
@@ -216,16 +214,16 @@ public:
   /// \param context class used to draw
   void draw(const Cairo::RefPtr<Cairo::Context>& context);
   operator bool() const;
+  bool isSelected() const;
+  void toggleSelection();
 
 private:
-  friend Shapes;
-  Glib::RefPtr<Shape> release();
-
   /// \brief Wrapped Glib::RefPtr to Shape object
-  Glib::RefPtr<Shape> pointer_;
+  std::shared_ptr<Shape> pointer_;
   /// \brief ShapeTrace object to create trace of Shape object stored
   /// in pointer_
-  ShapeTrace shapeTrace_;
+  std::shared_ptr<ShapeTrace> shapeTrace_;
+  bool selected_;
 };
 
 #endif // SHAPES_H

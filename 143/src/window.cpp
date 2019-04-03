@@ -16,10 +16,8 @@
 Timer::Timer(Glib::Dispatcher& dispatcher) : dispatcher_(dispatcher) {}
 
 void Timer::do_work() {
-	while (true) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		dispatcher_.emit();
-	}
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  dispatcher_.emit();
 }
 
 template<class T>
@@ -49,19 +47,19 @@ Window::Window(
 	BaseObjectType* cobject,
   Glib::RefPtr<Gtk::Builder> builder
 ) : Gtk::ApplicationWindow(cobject),
-  builder_(std::move(builder)), timer(dispatcher) {
+  builder_(std::move(builder)), timer(dispatcher), thread_(nullptr) {
   connectButton(builder_, "add_rectangle_button", *this, &Window::addRectangle);
-  connectButton(builder_, "add_triangle_button" , *this, &Window::addTriangle);
-  connectButton(builder_, "add_ellipse_button"  , *this, &Window::addEllipse);
+  connectButton(builder_, "add_triangle_button" , *this, &Window::addTriangle );
+  connectButton(builder_, "add_ellipse_button"  , *this, &Window::addEllipse  );
 
-  connectButton(builder_, "trace_button"        , *this, &Window::toggleTrace);
-  connectButton(builder_, "reset_button"        , *this, &Window::reset);
-  connectButton(builder_, "color_button"        , *this, &Window::changeColor);
+  connectButton(builder_, "trace_button"        , *this, &Window::toggleTrace );
+  connectButton(builder_, "reset_button"        , *this, &Window::reset       );
+  connectButton(builder_, "color_button"        , *this, &Window::changeColor );
   connectButton(builder_, "visibility_button", *this,&Window::toggleVisibility);
-  connectButton(builder_, "aggregate_button"    , *this, &Window::aggregate);
-  connectButton(builder_, "deaggregate_button"  , *this, &Window::deaggregate);
-  connectButton(builder_, "clone_button"        , *this, &Window::cloneShape);
-  connectButton(builder_, "delete_button"       , *this, &Window::deleteShape);
+  connectButton(builder_, "aggregate_button"    , *this, &Window::aggregate   );
+  connectButton(builder_, "deaggregate_button"  , *this, &Window::deaggregate );
+  connectButton(builder_, "clone_button"        , *this, &Window::cloneShape  );
+  connectButton(builder_, "delete_button"       , *this, &Window::deleteShape );
 
   getObject(builder_, nAdjustment_, "n_adjustment");
   getObject(builder_, drawingArea_, "drawing_area");
@@ -124,19 +122,28 @@ Window::Window(
 		*this, &Window::scrollZoom
 	));
 
-	dispatcher.connect(sigc::mem_fun(*this, &Window::update));
-	new std::thread(&Timer::do_work, &timer);
+  dispatcher.connect(sigc::mem_fun(*this, &Window::thread));
+  thread();
 	parametersChanged();
 }
 
-Window::~Window() = default;
+Window::~Window() {
+  if (thread_->joinable())
+    thread_->join();
+  delete thread_;
+}
 
 void Window::quit[[noreturn]]() {
 	exit(0);
 }
 
 void Window::update() {
-	drawingArea_->queue_draw();
+  drawingArea_->queue_draw();
+}
+
+void Window::thread() {
+  update();
+  thread_ = new std::thread(&Timer::do_work, &timer);
 }
 
 bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
@@ -166,7 +173,7 @@ void Window::parametersChanged() {
     static_cast<unsigned char>(traceSizeAdjustment_->get_value())
   );
   SHAPE.setTraceTime(float(traceTimeAdjustment_->get_value()));
-	update();
+  update();
 }
 
 void Window::addRectangle() {
@@ -174,7 +181,7 @@ void Window::addRectangle() {
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Rectangle::create());
 	}
-	update();
+  update();
 }
 
 void Window::addTriangle() {
@@ -182,7 +189,7 @@ void Window::addTriangle() {
 	for (int i = 0; i < n; i++) {
 		shapes_.add(ShapeChilds::Triangle::create());
 	}
-	update();
+  update();
 }
 
 void Window::addEllipse() {
@@ -190,7 +197,7 @@ void Window::addEllipse() {
 	for (int i = 0; i < n; i++) {
     shapes_.add(ShapeChilds::Ellipse::create());
 	}
-	update();
+  update();
 }
 
 void Window::toggleTrace() {
@@ -230,8 +237,10 @@ void Window::aggregate() {
   if (!arr.empty()) {
     if (arr.size() > 1) {
       shapes_.add(Aggregator::create(arr));
+      update();
     } else {
       shapes_.add(arr[0]);
+      update();
     }
   }
 }
@@ -247,12 +256,12 @@ void Window::deaggregate() {
           shapes_.add(j);
         }
       } else {
-        if (i->isSelected())
-          i->toggleSelection();
         shapes_.add(i);
       }
     }
   }
+  if (!arr.empty())
+    update();
 }
 
 void Window::cloneShape() {
@@ -263,12 +272,12 @@ void Window::cloneShape() {
       shapes_.add(s->clone());
     }
   }
-	update();
+  update();
 }
 
 void Window::deleteShape() {
   shapes_.erase(shapes_.getActiveIterator());
-	update();
+  update();
 }
 
 bool Window::activate(GdkEventButton* event) {
@@ -276,12 +285,8 @@ bool Window::activate(GdkEventButton* event) {
     if (event->button == 1) {
       shapes_.activate(Point(float(event->x), float(event->y)));
     } else if (event->button == 3) {
-      auto s = shapes_.getTop(
-            Point(float(event->x), float(event->y))
-      );
-      if (s) {
-        s->toggleSelection();
-      }
+      shapes_.toggleSelection
+      (shapes_.getTopIterator(Point(float(event->x), float(event->y))));
     }
     update();
   }
@@ -290,7 +295,7 @@ bool Window::activate(GdkEventButton* event) {
 
 bool Window::moveActive(GdkEventMotion* event) {
   shapes_.moveActive(Point(float(event->x), float(event->y)));
-	update();
+  update();
 	return true;
 }
 
@@ -301,7 +306,7 @@ bool Window::release(GdkEventButton*) {
 }
 
 bool Window::scrollZoom(GdkEventScroll* event) {
-  Glib::RefPtr<Shape> shape = shapes_.getTop(
+  std::shared_ptr<Shape> shape = shapes_.getTop(
     Point(float(event->x), float(event->y))
   );
   if (shape) {

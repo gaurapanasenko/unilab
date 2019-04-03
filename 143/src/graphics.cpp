@@ -97,11 +97,12 @@ bool isOneSizePointsToStraight(
 *******/
 Size::Size() : Point(0, 0) {}
 
-Size::Size(float x, float y) : Point((x > 0) ? x : 0, (y > 0) ? y : 0) {}
+Size::Size(float x, float y)
+  : Point((x > 0) ? x : 0, (y > 0) ? y : 0) {}
 
-Size::Size(const Point& point) : Point(
-  (point.getX() > 0) ? point.getX() : 0, (point.getY() > 0) ? point.getY() : 0
-) {}
+Size::Size(const Point& point)
+  : Point((point.getX() > 0) ? point.getX() : 0,
+          (point.getY() > 0) ? point.getY() : 0) {}
 
 void Size::setX(float x) {
   Point::setX((x > 0) ? x : 0);
@@ -150,8 +151,10 @@ float calculateDistanceToEllipse(
 	const Point& point, const Point& size
 ) {
 	if (size.getX() <= 0 || size.getY() <= 0) return 0;
-  return std::pow(point.getX(), 2.0f) / std::pow(size.getX() / 2.0f, 2.0f) +
-         std::pow(point.getY(), 2.0f) / std::pow(size.getY() / 2.0f, 2.0f);
+  return std::pow(point.getX(), 2.0f)
+           / std::pow(size.getX() / 2.0f, 2.0f) +
+         std::pow(point.getY(), 2.0f)
+           / std::pow(size.getY() / 2.0f, 2.0f);
 }
 
 /********
@@ -174,12 +177,14 @@ void Sizes::setDefaultSize(const Size& size) {
 }
 
 void Sizes::setDefaultSizeX(float x) {
-  defaultSize_.setX((x > maximumSize_.getX()) ? maximumSize_.getX() : x);
+  defaultSize_.setX
+      ((x > maximumSize_.getX()) ? maximumSize_.getX() : x);
   minimumSize_.setX(defaultSize_.getX() * minimumZoom_);
 }
 
 void Sizes::setDefaultSizeY(float y) {
-  defaultSize_.setY((y > maximumSize_.getY()) ? maximumSize_.getY() : y);
+  defaultSize_.setY
+      ((y > maximumSize_.getY()) ? maximumSize_.getY() : y);
   minimumSize_.setY(defaultSize_.getY() * minimumZoom_);
 }
 
@@ -211,7 +216,8 @@ float Sizes::getMinimumZoom() const {
 }
 
 void Sizes::setMinimumZoom(float minimumZoom) {
-  minimumZoom_ = (minimumZoom < 0) ? 0 : (minimumZoom > 1) ? 1 : minimumZoom;
+  minimumZoom_
+      = (minimumZoom < 0) ? 0 : (minimumZoom > 1) ? 1 : minimumZoom;
   minimumSize_ = defaultSize_ * minimumZoom_;
 }
 

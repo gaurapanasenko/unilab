@@ -11,7 +11,7 @@
 /*************
 * Aggregator *
 *************/
-Aggregator::Aggregator(std::vector< Glib::RefPtr<Shape> > array)
+Aggregator::Aggregator(std::vector< std::shared_ptr<Shape> > array)
   : array_(std::move(array)) {
   Point mp1(0, 0), mp2(0, 0);
   bool first = true;
@@ -46,37 +46,33 @@ Aggregator::Aggregator(std::vector< Glib::RefPtr<Shape> > array)
     if (i) {
       i->setSizeForce(i->getSize() * 2.0f / size);
       i->setPosition((i->getPosition() - position) * 2.0f / size);
-      if (i->isSelected())
-        i->toggleSelection();
     }
   }
 }
 
-Aggregator::Aggregator(const Aggregator& object) : Shape(object) {
+/*Aggregator::Aggregator(const Aggregator& object) : Shape(object) {
   for(auto& i : object.array_) {
     if (i) {
       array_.emplace_back(i->clone());
     }
   }
-}
+}*/
 
-const Glib::RefPtr<Shape> Aggregator::create(
-  const std::vector< Glib::RefPtr<Shape> >& array
+const std::shared_ptr<Shape> Aggregator::create(
+  const std::vector< std::shared_ptr<Shape> >& array
 ) {
-  return Glib::RefPtr<Shape>(new Aggregator(array));
+  return std::make_shared<Aggregator>(array);
 }
 
-const Glib::RefPtr<Shape> Aggregator::clone() {
-  return Glib::RefPtr<Shape>(new Aggregator(*this));
+const std::shared_ptr<Shape> Aggregator::clone() {
+  return std::make_shared<Aggregator>(*this);
 }
 
-void Aggregator::drawShape(
-    const Cairo::RefPtr<Cairo::Context>& context,
-    float alpha
-) {
+void Aggregator::drawShape(const Cairo::RefPtr<Cairo::Context>& context,
+                           bool selected, float alpha) {
   for (auto& i : array_) {
     if (i) {
-      i->draw(context, alpha);
+      i->draw(context, selected, alpha);
     }
   }
 }
@@ -89,25 +85,16 @@ bool Aggregator::isInShapeVirtual(const Point& point) const {
   return false;
 }
 
-void Aggregator::toggleSelectionVirtual() {
-  for (auto& i : array_) {
-    if (i) {
-      i->toggleSelection();
-    }
-  }
-}
-
-const std::vector< Glib::RefPtr<Shape> > Aggregator::deaggregate() {
-  std::vector< Glib::RefPtr<Shape> > arr;
+const std::vector< std::shared_ptr<Shape> > Aggregator::deaggregate() {
+  std::vector< std::shared_ptr<Shape> > arr;
   arr.reserve(array_.size());
   for (auto& i : array_) {
     if (i) {
       auto s = i->clone();
       if (s) {
         s->setSizeForce(i->getSize() * getSize() / 2.0f);
-        s->setPosition(i->getPosition() * getSize() / 2.0f + getPosition());
-        if (s->isSelected())
-          s->toggleSelection();
+        s->setPosition
+            (i->getPosition() * getSize() / 2.0f + getPosition());
         arr.emplace_back(s);
       }
     }
