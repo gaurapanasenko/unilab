@@ -11,7 +11,7 @@
 
 class Point {
 public:
-	Point();
+  Point();
   Point(const Point&) = default;
   Point(Point&&) = default;
   Point(float x, float y);
@@ -45,7 +45,7 @@ const Point floor(const Point& point);
 /// \param c point C
 /// \return Pseudo-scalar product
 float calculatePseudoscalarProduct(
-	const Point& a, const Point& b, const Point& c
+  const Point& a, const Point& b, const Point& c
 );
 
 /// \brief Detects that points C and D is on one side
@@ -56,26 +56,26 @@ float calculatePseudoscalarProduct(
 /// \param d point D
 /// \return True if points on one side, else false
 bool isOneSizePointsToStraight(
-	const Point& a, const Point& b, const Point& c, const Point& d
+  const Point& a, const Point& b, const Point& c, const Point& d
 );
 
 class Size : public Point {
 public:
-	Size();
+  Size();
   Size(float x, float y);
   Size(const Point& point);
   void setX(float x);
   void setY(float y);
-	/// \brief Checks is point is in frame
-	/// \param point checking point
-	/// \return true if point in frame, else false
+  /// \brief Checks is point is in frame
+  /// \param point checking point
+  /// \return true if point in frame, else false
   bool isInFrame(const Point& point) const;
 };
 
 class Color {
 public:
-	Color();
-	Color(unsigned char r, unsigned char g, unsigned char b);
+  Color();
+  Color(unsigned char r, unsigned char g, unsigned char b);
   double getR();
   double getG();
   double getB();

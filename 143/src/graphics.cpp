@@ -34,36 +34,36 @@ void Point::setY(float y) {
 }
 
 const Point operator+(const Point& lhs, const Point& rhs) {
-	return Point(lhs.getX() + rhs.getX(), lhs.getY() + rhs.getY());
+  return Point(lhs.getX() + rhs.getX(), lhs.getY() + rhs.getY());
 }
 
 const Point operator-(const Point& lhs, const Point& rhs) {
-	return Point(lhs.getX() - rhs.getX(), lhs.getY() - rhs.getY());
+  return Point(lhs.getX() - rhs.getX(), lhs.getY() - rhs.getY());
 }
 
 const Point operator*(const Point& lhs, const Point& rhs) {
-	return Point(lhs.getX() * rhs.getX(), lhs.getY() * rhs.getY());
+  return Point(lhs.getX() * rhs.getX(), lhs.getY() * rhs.getY());
 }
 
 const Point operator/(const Point& lhs, const Point& rhs) {
-	return Point(lhs.getX() / rhs.getX(), lhs.getY() / rhs.getY());
+  return Point(lhs.getX() / rhs.getX(), lhs.getY() / rhs.getY());
 }
 
 
 const Point operator+(const Point& lhs, float rhs) {
-	return Point(lhs.getX() + rhs, lhs.getY() + rhs);
+  return Point(lhs.getX() + rhs, lhs.getY() + rhs);
 }
 
 const Point operator-(const Point& lhs, float rhs) {
-	return Point(lhs.getX() - rhs, lhs.getY() - rhs);
+  return Point(lhs.getX() - rhs, lhs.getY() - rhs);
 }
 
 const Point operator*(const Point& lhs, float rhs) {
-	return Point(lhs.getX() * rhs, lhs.getY() * rhs);
+  return Point(lhs.getX() * rhs, lhs.getY() * rhs);
 }
 
 const Point operator/(const Point& lhs, float rhs) {
-	return Point(lhs.getX() / rhs, lhs.getY() / rhs);
+  return Point(lhs.getX() / rhs, lhs.getY() / rhs);
 }
 
 float calulateVectorLengthSqruare(const Point& point) {
@@ -79,17 +79,17 @@ const Point floor(const Point& point) {
 }
 
 float calculatePseudoscalarProduct(
-	const Point& a, const Point& b, const Point& c
+  const Point& a, const Point& b, const Point& c
 ) {
-	Point ab = b - a, ac = c - a;
-	return ab.getX() * ac.getY() - ab.getY() * ac.getX();
+  Point ab = b - a, ac = c - a;
+  return ab.getX() * ac.getY() - ab.getY() * ac.getX();
 }
 
 bool isOneSizePointsToStraight(
-	const Point& a, const Point& b, const Point& c, const Point& d
+  const Point& a, const Point& b, const Point& c, const Point& d
 ) {
-	return calculatePseudoscalarProduct(c, a, b) *
-	       calculatePseudoscalarProduct(d, a, b) > 0;
+  return calculatePseudoscalarProduct(c, a, b) *
+         calculatePseudoscalarProduct(d, a, b) > 0;
 }
 
 /*******
@@ -113,8 +113,8 @@ void Size::setY(float y) {
 }
 
 bool Size::isInFrame(const Point& point) const {
-	Point p(abs(point) * 2);
-	return (p.getX() < getX() && p.getY() < getY());
+  Point p(abs(point) * 2);
+  return (p.getX() < getX() && p.getY() < getY());
 }
 
 /********
@@ -148,9 +148,9 @@ Color randomColor() {
 }
 
 float calculateDistanceToEllipse(
-	const Point& point, const Point& size
+  const Point& point, const Point& size
 ) {
-	if (size.getX() <= 0 || size.getY() <= 0) return 0;
+  if (size.getX() <= 0 || size.getY() <= 0) return 0;
   return std::pow(point.getX(), 2.0f)
            / std::pow(size.getX() / 2.0f, 2.0f) +
          std::pow(point.getY(), 2.0f)

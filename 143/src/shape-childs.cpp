@@ -36,9 +36,9 @@ bool Triangle::isInShapeVirtual(const Point& p) const {
         b = Point( 0, -1),
         c = Point( 1,  1),
         d = p;
-	return isOneSizePointsToStraight(a, b, c, d) &&
-	       isOneSizePointsToStraight(b, c, a, d) &&
-	       isOneSizePointsToStraight(c, a, b, d);
+  return isOneSizePointsToStraight(a, b, c, d) &&
+         isOneSizePointsToStraight(b, c, a, d) &&
+         isOneSizePointsToStraight(c, a, b, d);
 }
 
 /************
@@ -60,7 +60,7 @@ void Rectangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context,
 }
 
 bool Rectangle::isInShapeVirtual(const Point&) const {
-	return true;
+  return true;
 }
 
 /**********

@@ -36,24 +36,24 @@ std::shared_ptr<ShapeTrace> ShapeTrace::create(
 void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context,
                       bool selected) {
   if (shape_) {
-		const unsigned char& size = SHAPE.getTraceSize();
-		if (size != queue_.size()) {
-			queue_.resize(0);
-			queue_.resize(size);
-			tail_ = 0;
-		}
+    const unsigned char& size = SHAPE.getTraceSize();
+    if (size != queue_.size()) {
+      queue_.resize(0);
+      queue_.resize(size);
+      tail_ = 0;
+    }
     if ((clock() - time_) * 1000.0f / CLOCKS_PER_SEC
         > SHAPE.getTraceTime()) {
-			time_ = clock();
+      time_ = clock();
       queue_[tail_] = shape_->clone();
       tail_ = (tail_ + 1) % size;
-		}
-		for (unsigned char i = 0; i < size; i++) {
+    }
+    for (unsigned char i = 0; i < size; i++) {
       unsigned char index = (tail_ + i) % size;
       if (queue_[index]) {
         queue_[index]->draw(context, selected, 0.8f / (size - i));
       }
-		}
+    }
   }
 }
 
@@ -97,9 +97,12 @@ bool Shape::isInShapeVirtual(const Point&) const {
 }
 
 void Shape::render(bool selected) {
-  Point minSize = ((selected) ? getSize() : getSize()
-    * SHAPE.getSizes().validateZoom(getSize(),
-      SHAPE.getSizes().getMinimumZoom())) / 2;
+  Point minSize = getSize();
+  auto s = SHAPE.getSizes();
+  if (!selected) {
+    minSize = minSize * s.validateZoom(getSize(), s.getMinimumZoom());
+  }
+  minSize = minSize / 2;
   const float h = SHAPE.getMaximumHeight(), w = SHAPE.getMaximumWidth();
 
   float x = getPosition().getX(), y = getPosition().getY();
@@ -108,19 +111,15 @@ void Shape::render(bool selected) {
   if (x > w - minSize.getX()) x = w - minSize.getX();
   if (y > h - minSize.getY()) y = h - minSize.getY();
 
-	setPosition(Point(x, y));
+  setPosition(Point(x, y));
   if (!selected) {
-    setZoom(std::min(std::min(
-      std::min(
-        x * 2.0f / getSize().getX(), (w - x) * 2.0f / getSize().getX()
-      ),
-      std::min(
-        y * 2.0f / getSize().getY(), (h - y) * 2.0f / getSize().getY()
-      )
-    ), 1.0f));
-	} else {
+    Point sz = Point(2, 2) / getSize();
+    float minX = std::min(x * sz.getX(), (w - x) * sz.getX());
+    float minY = std::min(y * sz.getY(), (h - y) * sz.getY());
+    setZoom(std::min(std::min(minX, minY), 1.0f));
+  } else {
     setZoom(1.0f);
-	}
+  }
 }
 
 bool Shape::areIntersected(const std::shared_ptr<Shape>& shape,
@@ -128,18 +127,18 @@ bool Shape::areIntersected(const std::shared_ptr<Shape>& shape,
   if (!shape || this == shape.operator->()) return false;
   const Point position = abs(getPosition() - shape->getPosition());
   bool b = getSize().isInFrame(position);
-	if (b) {
+  if (b) {
     float zoom = calculateDistanceToEllipse(position, getSize());
     if (zoom < 1.0f) {
       if (!wasIntersected) {
         color_ = randomColor();
-			}
+      }
       if (zoom < getZoom()) {
         setZoom(zoom);
       }
       return true;
-		}
-	}
+    }
+  }
   return false;
 }
 
@@ -153,22 +152,22 @@ void Shape::draw(const Cairo::RefPtr<Cairo::Context>& context,
         (double(size.getX()), 0, 0, double(size.getY()),
          double(getPosition().getX()), double(getPosition().getY()));
     context->save();
-		context->transform(matrix);
+    context->transform(matrix);
     drawShape(context, selected, alpha);
-		context->set_matrix(SHAPE.getDefaultMatrix());
+    context->set_matrix(SHAPE.getDefaultMatrix());
     context->set_source_rgba
         (double(color_.getR()) * 0.6 + 0.4,
          double(color_.getG()) * 0.4 + 0.6,
          double(color_.getB()) * 0.6 + 0.4, double(alpha));
-		context->fill_preserve();
+    context->fill_preserve();
     if (selected) {
       context->set_source_rgba(0.8, 0.2, 0.2, double(alpha));
-		} else {
+    } else {
       context->set_source_rgba(0.2, 0.8, 0.2, double(alpha));
-		}
+    }
     context->stroke();
     context->restore();
-	}
+  }
 }
 
 bool Shape::isInShape(const Point& point) const {
@@ -177,7 +176,7 @@ bool Shape::isInShape(const Point& point) const {
 }
 
 const Point& Shape::getPosition() const {
-	return position_;
+  return position_;
 }
 
 void Shape::setPosition(const Point& position) {
@@ -199,7 +198,7 @@ void Shape::setSizeForce(const Size& size) {
 }
 
 float Shape::getZoom() const {
-	return zoom_;
+  return zoom_;
 }
 
 void Shape::setZoom(float zoom) {
@@ -211,20 +210,20 @@ void Shape::toggleVisibility() {
 }
 
 void Shape::changeColor() {
-	color_ = randomColor();
+  color_ = randomColor();
 }
 
 void Shape::reset() {
-	position_ = SHAPE.getPosition();
+  position_ = SHAPE.getPosition();
   size_ = SHAPE.getSizes().getDefaultSize();
-	zoom_ = 1.0;
-	color_ = defaultColor_;
+  zoom_ = 1.0;
+  color_ = defaultColor_;
   visible_ = true;
   trace_ = false;
 }
 
 bool Shape::hasTrace() {
-	return trace_;
+  return trace_;
 }
 
 void Shape::toggleTrace() {
@@ -313,14 +312,14 @@ void Shapes::activate(const Point& p) {
     activated_ = true;
     activationPoint_ = floor(p - (*top)->getPosition());
     std::rotate(top, top + 1, array_.end());
-	}
+  }
 }
 
 void Shapes::moveActive(const Point& p) {
   auto i = getActiveIterator();
   if (activated_ && i != array_.end() && *i) {
     (*i)->setPosition(floor(p - activationPoint_));
-	}
+  }
 }
 
 void Shapes::release() {

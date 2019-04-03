@@ -26,10 +26,10 @@ void getObject(
   const char* name
 ) {
   pointer = Glib::RefPtr<T>::cast_dynamic(
-		builder->get_object(name)
-	);
+    builder->get_object(name)
+  );
   if (!pointer) {
-		exit(1);
+    exit(1);
   }
 }
 
@@ -44,7 +44,7 @@ void connectButton(
 }
 
 Window::Window(
-	BaseObjectType* cobject,
+  BaseObjectType* cobject,
   Glib::RefPtr<Gtk::Builder> builder
 ) : Gtk::ApplicationWindow(cobject),
   builder_(std::move(builder)), timer(dispatcher), thread_(nullptr) {
@@ -67,64 +67,64 @@ Window::Window(
 
 
   getObject(builder_, xAdjustment_, "x_adjustment");
-	xAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-		*this, &Window::parametersChanged
-	));
+  xAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+    *this, &Window::parametersChanged
+  ));
   getObject(builder_, yAdjustment_, "y_adjustment");
-	yAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-		*this, &Window::parametersChanged
-	));
+  yAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+    *this, &Window::parametersChanged
+  ));
   getObject(builder_, widthAdjustment_, "width_adjustment");
-	widthAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-		*this, &Window::parametersChanged
-	));
+  widthAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+    *this, &Window::parametersChanged
+  ));
   getObject(builder_, heightAdjustment_, "height_adjustment");
-	heightAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-		*this, &Window::parametersChanged
-	));
-	getObject(builder_, minimumZoomAdjustment_, "minimum_zoom_adjustment");
-	minimumZoomAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-		*this, &Window::parametersChanged
-	));
-	getObject(builder_, traceSizeAdjustment_, "trace_size_adjustment");
-	traceSizeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-		*this, &Window::parametersChanged
-	));
-	getObject(builder_, traceTimeAdjustment_, "trace_time_adjustment");
-	traceTimeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
-		*this, &Window::parametersChanged
-	));
+  heightAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+    *this, &Window::parametersChanged
+  ));
+  getObject(builder_, minimumZoomAdjustment_, "minimum_zoom_adjustment");
+  minimumZoomAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+    *this, &Window::parametersChanged
+  ));
+  getObject(builder_, traceSizeAdjustment_, "trace_size_adjustment");
+  traceSizeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+    *this, &Window::parametersChanged
+  ));
+  getObject(builder_, traceTimeAdjustment_, "trace_time_adjustment");
+  traceTimeAdjustment_->signal_value_changed().connect(sigc::mem_fun(
+    *this, &Window::parametersChanged
+  ));
 
-	drawingArea_->add_events(
-		Gdk::BUTTON_PRESS_MASK |
-		Gdk::BUTTON_MOTION_MASK |
+  drawingArea_->add_events(
+    Gdk::BUTTON_PRESS_MASK |
+    Gdk::BUTTON_MOTION_MASK |
     Gdk::BUTTON_RELEASE_MASK |
-		Gdk::SCROLL_MASK
-	);
+    Gdk::SCROLL_MASK
+  );
   this->add_events(
     Gdk::KEY_PRESS_MASK |
     Gdk::KEY_RELEASE_MASK
   );
 
-	drawingArea_->signal_draw().connect(sigc::mem_fun(
-		*this, &Window::draw
-	));
-	drawingArea_->signal_button_press_event().connect(sigc::mem_fun(
-		*this, &Window::activate
-	));
-	drawingArea_->signal_motion_notify_event().connect(sigc::mem_fun(
-		*this, &Window::moveActive
-	));
-	drawingArea_->signal_button_release_event().connect(sigc::mem_fun(
-		*this, &Window::release
+  drawingArea_->signal_draw().connect(sigc::mem_fun(
+    *this, &Window::draw
   ));
-	drawingArea_->signal_scroll_event().connect(sigc::mem_fun(
-		*this, &Window::scrollZoom
-	));
+  drawingArea_->signal_button_press_event().connect(sigc::mem_fun(
+    *this, &Window::activate
+  ));
+  drawingArea_->signal_motion_notify_event().connect(sigc::mem_fun(
+    *this, &Window::moveActive
+  ));
+  drawingArea_->signal_button_release_event().connect(sigc::mem_fun(
+    *this, &Window::release
+  ));
+  drawingArea_->signal_scroll_event().connect(sigc::mem_fun(
+    *this, &Window::scrollZoom
+  ));
 
   dispatcher.connect(sigc::mem_fun(*this, &Window::thread));
   thread();
-	parametersChanged();
+  parametersChanged();
 }
 
 Window::~Window() {
@@ -134,7 +134,7 @@ Window::~Window() {
 }
 
 void Window::quit[[noreturn]]() {
-	exit(0);
+  exit(0);
 }
 
 void Window::update() {
@@ -158,7 +158,7 @@ bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
     context->set_line_cap(Cairo::LINE_CAP_ROUND);
     shapes_.draw(context);
   }
-	return true;
+  return true;
 }
 
 void Window::parametersChanged() {
@@ -178,25 +178,25 @@ void Window::parametersChanged() {
 
 void Window::addRectangle() {
   int n = int(nAdjustment_->get_value());
-	for (int i = 0; i < n; i++) {
-		shapes_.add(ShapeChilds::Rectangle::create());
-	}
+  for (int i = 0; i < n; i++) {
+    shapes_.add(ShapeChilds::Rectangle::create());
+  }
   update();
 }
 
 void Window::addTriangle() {
   int n = int(nAdjustment_->get_value());
-	for (int i = 0; i < n; i++) {
-		shapes_.add(ShapeChilds::Triangle::create());
-	}
+  for (int i = 0; i < n; i++) {
+    shapes_.add(ShapeChilds::Triangle::create());
+  }
   update();
 }
 
 void Window::addEllipse() {
   int n = int(nAdjustment_->get_value());
-	for (int i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     shapes_.add(ShapeChilds::Ellipse::create());
-	}
+  }
   update();
 }
 
@@ -290,19 +290,19 @@ bool Window::activate(GdkEventButton* event) {
     }
     update();
   }
-	return true;
+  return true;
 }
 
 bool Window::moveActive(GdkEventMotion* event) {
   shapes_.moveActive(Point(float(event->x), float(event->y)));
   update();
-	return true;
+  return true;
 }
 
 bool Window::release(GdkEventButton*) {
-	shapes_.release();
-	update();
-	return true;
+  shapes_.release();
+  update();
+  return true;
 }
 
 bool Window::scrollZoom(GdkEventScroll* event) {

@@ -46,11 +46,11 @@ private:
   Point position_;
   /// \brief draw area sizes
   Sizes sizes_;
-	/// \brief number of cloned objects when doing trace
-	unsigned char traceSize_;
-	/// \brief interval between saving state of Shape object
-	/// when doing trace
-	float traceTime_;
+  /// \brief number of cloned objects when doing trace
+  unsigned char traceSize_;
+  /// \brief interval between saving state of Shape object
+  /// when doing trace
+  float traceTime_;
   Cairo::Matrix defaultMatrix_;
 };
 

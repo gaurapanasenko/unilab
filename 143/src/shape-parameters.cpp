@@ -16,7 +16,7 @@ ShapeParameters::ShapeParameters()
 : position_(Point(0, 0)), traceSize_(0), traceTime_(0.1f) {}
 
 const Point& ShapeParameters::getPosition() const {
-	return position_;
+  return position_;
 }
 
 void ShapeParameters::setPosition(const Point& position) {
@@ -85,29 +85,29 @@ void ShapeParameters::setMinimumZoom(float minimumZoom) {
 }
 
 unsigned char ShapeParameters::getTraceSize() {
-	return traceSize_;
+  return traceSize_;
 }
 
 void ShapeParameters::setTraceSize(const unsigned char traceSize) {
-	traceSize_ = traceSize;
+  traceSize_ = traceSize;
 }
 
 float ShapeParameters::getTraceTime() {
-	return traceTime_;
+  return traceTime_;
 }
 
 void ShapeParameters::setTraceTime(float traceTime) {
-	traceTime_ = traceTime;
+  traceTime_ = traceTime;
 }
 
 const Cairo::Matrix& ShapeParameters::getDefaultMatrix() {
-	return defaultMatrix_;
+  return defaultMatrix_;
 }
 
 void ShapeParameters::setDefaultMatrix(
   const Cairo::Matrix& defaultMatrix
 ) {
-	defaultMatrix_ = defaultMatrix;
+  defaultMatrix_ = defaultMatrix;
 }
 
 ShapeParameters SHAPE;

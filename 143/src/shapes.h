@@ -44,20 +44,20 @@ public:
   ShapeTrace& operator=(const ShapeTrace&) = default;
   ShapeTrace& operator=(ShapeTrace&&) = default;
 
-	/// \brief Draws all Shape objects that being stored in queue.
-	/// \param context class used to draw
+  /// \brief Draws all Shape objects that being stored in queue.
+  /// \param context class used to draw
   void draw(const Cairo::RefPtr<Cairo::Context>& context,
             bool selected);
 
 private:
   /// \brief Glib::RefPtr to Shape object that being traced
   std::shared_ptr<Shape> shape_;
-	/// \brief queue of Shape objects to create trace
+  /// \brief queue of Shape objects to create trace
   std::vector< std::shared_ptr<Shape> > queue_;
-	/// \brief index to last added element
-	unsigned char tail_;
-	/// \brief time when last element was added
-	clock_t time_;
+  /// \brief index to last added element
+  unsigned char tail_;
+  /// \brief time when last element was added
+  clock_t time_;
 };
 
 /// Processes one shape on paining
@@ -70,77 +70,77 @@ public:
   Shape& operator=(const Shape&) = default;
   Shape& operator=(Shape&&) = default;
 
-	/// \brief Virtual destructor to support inheritance
+  /// \brief Virtual destructor to support inheritance
   virtual ~Shape();
-	/// \brief Virtual method to draw specific inherited shape
+  /// \brief Virtual method to draw specific inherited shape
   virtual void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
                          bool selected, float alpha = 0.8f);
-	/// \brief Virtual cloning method to support inheritance
+  /// \brief Virtual cloning method to support inheritance
   virtual const std::shared_ptr<Shape> clone();
-	/// \brief Checks is point is in shape by shape parameters
-	/// \param p checking point
-	/// \return true if point in shape, else false
+  /// \brief Checks is point is in shape by shape parameters
+  /// \param p checking point
+  /// \return true if point in shape, else false
   virtual bool isInShapeVirtual(const Point& p) const;
 
   /// \brief Checks that object fields are valid for device size
   /// \param allocation position and size of drawing widget
   void render(bool selected);
-	/// \brief Checks that two shape objects are intersected
+  /// \brief Checks that two shape objects are intersected
   bool areIntersected(const std::shared_ptr<Shape>& shape,
                       bool wasIntersected);
-	/// \brief Drawing shape on painting
-	/// \param context class used to draw
-	/// \param alpha sets transparency for shape
+  /// \brief Drawing shape on painting
+  /// \param context class used to draw
+  /// \param alpha sets transparency for shape
   void draw(const Cairo::RefPtr<Cairo::Context>& context,
             bool selected, float alpha = 0.8f);
-	/// \brief Checks is point is in shape
-	/// \param p checking point
-	/// \return true if point in shape, else false
+  /// \brief Checks is point is in shape
+  /// \param p checking point
+  /// \return true if point in shape, else false
   bool isInShape(const Point& point) const;
 
-	/// \brief Getter for current position, if shape is not deformed,
-	/// the position will be center of shape
-	/// \return position point
-	const Point& getPosition() const;
-	/// \brief Setter for position of shape
-	/// \param point point of center of shape
+  /// \brief Getter for current position, if shape is not deformed,
+  /// the position will be center of shape
+  /// \return position point
+  const Point& getPosition() const;
+  /// \brief Setter for position of shape
+  /// \param point point of center of shape
   void setPosition(const Point& position);
   const Size& getSize() const;
   void setSize(const Size& size);
   void setSizeForce(const Size& size);
-	/// \brief Getter for current zoom
+  /// \brief Getter for current zoom
   float getZoom() const;
   /// \brief Setter for current zoom
   void setZoom(float zoom);
 
-	/// \brief Toggles visibility of shape
-	void toggleVisibility();
-	/// \brief Sets random color to shape
-	void changeColor();
-	/// \brief Sets default parameters for shape
-	void reset();
-	/// \brief Checks if shape has trace
-	/// \return true if has trace, else false
-	bool hasTrace();
-	/// \brief Toggles trace of shape
-	void toggleTrace();
+  /// \brief Toggles visibility of shape
+  void toggleVisibility();
+  /// \brief Sets random color to shape
+  void changeColor();
+  /// \brief Sets default parameters for shape
+  void reset();
+  /// \brief Checks if shape has trace
+  /// \return true if has trace, else false
+  bool hasTrace();
+  /// \brief Toggles trace of shape
+  void toggleTrace();
 
 private:
-	/// \brief Current frame of object
-	Point position_;
-	/// \brief Default zoom
+  /// \brief Current frame of object
+  Point position_;
+  /// \brief Default zoom
   Size size_;
-	/// \brief Current zoom
-	float zoom_;
-	/// \brief Color, that is generating in constructor
-	Color defaultColor_;
-	/// \brief Current color of shape
+  /// \brief Current zoom
+  float zoom_;
+  /// \brief Color, that is generating in constructor
+  Color defaultColor_;
+  /// \brief Current color of shape
   Color color_;
-	/// \brief Saved path for automated motion
-	//Array<Point> path_;
-	/// \brief Defines visibility of shape
-	bool visible_;
-	/// \brief Defines visibility of shape
+  /// \brief Saved path for automated motion
+  //Array<Point> path_;
+  /// \brief Defines visibility of shape
+  bool visible_;
+  /// \brief Defines visibility of shape
   bool trace_;
 };
 
@@ -148,8 +148,8 @@ private:
 class Shapes {
 public:
   class Element;
-	/// \brief Default construction that initializes fields
-	Shapes();
+  /// \brief Default construction that initializes fields
+  Shapes();
 
   /// \brief Getter for iterator of active shape
   /// \return Iterator to element with reference to Shape
@@ -158,41 +158,41 @@ public:
   std::vector<Element>::iterator getTopIterator(const Point& point);
   std::shared_ptr<Shape> getTop(const Point& point);
 
-	/// \brief Adds new Shape object to list of objects
+  /// \brief Adds new Shape object to list of objects
   /// \param item Wrapped pointer to Shape object in pointer object
   void add(const std::shared_ptr<Shape>& pointer);
-	/// \brief Deletes Shape object on index
-	/// \param index index of object that will be deleted
+  /// \brief Deletes Shape object on index
+  /// \param index index of object that will be deleted
   void erase(const std::vector<Element>::iterator& iterator);
   void toggleSelection(const std::vector<Element>::iterator& iterator);
 
-	/// \brief Activates Shape object if point in argument placed in Shape
-	/// \param p point by which finding Shape object
-	void activate(const Point& p);
-	/// \brief Moves Shape object activated by function activate
-	/// to a new position relatively position where object was activated
-	/// \param p new position of shape relatively of activation point
-	void moveActive(const Point& p);
-	/// \brief Releases activated object, so it will not be
-	/// moved by moveActive.
-	void release();
+  /// \brief Activates Shape object if point in argument placed in Shape
+  /// \param p point by which finding Shape object
+  void activate(const Point& p);
+  /// \brief Moves Shape object activated by function activate
+  /// to a new position relatively position where object was activated
+  /// \param p new position of shape relatively of activation point
+  void moveActive(const Point& p);
+  /// \brief Releases activated object, so it will not be
+  /// moved by moveActive.
+  void release();
 
   void render();
-	/// \brief Draws all Shape objects that stored in list
-	/// \param context class used to draw
-	void draw(const Cairo::RefPtr<Cairo::Context>& context);
+  /// \brief Draws all Shape objects that stored in list
+  /// \param context class used to draw
+  void draw(const Cairo::RefPtr<Cairo::Context>& context);
 
   const std::vector< std::shared_ptr<Shape> > getSelected();
 
 private:
-	/// \brief Array of elements
+  /// \brief Array of elements
   std::vector<Element> array_;
   std::vector< std::vector<bool> > intersected_;
   std::vector< std::shared_ptr<Shape> > selected_;
-	/// \brief Detects that active id will be moved by mouse motion
-	bool activated_;
-	/// \brief Activation point of Shape object
-	Point activationPoint_;
+  /// \brief Detects that active id will be moved by mouse motion
+  bool activated_;
+  /// \brief Activation point of Shape object
+  Point activationPoint_;
 
 };
 
