@@ -53,6 +53,14 @@ bool operator==(const Cell& lhs, const Cell& rhs) {
   return b1 && b2 && b3;
 }
 
+
+std::istream& operator>>(std::istream& input, Cell cell) {
+  real x;
+  input >> x;
+  cell = x;
+  return input;
+}
+
 /***************
 * CellIterator *
 ***************/
@@ -338,16 +346,22 @@ Minor::Minor(Wrapper& wrapper, sizeType row,
              sizeType column, sizeType rows, sizeType columns)
   : wrapper_(wrapper), row_(row), column_(column),
     rows_(rows), columns_(columns) {
+  if (rows_ == ULLONG_MAX) {
+    rows_ = wrapper_.getColumnsSize();
+  }
+  if (columns_ == ULLONG_MAX) {
+    columns_ = wrapper_.getRowsSize();
+  }
   if (row_ >= wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such row");
   }
   if (column_ >= wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such column");
   }
-  if (row_ + rows_ >= wrapper_.getRowsSize()) {
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such rows");
   }
-  if (column_ + columns_ >= wrapper_.getColumnsSize()) {
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such columns");
   }
 }
@@ -362,10 +376,10 @@ Minor::Minor(Column& column)
   if (column_ >= wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such column");
   }
-  if (row_ + rows_ >= wrapper_.getRowsSize()) {
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such rows");
   }
-  if (column_ + columns_ >= wrapper_.getColumnsSize()) {
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such columns");
   }
 }
@@ -380,10 +394,10 @@ Minor::Minor(Row& row)
   if (column_ >= wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such column");
   }
-  if (row_ + rows_ >= wrapper_.getRowsSize()) {
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such rows");
   }
-  if (column_ + columns_ >= wrapper_.getColumnsSize()) {
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such columns");
   }
 
@@ -412,16 +426,22 @@ ConstMinor::ConstMinor(const Wrapper& wrapper, sizeType row,
                        sizeType column, sizeType rows, sizeType columns)
   : wrapper_(wrapper), row_(row), column_(column),
     rows_(rows), columns_(columns) {
+  if (rows_ == ULLONG_MAX) {
+    rows_ = wrapper_.getColumnsSize();
+  }
+  if (columns_ == ULLONG_MAX) {
+    columns_ = wrapper_.getRowsSize();
+  }
   if (row_ >= wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such row");
   }
   if (column_ >= wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such column");
   }
-  if (row_ + rows_ >= wrapper_.getRowsSize()) {
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such rows");
   }
-  if (column_ + columns_ >= wrapper_.getColumnsSize()) {
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such columns");
   }
 }
@@ -436,10 +456,10 @@ ConstMinor::ConstMinor(ConstColumn& column)
   if (column_ >= wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such column");
   }
-  if (row_ + rows_ >= wrapper_.getRowsSize()) {
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such rows");
   }
-  if (column_ + columns_ >= wrapper_.getColumnsSize()) {
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such columns");
   }
 }
@@ -454,10 +474,10 @@ ConstMinor::ConstMinor(ConstRow& row)
   if (column_ >= wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such column");
   }
-  if (row_ + rows_ >= wrapper_.getRowsSize()) {
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
     throw std::domain_error("Wrong Minor: no such rows");
   }
-  if (column_ + columns_ >= wrapper_.getColumnsSize()) {
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
     throw std::domain_error("Wrong Minor: no such columns");
   }
 
@@ -530,7 +550,7 @@ void Matrix::setData(sizeType row, sizeType column, real data) {
   matrix_[row][column] = data;
 }
 
-const Matrix operator*(const ConstMinor& lhs, const ConstMinor& rhs) {
+const Matrix operator*(ConstMinor lhs, ConstMinor rhs) {
   if (lhs.getColumnsSize() != rhs.getRowsSize()) {
     throw std::domain_error("Can't multiply matrices");
   }
@@ -549,7 +569,7 @@ const Matrix operator*(const ConstMinor& lhs, const ConstMinor& rhs) {
   return m;
 }
 
-const Matrix operator+(const ConstMinor& lhs, const ConstMinor& rhs) {
+const Matrix operator+(ConstMinor lhs, ConstMinor rhs) {
   bool bw = lhs.getColumnsSize() != rhs.getColumnsSize();
   bool bh = lhs.getRowsSize() != rhs.getRowsSize();
   if (bw || bh) {
@@ -562,9 +582,10 @@ const Matrix operator+(const ConstMinor& lhs, const ConstMinor& rhs) {
       m[i][j] = lhs[i][j] + rhs[i][j];
     }
   }
+  return m;
 }
 
-const Matrix operator-(const ConstMinor& lhs, const ConstMinor& rhs) {
+const Matrix operator-(ConstMinor lhs, ConstMinor rhs) {
   bool bw = lhs.getColumnsSize() != rhs.getColumnsSize();
   bool bh = lhs.getRowsSize() != rhs.getRowsSize();
   if (bw || bh) {
@@ -577,6 +598,28 @@ const Matrix operator-(const ConstMinor& lhs, const ConstMinor& rhs) {
       m[i][j] = lhs[i][j] - rhs[i][j];
     }
   }
+  return m;
+}
+
+std::ostream& operator<<(std::ostream& output, ConstMinor data) {
+  size_t a = data.getRowsSize(), b = data.getColumnsSize();
+  for (sizeType i = 0; i < a; i++) {
+    for (sizeType j = 0; j < b; j++) {
+      output << data[i][j] << " ";
+    }
+    output << "\n";
+  }
+  return output;
+}
+
+std::istream& operator>>(std::istream& input, Minor data) {
+  size_t a = data.getRowsSize(), b = data.getColumnsSize();
+  for (sizeType i = 0; i < a; i++) {
+    for (sizeType j = 0; j < b; j++) {
+      input >> data[i][j];
+    }
+  }
+  return input;
 }
 
 }

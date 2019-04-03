@@ -29,6 +29,8 @@ private:
   sizeType row_, column_;
 };
 
+std::istream& operator>>(std::istream& input, Cell cell);
+
 bool operator==(const Cell& lhs, const Cell& rhs);
 
 class CellIterator
@@ -185,7 +187,7 @@ private:
 
 class ConstMinor : public Wrapper {
 public:
-  explicit ConstMinor(const Wrapper& wrapper, sizeType row = 0,
+  ConstMinor(const Wrapper& wrapper, sizeType row = 0,
         sizeType column = 0,
         sizeType rows = ULLONG_MAX,
         sizeType columns = ULLONG_MAX);
@@ -226,10 +228,11 @@ private:
   sizeType rows_, columns_;
 };
 
-const Matrix operator*(const ConstMinor& lhs, const ConstMinor& rhs);
-const Matrix operator+(const ConstMinor& lhs, const ConstMinor& rhs);
-const Matrix operator-(const ConstMinor& lhs, const ConstMinor& rhs);
-std::ostream& operator<<(std::ostream& output, const Minor& data);
+const Matrix operator*(ConstMinor lhs, ConstMinor rhs);
+const Matrix operator+(ConstMinor lhs, ConstMinor rhs);
+const Matrix operator-(ConstMinor lhs, ConstMinor rhs);
+std::ostream& operator<<(std::ostream& output, ConstMinor data);
+std::istream& operator>>(std::istream& input, Minor data);
 
 }
 
