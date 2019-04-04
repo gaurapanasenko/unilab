@@ -3,10 +3,10 @@
 #include <gtkmm/treepath.h>
 #include <cmath>
 
-/**************
-* SimpleStore *
-**************/
-SimpleStore::SimpleStore(sizeType size)
+/********
+* Store *
+*********/
+Store::Store(sizeType size)
   : columnRecord(),
     modelColumns(size), stamp(1), columnsSize_(size) {
   for(unsigned int i = 0; i < modelColumns.size(); ++i) {
@@ -14,9 +14,9 @@ SimpleStore::SimpleStore(sizeType size)
   }
 }
 
-SimpleStore::~SimpleStore() {}
+Store::~Store() {}
 
-void SimpleStore::resize(sizeType rows, sizeType columns, real data) {
+void Store::resize(sizeType rows, sizeType columns, real data) {
   sizeType oldRows = getRowsSizeVirtual();
   resizeVirtual(rows, columns, data);
   stamp++;
@@ -50,22 +50,22 @@ void SimpleStore::resize(sizeType rows, sizeType columns, real data) {
   }
 }
 
-sizeType SimpleStore::getColumnsSize() const {
+sizeType Store::getColumnsSize() const {
   return columnsSize_;
 }
 
-sizeType SimpleStore::getRowsSize() const {
+sizeType Store::getRowsSize() const {
   return getRowsSizeVirtual();
 }
 
-real SimpleStore::getData(sizeType row, sizeType column) const {
+real Store::getData(sizeType row, sizeType column) const {
   if (row >= getRowsSize() || column >= getColumnsSize()) {
     return NAN;
   }
   return getDataVirtual(row, column);
 }
 
-void SimpleStore::setData(sizeType row, sizeType column, real data) {
+void Store::setData(sizeType row, sizeType column, real data) {
   if (row >= getRowsSize() || column >= getColumnsSize()) {
     return;
   }
@@ -77,51 +77,51 @@ void SimpleStore::setData(sizeType row, sizeType column, real data) {
   row_changed(get_path(iter), iter);
 }
 
-Gtk::TreeModelColumn<real>& SimpleStore::get_model_column(
+Gtk::TreeModelColumn<real>& Store::get_model_column(
     sizeType column) {
   return modelColumns[column];
 }
 
-SimpleStore& SimpleStore::getReference() {
+Store& Store::getReference() {
   return *this;
 }
 
-void SimpleStore::resizeVirtual(sizeType rows, sizeType columns,
+void Store::resizeVirtual(sizeType rows, sizeType columns,
                                 real data) {}
 
-sizeType SimpleStore::getColumnsSizeVirtual() const {
+sizeType Store::getColumnsSizeVirtual() const {
   return 0;
 }
 
-sizeType SimpleStore::getRowsSizeVirtual() const {
+sizeType Store::getRowsSizeVirtual() const {
   return 0;
 }
 
-real SimpleStore::getDataVirtual(
+real Store::getDataVirtual(
   sizeType row, sizeType column
 ) const {
   return 0;
 }
 
-void SimpleStore::setDataVirtual(
+void Store::setDataVirtual(
   sizeType row, sizeType column, real data
 ) {}
 
-Gtk::TreeModelFlags SimpleStore::get_flags_vfunc() const {
+Gtk::TreeModelFlags Store::get_flags_vfunc() const {
   return Gtk::TreeModelFlags(0);
 }
 
-int SimpleStore::get_n_columns_vfunc() const {
+int Store::get_n_columns_vfunc() const {
   return columnsSize_;
 }
 
-GType SimpleStore::get_column_type_vfunc(int index) const {
+GType Store::get_column_type_vfunc(int index) const {
   if(index <= (int)modelColumns.size())
     return modelColumns[index].type();
   else return 0;
 }
 
-bool SimpleStore::iter_next_vfunc(const iterator& iter,
+bool Store::iter_next_vfunc(const iterator& iter,
                                   iterator& iter_next) const {
   iter_next = iterator();
   long index = (long)iter.gobj()->user_data;
@@ -135,7 +135,7 @@ bool SimpleStore::iter_next_vfunc(const iterator& iter,
   }
 }
 
-bool SimpleStore::get_iter_vfunc(const Path& path,
+bool Store::get_iter_vfunc(const Path& path,
                                  iterator& iter) const {
   iter = iterator();
   unsigned sz = path.size();
@@ -150,24 +150,24 @@ bool SimpleStore::get_iter_vfunc(const Path& path,
   return true;
 }
 
-bool SimpleStore::iter_children_vfunc(const iterator& parent,
+bool Store::iter_children_vfunc(const iterator& parent,
                                       iterator& iter) const {
   return iter_nth_child_vfunc(parent, 0, iter);
 }
 
-bool SimpleStore::iter_parent_vfunc(const iterator& child,
+bool Store::iter_parent_vfunc(const iterator& child,
                                     iterator& iter) const {
   iter = iterator();
   return false;
 }
 
-bool SimpleStore::iter_nth_child_vfunc(const iterator& parent,
+bool Store::iter_nth_child_vfunc(const iterator& parent,
                                        int n, iterator& iter) const {
   iter = iterator();
   return false;
 }
 
-bool SimpleStore::iter_nth_root_child_vfunc(int n,
+bool Store::iter_nth_root_child_vfunc(int n,
                                             iterator& iter) const {
   iter = iterator();
   if(n < (int) getRowsSize()) {
@@ -179,19 +179,19 @@ bool SimpleStore::iter_nth_root_child_vfunc(int n,
   return false;
 }
 
-bool SimpleStore::iter_has_child_vfunc(const iterator& iter) const {
+bool Store::iter_has_child_vfunc(const iterator& iter) const {
   return (iter_n_children_vfunc(iter) > 0);
 }
 
-int SimpleStore::iter_n_children_vfunc(const iterator& iter) const {
+int Store::iter_n_children_vfunc(const iterator& iter) const {
   return 0;
 }
 
-int SimpleStore::iter_n_root_children_vfunc() const {
+int Store::iter_n_root_children_vfunc() const {
   return getRowsSize();
 }
 
-Gtk::TreeModel::Path SimpleStore::get_path_vfunc(
+Gtk::TreeModel::Path Store::get_path_vfunc(
     const iterator& iter) const {
   const long index = (long) iter.gobj()->user_data;
   if (index < (long) getRowsSize()) {
@@ -203,7 +203,7 @@ Gtk::TreeModel::Path SimpleStore::get_path_vfunc(
   }
 }
 
-void SimpleStore::get_value_vfunc(const TreeModel::iterator& iter,
+void Store::get_value_vfunc(const TreeModel::iterator& iter,
                                   int column,
                                   Glib::ValueBase& value) const {
   Gtk::TreeModelColumn<real>::ValueType valueSpecific;
@@ -224,7 +224,7 @@ void SimpleStore::get_value_vfunc(const TreeModel::iterator& iter,
   value = valueSpecific;
 }
 
-void SimpleStore::set_value_impl(const iterator& row,
+void Store::set_value_impl(const iterator& row,
                                  int column,
                                  const Glib::ValueBase& value) {
   auto new_value = reinterpret_cast<Glib::Value<real>&>(
@@ -235,7 +235,7 @@ void SimpleStore::set_value_impl(const iterator& row,
   row_changed(get_path(row), row);
 }
 
-bool SimpleStore::check_treeiter_validity(
+bool Store::check_treeiter_validity(
   const const_iterator& iter
 ) const {
   return stamp == iter.get_stamp();
@@ -245,7 +245,7 @@ bool SimpleStore::check_treeiter_validity(
 * TwoStore *
 ***********/
 TwoStore::TwoStore(sizeType size)
-  : Glib::ObjectBase(typeid(TwoStore)), SimpleStore(size + 1),
+  : Glib::ObjectBase(typeid(TwoStore)), Store(size + 1),
     Glib::Object(), a_(size, size, 1), y_(size, 1, 1) {}
 
 Glib::RefPtr<TwoStore> TwoStore::create(sizeType size) {
@@ -298,7 +298,7 @@ void TwoStore::setDataVirtual(
 * OneStore *
 ***********/
 OneStore::OneStore(sizeType size)
-  : Glib::ObjectBase(typeid(OneStore)), SimpleStore(1),
+  : Glib::ObjectBase(typeid(OneStore)), Store(1),
     Glib::Object(), matrix_(size, 1, 0) {}
 
 Glib::RefPtr<OneStore> OneStore::create(sizeType size) {

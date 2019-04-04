@@ -5,19 +5,18 @@
 
 #include <gtkmm/treemodel.h>
 
-class SimpleStore : public Gtk::TreeModel, Matrix::Wrapper {
+class Store : public Gtk::TreeModel, Matrix::Wrapper {
 protected:
-  SimpleStore(sizeType size = 3);
-   ~SimpleStore() override;
-
+  Store(sizeType size = 3);
+   ~Store() override;
 
 public:
-  SimpleStore(const SimpleStore&) = delete;
-  SimpleStore(SimpleStore&&) = delete;
-  SimpleStore& operator=(const SimpleStore&) = delete;
-  SimpleStore& operator=(SimpleStore&&) = delete;
+  Store(const Store&) = delete;
+  Store(Store&&) = delete;
+  Store& operator=(const Store&) = delete;
+  Store& operator=(Store&&) = delete;
   Gtk::TreeModelColumn<real>& get_model_column(sizeType column);
-  SimpleStore& getReference();
+  Store& getReference();
 
   void resize(sizeType rows, sizeType columns, real data) override;
   sizeType getColumnsSize() const override;
@@ -67,7 +66,7 @@ private:
   sizeType columnsSize_;
 };
 
-class TwoStore : public SimpleStore::SimpleStore, public Glib::Object {
+class TwoStore : public Store::Store, public Glib::Object {
 protected:
   TwoStore(sizeType size = 3);
 
@@ -90,7 +89,7 @@ private:
 };
 
 class OneStore
-    : public SimpleStore::SimpleStore, public Glib::Object {
+    : public Store, public Glib::Object {
 protected:
   OneStore(sizeType size = 3);
 
