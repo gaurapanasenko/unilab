@@ -299,7 +299,7 @@ sizeType ConstColumn::getColumn() const {
 /**********
 * Wrapper *
 **********/
-void Wrapper::resize(sizeType rows, sizeType columns) {}
+void Wrapper::resize(sizeType rows, sizeType columns, real data) {}
 
 sizeType Wrapper::getColumnsSize() const {
   return 0;
@@ -525,12 +525,12 @@ Matrix::Matrix(sizeType rows, sizeType columns, real data)
   : rows_(rows), columns_(columns),
     matrix_(rows, std::vector<real>(columns, data)) {}
 
-void Matrix::resize(sizeType rows, sizeType columns) {
+void Matrix::resize(sizeType rows, sizeType columns, real data) {
   rows_ = rows;
   columns_ = columns;
-  matrix_.resize(rows_);
+  matrix_.resize(rows_, std::vector<real>(columns_, data));
   for (auto& i : matrix_) {
-    i.resize(columns_);
+    i.resize(columns_, data);
   }
 }
 

@@ -149,7 +149,7 @@ class Wrapper {
 public:
   Wrapper() = default;
 
-  virtual void resize(sizeType rows, sizeType columns);
+  virtual void resize(sizeType rows, sizeType columns, real data);
   virtual sizeType getColumnsSize() const;
   virtual sizeType getRowsSize() const;
   virtual real getData(sizeType row,
@@ -182,7 +182,7 @@ public:
 
 private:
   Wrapper& wrapper_;
-  sizeType column_, row_, rows_, columns_;
+  sizeType row_, column_, rows_, columns_;
 };
 
 class ConstMinor : public Wrapper {
@@ -199,7 +199,7 @@ public:
 
 private:
   const Wrapper& wrapper_;
-  sizeType column_, row_, rows_, columns_;
+  sizeType row_, column_, rows_, columns_;
 };
 
 class Number : public Wrapper {
@@ -217,15 +217,15 @@ class Matrix : public Wrapper {
 public:
   Matrix();
   Matrix(sizeType rows, sizeType columns, real data = 0);
-  void resize(sizeType rows, sizeType columns) override;
+  void resize(sizeType rows, sizeType columns, real data) override;
   sizeType getColumnsSize() const override;
   sizeType getRowsSize() const override;
   real getData(sizeType row, sizeType column) const override;
   void setData(sizeType row, sizeType column, real data) override;
 
 private:
-  std::vector< std::vector<real> > matrix_;
   sizeType rows_, columns_;
+  std::vector< std::vector<real> > matrix_;
 };
 
 const Matrix operator*(ConstMinor lhs, ConstMinor rhs);
