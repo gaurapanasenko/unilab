@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0) # setting this is required
-project(main)                       # this sets the project name
+project(143)                        # this sets the project name
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 ###############################################################################
 ## file globbing ##############################################################

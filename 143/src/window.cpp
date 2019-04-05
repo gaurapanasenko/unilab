@@ -92,7 +92,7 @@ Window::Window(BaseObjectType* cobject,
   drawingArea_->signal_scroll_event().connect(mfs);
 
   dispatcher.connect(sigc::mem_fun(*this, &Window::thread));
-  thread();
+  //thread();
   parametersChanged();
 }
 

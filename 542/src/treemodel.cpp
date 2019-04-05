@@ -136,7 +136,7 @@ bool Store::iter_next_vfunc(const iterator& iter,
 }
 
 bool Store::get_iter_vfunc(const Path& path,
-                                 iterator& iter) const {
+                           iterator& iter) const {
   iter = iterator();
   unsigned sz = path.size();
   if(!sz || sz > 1) {
@@ -162,13 +162,12 @@ bool Store::iter_parent_vfunc(const iterator& child,
 }
 
 bool Store::iter_nth_child_vfunc(const iterator& parent,
-                                       int n, iterator& iter) const {
+                                 int n, iterator& iter) const {
   iter = iterator();
   return false;
 }
 
-bool Store::iter_nth_root_child_vfunc(int n,
-                                            iterator& iter) const {
+bool Store::iter_nth_root_child_vfunc(int n, iterator& iter) const {
   iter = iterator();
   if(n < (int) getRowsSize()) {
     iter.set_stamp(stamp);
@@ -191,8 +190,8 @@ int Store::iter_n_root_children_vfunc() const {
   return getRowsSize();
 }
 
-Gtk::TreeModel::Path Store::get_path_vfunc(
-    const iterator& iter) const {
+Gtk::TreeModel::Path
+Store::get_path_vfunc(const iterator& iter) const {
   const long index = (long) iter.gobj()->user_data;
   if (index < (long) getRowsSize()) {
     auto path = Path(1);
@@ -207,16 +206,13 @@ void Store::get_value_vfunc(const TreeModel::iterator& iter,
                                   int column,
                                   Glib::ValueBase& value) const {
   Gtk::TreeModelColumn<real>::ValueType valueSpecific;
-  valueSpecific.init(
-    Gtk::TreeModelColumn<real>::ValueType::value_type()
-  );
+  auto vt = Gtk::TreeModelColumn<real>::ValueType::value_type();
+  valueSpecific.init(vt);
   auto index = (long)iter.gobj()->user_data;
   real result;
-  if (
-    check_treeiter_validity(iter) &&
-    column <= (int) getColumnsSize() &&
-    index < (long) getRowsSize()
-  ) {
+  bool bc = column < int(getColumnsSize());
+  bool br = index < long(getRowsSize());
+  if (check_treeiter_validity(iter) && bc && br) {
     result = getData(index, column);
   } else result = NAN;
   valueSpecific.set(result);
@@ -224,9 +220,8 @@ void Store::get_value_vfunc(const TreeModel::iterator& iter,
   value = valueSpecific;
 }
 
-void Store::set_value_impl(const iterator& row,
-                                 int column,
-                                 const Glib::ValueBase& value) {
+void Store::set_value_impl(const iterator& row, int column,
+                           const Glib::ValueBase& value) {
   auto new_value = reinterpret_cast<Glib::Value<real>&>(
     const_cast<Glib::ValueBase&>(value)
   ).get();
@@ -319,10 +314,10 @@ sizeType OneStore::getRowsSizeVirtual() const {
 }
 
 real OneStore::getDataVirtual(sizeType row, sizeType column) const {
-  return matrix_[column][row];
+  return matrix_[row][column];
 }
 
 void OneStore::setDataVirtual(sizeType row, sizeType column,
                               real data) {
-  matrix_[column][row] = data;
+  matrix_[row][column] = data;
 }

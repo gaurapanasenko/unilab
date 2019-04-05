@@ -17,9 +17,17 @@ Cell::Cell(Wrapper& wrapper, sizeType row,
   }
 }
 
+Cell& Cell::operator=(const Cell& cell) {
+  return (*this) = real(cell);;
+}
+
 Cell& Cell::operator=(real data) {
   wrapper_.setData(row_, column_, data);
   return *this;
+}
+
+Cell::operator real() {
+  return wrapper_.getData(row_, column_);
 }
 
 Cell::operator real() const {
@@ -163,10 +171,10 @@ ConstCell::ConstCell(const Wrapper& wrapper, sizeType row,
                      sizeType column)
   : wrapper_(wrapper), row_(row), column_(column) {
   if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Cell: no such row");
+    throw std::domain_error("Wrong ConstCell: no such row");
   }
   if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Cell: no such column");
+    throw std::domain_error("Wrong ConstCell: no such column");
   }
 }
 
@@ -242,9 +250,12 @@ ConstCellIterator::operator*() {
 ConstRow::ConstRow(const Wrapper& wrapper, sizeType row)
   : wrapper_(wrapper), row_(row) {
   if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Row: no such row");
+    throw std::domain_error("Wrong ConstRow: no such row");
   }
 }
+
+ConstRow::ConstRow(Row row)
+  : wrapper_(row.getWrapper()), row_(row.getRow()) {}
 
 ConstCell ConstRow::operator[](sizeType column) {
   return ConstCell(wrapper_, row_, column);
@@ -272,9 +283,12 @@ sizeType ConstRow::getRow() const {
 ConstColumn::ConstColumn(const Wrapper& wrapper, sizeType column)
   : wrapper_(wrapper), column_(column) {
   if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Column: no such row");
+    throw std::domain_error("Wrong ConstColumn: no such row");
   }
 }
+
+ConstColumn::ConstColumn(Column column)
+  : wrapper_(column.getWrapper()), column_(column.getColumn()) {}
 
 ConstCell ConstColumn::operator[](sizeType row) {
   return ConstCell(wrapper_, row, column_);
@@ -331,6 +345,10 @@ ConstColumn Wrapper::getColumn(sizeType column) const {
   return ConstColumn(*this, column);
 }
 
+sizeType Wrapper::size() {
+  return getRowsSize();
+}
+
 Row Wrapper::operator[](sizeType row) {
   return getRow(row);
 }
@@ -346,61 +364,30 @@ Minor::Minor(Wrapper& wrapper, sizeType row,
              sizeType column, sizeType rows, sizeType columns)
   : wrapper_(wrapper), row_(row), column_(column),
     rows_(rows), columns_(columns) {
-  if (rows_ == ULLONG_MAX) {
-    rows_ = wrapper_.getColumnsSize();
-  }
-  if (columns_ == ULLONG_MAX) {
-    columns_ = wrapper_.getRowsSize();
-  }
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such column");
-  }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such rows");
-  }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such columns");
-  }
+  validate();
 }
 
-Minor::Minor(Column& column)
+Minor::Minor(Column column)
   : wrapper_(column.getWrapper()), row_(0),
     column_(column.getColumn()),
-    rows_(wrapper_.getRowsSize() - 1), columns_(1) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such column");
-  }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such rows");
-  }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such columns");
-  }
+    rows_(wrapper_.getRowsSize()), columns_(1) {
+  validate();
 }
 
-Minor::Minor(Row& row)
+Minor::Minor(Row row)
   : wrapper_(row.getWrapper()), row_(row.getRow()),
     column_(0),
     rows_(1), columns_(wrapper_.getColumnsSize() - 1) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such column");
-  }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such rows");
-  }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such columns");
-  }
+  validate();
+}
 
+Minor& Minor::operator=(ConstMinor minor) {
+  bool b1 = getRowsSize() != minor.getRowsSize();
+  bool b2 = getColumnsSize() != minor.getColumnsSize();
+  if (b1 || b2) {
+    throw std::domain_error("Wrong size on copy minors");
+  }
+  std::copy();
 }
 
 sizeType Minor::getColumnsSize() const {
@@ -419,6 +406,39 @@ void Minor::setData(sizeType row, sizeType column, real data) {
   wrapper_.setData(row_ + row, column_ + column, data);
 }
 
+Wrapper& Minor::getWrapper() {
+  return wrapper_;
+}
+
+sizeType Minor::getRowMinor() {
+  return row_;
+}
+
+sizeType Minor::getColumnMinor() {
+  return column_;
+}
+
+void Minor::validate() {
+  if (rows_ == autoSizeMask) {
+    rows_ = wrapper_.getRowsSize();
+  }
+  if (columns_ == autoSizeMask) {
+    columns_ = wrapper_.getColumnsSize();
+  }
+  if (row_ >= wrapper_.getRowsSize()) {
+    throw std::domain_error("Wrong Minor: no such row");
+  }
+  if (column_ >= wrapper_.getColumnsSize()) {
+    throw std::domain_error("Wrong Minor: no such column");
+  }
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
+    throw std::domain_error("Wrong Minor: no such rows");
+  }
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
+    throw std::domain_error("Wrong Minor: no such columns");
+  }
+}
+
 /*************
 * ConstMinor *
 *************/
@@ -426,61 +446,43 @@ ConstMinor::ConstMinor(const Wrapper& wrapper, sizeType row,
                        sizeType column, sizeType rows, sizeType columns)
   : wrapper_(wrapper), row_(row), column_(column),
     rows_(rows), columns_(columns) {
-  if (rows_ == ULLONG_MAX) {
-    rows_ = wrapper_.getColumnsSize();
-  }
-  if (columns_ == ULLONG_MAX) {
-    columns_ = wrapper_.getRowsSize();
-  }
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such column");
-  }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such rows");
-  }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such columns");
-  }
+  validate();
 }
 
-ConstMinor::ConstMinor(ConstColumn& column)
+ConstMinor::ConstMinor(ConstColumn column)
   : wrapper_(column.getWrapper()), row_(0),
     column_(column.getColumn()),
     rows_(wrapper_.getRowsSize() - 1), columns_(1) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such column");
-  }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such rows");
-  }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such columns");
-  }
+  validate();
 }
 
-ConstMinor::ConstMinor(ConstRow& row)
+ConstMinor::ConstMinor(ConstRow row)
   : wrapper_(row.getWrapper()), row_(row.getRow()),
     column_(0),
     rows_(1), columns_(wrapper_.getColumnsSize() - 1) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such column");
-  }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such rows");
-  }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such columns");
-  }
+  validate();
+}
 
+ConstMinor::ConstMinor(Minor minor)
+  : wrapper_(minor.getWrapper()), row_(minor.getRowMinor()),
+    column_(minor.getColumnMinor()),
+    rows_(minor.getRowsSize()), columns_(minor.getColumnsSize()) {
+  validate();
+
+}
+
+ConstMinor::ConstMinor(Column column)
+  : wrapper_(column.getWrapper()), row_(0),
+    column_(column.getColumn()),
+    rows_(wrapper_.getRowsSize()), columns_(1) {
+  validate();
+}
+
+ConstMinor::ConstMinor(Row row)
+  : wrapper_(row.getWrapper()), row_(row.getRow()),
+    column_(0),
+    rows_(1), columns_(wrapper_.getColumnsSize() - 1) {
+  validate();
 }
 
 sizeType ConstMinor::getColumnsSize() const {
@@ -493,6 +495,27 @@ sizeType ConstMinor::getRowsSize() const {
 
 real ConstMinor::getData(sizeType row, sizeType column) const {
   return wrapper_.getData(row_ + row, column_ + column);
+}
+
+void ConstMinor::validate() {
+  if (rows_ == autoSizeMask) {
+    rows_ = wrapper_.getRowsSize();
+  }
+  if (columns_ == autoSizeMask) {
+    columns_ = wrapper_.getColumnsSize();
+  }
+  if (row_ >= wrapper_.getRowsSize()) {
+    throw std::domain_error("Wrong ConstMinor: no such row");
+  }
+  if (column_ >= wrapper_.getColumnsSize()) {
+    throw std::domain_error("Wrong ConstMinor: no such column");
+  }
+  if (row_ + rows_ > wrapper_.getRowsSize()) {
+    throw std::domain_error("Wrong ConstMinor: no such rows");
+  }
+  if (column_ + columns_ > wrapper_.getColumnsSize()) {
+    throw std::domain_error("Wrong ConstMinor: no such columns");
+  }
 }
 
 /*********

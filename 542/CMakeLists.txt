@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0) # setting this is required
-project(main)                       # this sets the project name
+project(542)                       # this sets the project name
 set (CMAKE_CXX_STANDARD 11)
 
 ###############################################################################

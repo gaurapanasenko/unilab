@@ -1,4 +1,4 @@
-//#include "window.h"
+#include "window.h"
 #include <gtkmm/builder.h>
 #include <gtkmm/main.h>
 #include <glibmm/fileutils.h>
@@ -21,12 +21,12 @@ int main (int argc, char *argv[]) {
     return 1;
   }
 
-//  Window* window = nullptr;
-//  builder->get_widget_derived("main_window", window);
-//  if (window) {
-//    Gtk::Main::run(*window);
-//  }
-//  delete window;
+  Window* window = nullptr;
+  builder->get_widget_derived("main_window", window);
+  if (window) {
+    Gtk::Main::run(*window);
+  }
+  delete window;
 
   return 0;
 }

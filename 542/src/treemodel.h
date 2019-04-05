@@ -5,7 +5,7 @@
 
 #include <gtkmm/treemodel.h>
 
-class Store : public Gtk::TreeModel, Matrix::Wrapper {
+class Store : public Gtk::TreeModel, public Matrix::Wrapper {
 protected:
   Store(sizeType size = 3);
    ~Store() override;

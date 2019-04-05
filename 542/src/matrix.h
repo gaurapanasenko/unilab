@@ -11,12 +11,16 @@ using real = long double;
 
 namespace Matrix {
 
+const sizeType autoSizeMask = ULLONG_MAX;
+
 class Wrapper;
 
 class Cell {
 public:
   explicit Cell(Wrapper& wrapper, sizeType row, sizeType column);
+  Cell& operator=(const Cell& cell);
   Cell& operator=(real data);
+  operator real();
   operator real() const;
   Wrapper& getWrapper() const;
   sizeType getRow() const;
@@ -116,6 +120,7 @@ private:
 class ConstRow {
 public:
   explicit ConstRow(const Wrapper& wrapper, sizeType row);
+  ConstRow(Row row);
   ConstCell operator[](sizeType column);
 
   ConstCellIterator begin();
@@ -132,6 +137,7 @@ private:
 class ConstColumn {
 public:
   explicit ConstColumn(const Wrapper& wrapper, sizeType column);
+  ConstColumn(Column column);
   ConstCell operator[](sizeType row);
 
   ConstCellIterator begin();
@@ -160,6 +166,7 @@ public:
   ConstRow getRow(sizeType row) const;
   Column getColumn(sizeType column);
   ConstColumn getColumn(sizeType column) const;
+  sizeType size();
 
   Row operator[](sizeType row);
   ConstRow operator[](sizeType row) const;
@@ -170,17 +177,26 @@ class Minor : public Wrapper {
 public:
   Minor(Wrapper& wrapper, sizeType row = 0,
         sizeType column = 0,
-        sizeType rows = ULLONG_MAX,
-        sizeType columns = ULLONG_MAX);
-  Minor(Column& column);
-  Minor(Row& row);
+        sizeType rows = autoSizeMask,
+        sizeType columns = autoSizeMask);
+  Minor(Column column);
+  Minor(Row row);
+
+  Minor& operator=(ConstMinor minor);
+
   sizeType getColumnsSize() const override;
   sizeType getRowsSize() const override;
   real getData(sizeType row,
                      sizeType column) const override;
   void setData(sizeType row, sizeType column, real data) override;
 
+  Wrapper& getWrapper();
+  sizeType getRowMinor();
+  sizeType getColumnMinor();
+
 private:
+  void validate();
+
   Wrapper& wrapper_;
   sizeType row_, column_, rows_, columns_;
 };
@@ -188,16 +204,21 @@ private:
 class ConstMinor : public Wrapper {
 public:
   ConstMinor(const Wrapper& wrapper, sizeType row = 0,
-        sizeType column = 0,
-        sizeType rows = ULLONG_MAX,
-        sizeType columns = ULLONG_MAX);
-  ConstMinor(ConstColumn& column);
-  ConstMinor(ConstRow& row);
+             sizeType column = 0,
+             sizeType rows = autoSizeMask,
+             sizeType columns = autoSizeMask);
+  ConstMinor(ConstColumn column);
+  ConstMinor(ConstRow row);
+  ConstMinor(Minor minor);
+  ConstMinor(Column column);
+  ConstMinor(Row row);
   sizeType getColumnsSize() const override;
   sizeType getRowsSize() const override;
   real getData(sizeType row, sizeType column) const override;
 
 private:
+  void validate();
+
   const Wrapper& wrapper_;
   sizeType row_, column_, rows_, columns_;
 };
