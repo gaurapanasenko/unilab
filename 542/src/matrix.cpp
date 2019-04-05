@@ -3,6 +3,96 @@
 
 namespace Matrix {
 
+/***********
+* Iterator *
+***********/
+template<class A>
+Iterator<A>::Iterator(A value, bool direction)
+  : value_(value), direction_(direction) {}
+
+template<class A>
+Iterator<A>& Iterator<A>::operator++() {
+  value_.setIndex(value_.getIndex(direction_), direction_);
+  return *this;
+}
+
+template<class A>
+Iterator<A> Iterator<A>::operator++(int) {
+  Iterator<A> out = *this;
+  value_.setIndex(value_.getIndex(direction_), direction_);
+  return *this;
+}
+
+template<class A>
+bool Iterator<A>::operator==(const Iterator<A>& rhs) const {
+  return value_ == rhs.value_;
+}
+
+template<class A>
+bool Iterator<A>::operator!=(const Iterator<A>& rhs) const {
+  return !((*this) == rhs);
+}
+
+template<class A>
+A Iterator<A>::operator*() {
+  return value_;
+}
+
+/************
+* ConstCell *
+************/
+ConstCell::ConstCell(const Wrapper& wrapper, sizeType row,
+                     sizeType column)
+  : wrapper_(wrapper), row_(row), column_(column) {
+  if (row_ >= wrapper_.getRowsSize()) {
+    throw std::domain_error("Wrong ConstCell: no such row");
+  }
+  if (column_ >= wrapper_.getColumnsSize()) {
+    throw std::domain_error("Wrong ConstCell: no such column");
+  }
+}
+
+ConstCell::operator real() {
+  return wrapper_.getData(row_, column_);
+}
+
+ConstCell::operator real() const {
+  return wrapper_.getData(row_, column_);
+}
+
+const Wrapper& ConstCell::getWrapper() const {
+  return wrapper_;
+}
+
+sizeType ConstCell::getRow() const {
+  return row_;
+}
+
+void ConstCell::setRow(sizeType row) {
+  row_ = row;
+}
+
+sizeType ConstCell::getColumn() const {
+  return column_;
+}
+
+void ConstCell::setColumn(sizeType column) {
+  column_ = column;
+}
+
+sizeType ConstCell::getIndex(bool direction) const {
+  if (direction) {
+
+  }
+}
+
+bool operator==(const ConstCell& lhs, const ConstCell& rhs) {
+  bool b1 = &lhs.getWrapper() == &rhs.getWrapper(),
+       b2 = lhs.getRow() == rhs.getRow(),
+       b3 = lhs.getColumn() == rhs.getColumn();
+  return b1 && b2 && b3;
+}
+
 /*******
 * Cell *
 *******/
@@ -164,50 +254,6 @@ sizeType Column::getColumn() const {
   return column_;
 }
 
-/************
-* ConstCell *
-************/
-ConstCell::ConstCell(const Wrapper& wrapper, sizeType row,
-                     sizeType column)
-  : wrapper_(wrapper), row_(row), column_(column) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong ConstCell: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong ConstCell: no such column");
-  }
-}
-
-ConstCell::operator real() const {
-  return wrapper_.getData(row_, column_);
-}
-
-const Wrapper& ConstCell::getWrapper() const {
-  return wrapper_;
-}
-
-sizeType ConstCell::getRow() const {
-  return row_;
-}
-
-void ConstCell::setRow(sizeType row) {
-  row_ = row;
-}
-
-sizeType ConstCell::getColumn() const {
-  return column_;
-}
-
-void ConstCell::setColumn(sizeType column) {
-  column_ = column;
-}
-
-bool operator==(const ConstCell& lhs, const ConstCell& rhs) {
-  bool b1 = &lhs.getWrapper() == &rhs.getWrapper(),
-       b2 = lhs.getRow() == rhs.getRow(),
-       b3 = lhs.getColumn() == rhs.getColumn();
-  return b1 && b2 && b3;
-}
 
 /********************
 * ConstCellIterator *
@@ -644,5 +690,4 @@ std::istream& operator>>(std::istream& input, Minor data) {
   }
   return input;
 }
-
 }
