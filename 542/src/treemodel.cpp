@@ -271,20 +271,20 @@ sizeType TwoStore::getRowsSizeVirtual() const {
 real TwoStore::getDataVirtual(
   sizeType row, sizeType column
 ) const {
-  if (column == 0) {
+  if (column == a_.size()) {
     return y_[row][0];
   } else {
-    return a_[row][column - 1];
+    return a_[row][column];
   }
 }
 
 void TwoStore::setDataVirtual(
   sizeType row, sizeType column, real data
 ) {
-  if (column == 0) {
+  if (column == a_.size()) {
     y_[row][0] = data;
   } else {
-    a_[row][column - 1] = data;
+    a_[row][column] = data;
   }
 }
 
@@ -293,8 +293,8 @@ void TwoStore::setDataVirtual(
 * OneStore *
 ***********/
 OneStore::OneStore(sizeType size)
-  : Glib::ObjectBase(typeid(OneStore)), Store(1),
-    Glib::Object(), matrix_(size, 1, 0) {}
+  : Glib::ObjectBase(typeid(OneStore)), Store(2),
+    Glib::Object(), matrix_(size, 2, 0) {}
 
 Glib::RefPtr<OneStore> OneStore::create(sizeType size) {
   return Glib::RefPtr<OneStore>(new OneStore(size));
@@ -302,11 +302,11 @@ Glib::RefPtr<OneStore> OneStore::create(sizeType size) {
 
 void OneStore::resizeVirtual(sizeType rows, sizeType columns,
                              real data) {
-  matrix_.resize(rows, 1, data);
+  matrix_.resize(rows, 2, data);
 }
 
 sizeType OneStore::getColumnsSizeVirtual() const {
-  return 1;
+  return matrix_.getColumnsSize();
 }
 
 sizeType OneStore::getRowsSizeVirtual() const {

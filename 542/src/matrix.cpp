@@ -2,6 +2,7 @@
 #include <exception>
 #include <string>
 #include <cmath>
+#include <iomanip>
 
 namespace Matrix {
 
@@ -367,11 +368,12 @@ real Wrapper::getData(sizeType, sizeType) const {
 void Wrapper::setData(sizeType, sizeType, real) {}
 
 Wrapper& Wrapper::operator=(const Wrapper& wrapper) {
-  bool b1 = getRowsSize() != wrapper.getRowsSize();
+  /*bool b1 = getRowsSize() != wrapper.getRowsSize();
   bool b2 = getColumnsSize() != wrapper.getColumnsSize();
   if (b1 || b2) {
     throw std::domain_error("Wrong size on copy minors");
-  }
+  }*/
+  resize(wrapper.getRowsSize(), wrapper.getColumnsSize(), 0);
   std::copy(wrapper.begin(), wrapper.end(), begin());
   return *this;
 }
@@ -445,7 +447,7 @@ ConstVector Wrapper::getColumn(sizeType column) const {
   return ConstVector(*this, column, DIRECTION_COLUMN);
 }
 
-sizeType Wrapper::size() {
+sizeType Wrapper::size() const {
   return getRowsSize();
 }
 
@@ -473,7 +475,7 @@ Minor::Minor(const Vector& vector)
 }
 
 Minor& Minor::operator=(const ConstMinor& minor) {
-  *this = minor;
+  static_cast<Wrapper&>(*this) = static_cast<const Wrapper&>(minor);
   return *this;
 }
 
@@ -827,7 +829,7 @@ std::ostream& operator<<(std::ostream& output,
   size_t a = data.getRowsSize(), b = data.getColumnsSize();
   for (sizeType i = 0; i < a; i++) {
     for (sizeType j = 0; j < b; j++) {
-      output << data[i][j] << " ";
+      output << std::setw(20) << std::setprecision(10) << data[i][j] << " ";
     }
     output << "\n";
   }

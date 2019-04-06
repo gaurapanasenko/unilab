@@ -5,6 +5,7 @@
 #include <gtkmm/menuitem.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 template<class T>
 void getObject(const Glib::RefPtr<Gtk::Builder>& builder,
@@ -50,8 +51,10 @@ Window::Window(BaseObjectType* cobject,
 
   resultStore_ = OneStore::create(size);
   resultTreeView_->set_model(resultStore_);
-  auto col = resultStore_->get_model_column(0);
-  resultTreeView_->append_column_numeric_editable("x1", col, "%Lg");
+  auto col0 = resultStore_->get_model_column(0);
+  resultTreeView_->append_column_numeric_editable("x1", col0, "%Lg");
+  auto col1 = resultStore_->get_model_column(1);
+  resultTreeView_->append_column_numeric_editable("δ1", col1, "%Lg");
 
   load();
 }
@@ -64,12 +67,12 @@ void Window::resizeMatrix() {
 
   dataTreeView_->remove_all_columns();
 
-  for (sizeType i = 1; i <= size; i++) {
+  for (sizeType i = 0; i < size; i++) {
     auto col = dataStore_->get_model_column(i);
     auto name = Glib::ustring::format(i);
     dataTreeView_->append_column_numeric_editable(name, col, "%Lg");
   }
-  auto col = dataStore_->get_model_column(0);
+  auto col = dataStore_->get_model_column(size);
   dataTreeView_->append_column_numeric_editable("y", col, "%Lg");
 }
 
@@ -99,9 +102,9 @@ void Window::run() {
   auto& rs = resultStore_->getReference();
   sizeType size = ds.getRowsSize();
   std::vector<Matrix::Matrix> y(size + 1, Matrix::Matrix(size, 1));
-  auto a = Matrix::Minor(ds, 0, 1, size, size);
+  auto a = Matrix::Minor(ds, 0, 0, size, size);
   std::cout << "A:\n" << a << "\n";
-  y[0] = ds.getColumn(0);
+  y[0] = ds.getColumn(size);
   std::cout << "y0:\n" << y[0] << "\n";
   auto r = rs.getColumn(0);
   for (sizeType i = 0; i < size; i++) {
@@ -111,8 +114,23 @@ void Window::run() {
   y[size] = - y[size];
   std::cout << "y" << size << ":\n" << y[size] << "\n";
   auto m = mergeWrappers(y.begin(), y.end() - 1, Matrix::DIRECTION_ROW);
-  std::cout << "Merged:\n" << m << "\n";
-  gauss(m, y[size].getColumn(0), r);
+  Matrix::Matrix ma; ma = m;
+  std::cout << "Merged:\n" << ma;
+  gauss(ma, Matrix::Matrix(y[size]).getColumn(0), r);
+  std::cout << "P:\n" << r;
+  rs.getColumn(1) = (m * r) - y[size];
+
+  std::stringstream ss;
+
+  ss << "λ ^ " << size;
+  for (sizeType i = 0; i < r.size(); i++) {
+    ss << " + " << "λ ^ " << size - i - 1 << " * " << r[size - i - 1];
+  }
+  ss << " = 0";
+  std::cout << ss.str() << "\n";
+  statusbar_->remove_all_messages();
+  statusbar_->push(ss.str());
+
 }
 
 void Window::quit[[noreturn]]() {

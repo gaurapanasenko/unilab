@@ -190,7 +190,7 @@ public:
   virtual sizeType getColumnsSize() const;
   virtual sizeType getRowsSize() const;
   virtual real getData(sizeType row, sizeType column) const;
-  virtual void setData(sizeType row, sizeType column, real data);
+  virtual void setData(sizeType row, sizeType column, real data = 0);
 
   Wrapper& operator=(const Wrapper& wrapper);
   Wrapper& operator=(Wrapper&&) = delete;
@@ -213,7 +213,7 @@ public:
   Vector getColumn(sizeType column);
   ConstVector getColumn(sizeType column) const;
 
-  sizeType size();
+  sizeType size() const;
 
 };
 
