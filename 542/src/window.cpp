@@ -1,5 +1,5 @@
 #include "window.h"
-#include "math.h"
+#include "model.h"
 #include <ctime>
 #include <gtkmm/toolbutton.h>
 #include <gtkmm/menuitem.h>
@@ -43,7 +43,7 @@ Window::Window(BaseObjectType* cobject,
   auto mfrm = sigc::mem_fun(*this, &Window::resizeMatrix);
   nAdjustment_->signal_value_changed().connect(mfrm);
 
-  auto size = nAdjustment_->get_value();
+  auto size = static_cast<sizeType>(nAdjustment_->get_value());
 
   dataStore_ = TwoStore::create(size);
   dataTreeView_->set_model(dataStore_);
@@ -57,7 +57,7 @@ Window::Window(BaseObjectType* cobject,
 }
 
 void Window::resizeMatrix() {
-  auto size = nAdjustment_->get_value();
+  auto size = static_cast<sizeType>(nAdjustment_->get_value());
 
   dataStore_->resize(size, size, 1);
   resultStore_->resize(size, 1, 1);
@@ -98,12 +98,21 @@ void Window::run() {
   auto& ds = dataStore_->getReference();
   auto& rs = resultStore_->getReference();
   sizeType size = ds.getRowsSize();
-  //rs.getColumn(0) =
-  Minor a = Matrix::Minor(ds, 0, 0, size, size);
-  Minor f = ds.getColumn(size);
-  Minor r = rs.getColumn(0);
-  r = a * f;
-
+  std::vector<Matrix::Matrix> y(size + 1, Matrix::Matrix(size, 1));
+  auto a = Matrix::Minor(ds, 0, 1, size, size);
+  std::cout << "A:\n" << a << "\n";
+  y[0] = ds.getColumn(0);
+  std::cout << "y0:\n" << y[0] << "\n";
+  auto r = rs.getColumn(0);
+  for (sizeType i = 0; i < size; i++) {
+    y[i + 1] = a * y[i];
+    std::cout << "y" << i + 1 << ":\n" << y[i + 1] << "\n";
+  }
+  y[size] = - y[size];
+  std::cout << "y" << size << ":\n" << y[size] << "\n";
+  auto m = mergeWrappers(y.begin(), y.end() - 1, Matrix::DIRECTION_ROW);
+  std::cout << "Merged:\n" << m << "\n";
+  gauss(m, y[size].getColumn(0), r);
 }
 
 void Window::quit[[noreturn]]() {

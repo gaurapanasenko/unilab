@@ -1,118 +1,54 @@
 #include "matrix.h"
 #include <exception>
+#include <string>
+#include <cmath>
 
 namespace Matrix {
 
-/***********
-* Iterator *
-***********/
 template<class A>
-Iterator<A>::Iterator(A value, bool direction)
-  : value_(value), direction_(direction) {}
-
-template<class A>
-Iterator<A>& Iterator<A>::operator++() {
-  value_.setIndex(value_.getIndex(direction_), direction_);
-  return *this;
-}
-
-template<class A>
-Iterator<A> Iterator<A>::operator++(int) {
-  Iterator<A> out = *this;
-  value_.setIndex(value_.getIndex(direction_), direction_);
-  return *this;
-}
-
-template<class A>
-bool Iterator<A>::operator==(const Iterator<A>& rhs) const {
-  return value_ == rhs.value_;
-}
-
-template<class A>
-bool Iterator<A>::operator!=(const Iterator<A>& rhs) const {
-  return !((*this) == rhs);
-}
-
-template<class A>
-A Iterator<A>::operator*() {
-  return value_;
-}
-
-/************
-* ConstCell *
-************/
-ConstCell::ConstCell(const Wrapper& wrapper, sizeType row,
-                     sizeType column)
-  : wrapper_(wrapper), row_(row), column_(column) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong ConstCell: no such row");
+void validate(const A& a, sizeType row, sizeType column,
+              sizeType rows, sizeType columns, bool soft) {
+  const Wrapper& wrapper = a.getWrapper();
+  std::string name = typeid(A).name();
+  sizeType rs = wrapper.getRowsSize();
+  sizeType cs = wrapper.getColumnsSize();
+  if (soft) {
+    rs++; cs++;
   }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong ConstCell: no such column");
+  if (row >= rs) {
+    throw std::domain_error("Wrong " + name + ": no such row");
   }
-}
-
-ConstCell::operator real() {
-  return wrapper_.getData(row_, column_);
-}
-
-ConstCell::operator real() const {
-  return wrapper_.getData(row_, column_);
-}
-
-const Wrapper& ConstCell::getWrapper() const {
-  return wrapper_;
-}
-
-sizeType ConstCell::getRow() const {
-  return row_;
-}
-
-void ConstCell::setRow(sizeType row) {
-  row_ = row;
-}
-
-sizeType ConstCell::getColumn() const {
-  return column_;
-}
-
-void ConstCell::setColumn(sizeType column) {
-  column_ = column;
-}
-
-sizeType ConstCell::getIndex(bool direction) const {
-  if (direction) {
-
+  if (column >= cs) {
+    throw std::domain_error("Wrong " + name + ": no such column");
   }
-}
-
-bool operator==(const ConstCell& lhs, const ConstCell& rhs) {
-  bool b1 = &lhs.getWrapper() == &rhs.getWrapper(),
-       b2 = lhs.getRow() == rhs.getRow(),
-       b3 = lhs.getColumn() == rhs.getColumn();
-  return b1 && b2 && b3;
+  if (row + rows > rs) {
+    throw std::domain_error("Wrong " + name + ": no such rows");
+  }
+  if (column + columns > cs) {
+    throw std::domain_error("Wrong " + name + ": no such columns");
+  }
 }
 
 /*******
 * Cell *
 *******/
-Cell::Cell(Wrapper& wrapper, sizeType row,
-                   sizeType column)
+Cell::Cell(Wrapper& wrapper, sizeType row, sizeType column)
   : wrapper_(wrapper), row_(row), column_(column) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Cell: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Cell: no such column");
-  }
-}
-
-Cell& Cell::operator=(const Cell& cell) {
-  return (*this) = real(cell);;
+  validate(*this, row_, column_, 0, 0, true);
 }
 
 Cell& Cell::operator=(real data) {
   wrapper_.setData(row_, column_, data);
+  return *this;
+}
+
+Cell& Cell::operator=(const Cell& cell) {
+  (*this) = real(cell);
+  return *this;
+}
+
+Cell& Cell::operator=(Cell&& cell) noexcept {
+  (*this) = real(cell);
   return *this;
 }
 
@@ -134,6 +70,7 @@ sizeType Cell::getRow() const {
 
 void Cell::setRow(sizeType row) {
   row_ = row;
+  validate(*this, row_, column_);
 }
 
 sizeType Cell::getColumn() const {
@@ -142,15 +79,31 @@ sizeType Cell::getColumn() const {
 
 void Cell::setColumn(sizeType column) {
   column_ = column;
+  validate(*this, row_, column_, 0, 0, true);
 }
 
-bool operator==(const Cell& lhs, const Cell& rhs) {
-  bool b1 = &lhs.getWrapper() == &rhs.getWrapper(),
-       b2 = lhs.getRow() == rhs.getRow(),
-       b3 = lhs.getColumn() == rhs.getColumn();
+sizeType Cell::getIndex(bool direction) const {
+  if (direction == DIRECTION_COLUMN) {
+    return row_;
+  }
+  return column_;
+}
+
+void Cell::setIndex(sizeType index, bool direction) {
+  if (direction == DIRECTION_COLUMN) {
+    row_ = index;
+  } else {
+    column_ = index;
+  }
+  validate(*this, row_, column_, 0, 0, true);
+}
+
+bool Cell::compare(const Cell& cell) const {
+  bool b1 = &getWrapper() == &cell.getWrapper(),
+       b2 = getRow() == cell.getRow(),
+       b3 = getColumn() == cell.getColumn();
   return b1 && b2 && b3;
 }
-
 
 std::istream& operator>>(std::istream& input, Cell cell) {
   real x;
@@ -159,201 +112,239 @@ std::istream& operator>>(std::istream& input, Cell cell) {
   return input;
 }
 
-/***************
-* CellIterator *
-***************/
-CellIterator::CellIterator(
-    std::iterator<std::input_iterator_tag, Cell>::value_type value,
-    bool direction) : value_(value), direction_(direction) {}
-
-CellIterator& CellIterator::operator++() {
-  if (direction_) {
-    value_.setColumn(value_.getColumn() + 1);
-  } else {
-    value_.setRow(value_.getRow() + 1);
-  }
-  return *this;
+/************
+* ConstCell *
+************/
+ConstCell::ConstCell(const Wrapper& wrapper, sizeType row,
+                     sizeType column)
+  : wrapper_(wrapper), row_(row), column_(column) {
+  validate(*this, row_, column_, 0, 0, true);
 }
 
-CellIterator CellIterator::operator++(int) {
-  CellIterator out = *this;
-  ++(*this);
-  return out;
+ConstCell::ConstCell(const Cell& cell)
+  : ConstCell(cell.getWrapper(), cell.getRow(), cell.getColumn()) {}
+
+ConstCell::operator real() {
+  return wrapper_.getData(row_, column_);
 }
 
-bool CellIterator::operator==(const CellIterator& rhs) const {
-  return value_ == rhs.value_;
+ConstCell::operator real() const {
+  return wrapper_.getData(row_, column_);
 }
 
-bool CellIterator::operator!=(const CellIterator& rhs) const {
-  return !(*this == rhs);
-}
-
-std::iterator<std::input_iterator_tag, Cell>::reference
-CellIterator::operator*() {
-  return value_;
-}
-
-/******
-* Row *
-******/
-Row::Row(Wrapper& wrapper, sizeType row)
-  : wrapper_(wrapper), row_(row) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Row: no such row");
-  }
-}
-
-Cell Row::operator[](sizeType column) {
-  return Cell(wrapper_, row_, column);
-}
-
-CellIterator Row::begin() {
-  return CellIterator((*this)[0], false);
-}
-
-CellIterator Row::end() {
-  return CellIterator((*this)[wrapper_.getRowsSize()], false);
-}
-
-Wrapper& Row::getWrapper() const {
+const Wrapper& ConstCell::getWrapper() const {
   return wrapper_;
 }
 
-sizeType Row::getRow() const {
+sizeType ConstCell::getRow() const {
   return row_;
 }
 
-/*********
-* Column *
-*********/
-Column::Column(Wrapper& wrapper, sizeType column)
-  : wrapper_(wrapper), column_(column) {
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Column: no such row");
-  }
+void ConstCell::setRow(sizeType row) {
+  row_ = row;
+  validate(*this, row_, column_, 0, 0, true);
 }
 
-Cell Column::operator[](sizeType row) {
-  return Cell(wrapper_, row, column_);
-}
-
-CellIterator Column::begin() {
-  return CellIterator((*this)[0], false);
-}
-
-CellIterator Column::end() {
-  return CellIterator((*this)[wrapper_.getColumnsSize()], false);
-}
-
-Wrapper& Column::getWrapper() const {
-  return wrapper_;
-}
-
-sizeType Column::getColumn() const {
+sizeType ConstCell::getColumn() const {
   return column_;
 }
 
+void ConstCell::setColumn(sizeType column) {
+  column_ = column;
+  validate(*this, row_, column_, 0, 0, true);
+}
 
-/********************
-* ConstCellIterator *
-********************/
-ConstCellIterator::ConstCellIterator(
-    std::iterator<std::input_iterator_tag, ConstCell>::value_type value,
-    bool direction) : value_(value), direction_(direction) {}
-
-ConstCellIterator& ConstCellIterator::operator++() {
-  if (direction_) {
-    value_.setColumn(value_.getColumn() + 1);
-  } else {
-    value_.setRow(value_.getRow() + 1);
+sizeType ConstCell::getIndex(bool direction) const {
+  if (direction == DIRECTION_COLUMN) {
+    return row_;
   }
+  return column_;
+}
+
+void ConstCell::setIndex(sizeType index, bool direction) {
+  if (direction == DIRECTION_COLUMN) {
+    row_ = index;
+  } else {
+    column_ = index;
+  }
+  validate(*this, row_, column_, 0, 0, true);
+}
+
+bool ConstCell::compare(const ConstCell& cell) const {
+
+  bool b1 = &getWrapper() == &cell.getWrapper(),
+       b2 = getRow() == cell.getRow(),
+       b3 = getColumn() == cell.getColumn();
+  return b1 && b2 && b3;
+}
+
+/*
+real operator+(const ConstCell& a) {
+  return + real(a);
+}
+
+real operator-(const ConstCell& a) {
+  return - real(a);
+}
+
+real operator+(const ConstCell& a, const ConstCell& b) {
+  return real(a) + real(b);
+}
+
+real operator-(const ConstCell& a, const ConstCell& b) {
+  return real(a) - real(b);
+}
+
+real operator*(const ConstCell& a, const ConstCell& b) {
+  return real(a) * real(b);
+}
+
+real operator/(const ConstCell& a, const ConstCell& b) {
+  return real(a) / real(b);
+}*/
+
+/*********
+* Vector *
+*********/
+Vector::Vector(Wrapper& wrapper, sizeType index,
+               bool direction)
+  : wrapper_(wrapper), index_(index), direction_(direction) {
+  if (direction_ == DIRECTION_COLUMN) {
+    validate(*this, 0, index_, 0, 0, true);
+  } else {
+    validate(*this, index_, 0, 0, 0, true);
+  }
+}
+
+Cell Vector::operator[](sizeType index) const {
+  if (direction_ == DIRECTION_COLUMN) {
+    return Cell(wrapper_, index, index_);
+  }
+  return Cell(wrapper_, index_, index);
+
+}
+
+Vector& Vector::operator=(const ConstVector& vector) {
+  if (size() != vector.size()) {
+    throw std::domain_error("Wrong size on copy vectors");
+  }
+  std::copy(vector.begin(), vector.end(), begin());
   return *this;
 }
 
-ConstCellIterator ConstCellIterator::operator++(int) {
-  ConstCellIterator out = *this;
-  ++(*this);
-  return out;
+Vector& Vector::operator=(const ConstMinor& minor) {
+  Minor(*this) = minor;
+  return *this;
 }
 
-bool ConstCellIterator::operator==(const ConstCellIterator& rhs) const {
-  return value_ == rhs.value_;
+Iterator<Cell> Vector::begin() const {
+  return Iterator<Cell>((*this)[0], direction_);
 }
 
-bool ConstCellIterator::operator!=(const ConstCellIterator& rhs) const {
-  return !(*this == rhs);
+Iterator<Cell> Vector::end() const {
+  return Iterator<Cell>((*this)[size()], direction_);
 }
 
-std::iterator<std::input_iterator_tag, ConstCell>::reference
-ConstCellIterator::operator*() {
-  return value_;
-}
-
-/***********
-* ConstRow *
-***********/
-ConstRow::ConstRow(const Wrapper& wrapper, sizeType row)
-  : wrapper_(wrapper), row_(row) {
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong ConstRow: no such row");
+sizeType Vector::size() const {
+  if (direction_ == DIRECTION_COLUMN) {
+    return wrapper_.getRowsSize();
   }
+  return wrapper_.getColumnsSize();
 }
 
-ConstRow::ConstRow(Row row)
-  : wrapper_(row.getWrapper()), row_(row.getRow()) {}
-
-ConstCell ConstRow::operator[](sizeType column) {
-  return ConstCell(wrapper_, row_, column);
-}
-
-ConstCellIterator ConstRow::begin() {
-  return ConstCellIterator((*this)[0], false);
-}
-
-ConstCellIterator ConstRow::end() {
-  return ConstCellIterator((*this)[wrapper_.getRowsSize()], false);
-}
-
-const Wrapper& ConstRow::getWrapper() const {
+Wrapper& Vector::getWrapper() const  {
   return wrapper_;
 }
 
-sizeType ConstRow::getRow() const {
-  return row_;
+sizeType Vector::getIndex(bool) const  {
+  return index_;
+}
+
+void Vector::setIndex(sizeType index, bool) {
+  index_ = index;
+  if (direction_ == DIRECTION_COLUMN) {
+    validate(*this, 0, index_, 0, 0, true);
+  } else {
+    validate(*this, index_, 0, 0, 0, true);
+  }
+}
+
+bool Vector::getDirection() const {
+  return direction_;
+}
+
+bool Vector::compare(const Vector& vector) const {
+  bool b1 = &getWrapper() == &vector.getWrapper(),
+       b2 = getIndex() == vector.getIndex(),
+       b3 = getDirection() == vector.getDirection();
+  return b1 && b2 && b3;
 }
 
 /**************
-* ConstColumn *
+* ConstVector *
 **************/
-ConstColumn::ConstColumn(const Wrapper& wrapper, sizeType column)
-  : wrapper_(wrapper), column_(column) {
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong ConstColumn: no such row");
+ConstVector::ConstVector(const Wrapper& wrapper, sizeType index,
+                         bool direction)
+  : wrapper_(wrapper), index_(index), direction_(direction) {
+  if (direction_ == DIRECTION_COLUMN) {
+    validate(*this, 0, index_, 0, 0, true);
+  } else {
+    validate(*this, index_, 0, 0, 0, true);
   }
 }
 
-ConstColumn::ConstColumn(Column column)
-  : wrapper_(column.getWrapper()), column_(column.getColumn()) {}
+ConstVector::ConstVector(const Vector& vector)
+  : ConstVector(vector.getWrapper(), vector.getIndex(),
+                vector.getDirection()) {}
 
-ConstCell ConstColumn::operator[](sizeType row) {
-  return ConstCell(wrapper_, row, column_);
+ConstCell ConstVector::operator[](sizeType index) const {
+  if (direction_ == DIRECTION_COLUMN) {
+    return ConstCell(wrapper_, index, index_);
+  }
+  return ConstCell(wrapper_, index_, index);
 }
 
-ConstCellIterator ConstColumn::begin() {
-  return ConstCellIterator((*this)[0], false);
+Iterator<ConstCell> ConstVector::begin() const {
+  return Iterator<ConstCell>((*this)[0], direction_);
 }
 
-ConstCellIterator ConstColumn::end() {
-  return ConstCellIterator((*this)[wrapper_.getColumnsSize()], false);
+Iterator<ConstCell> ConstVector::end() const {
+  return Iterator<ConstCell>((*this)[size()], direction_);
 }
 
-const Wrapper& ConstColumn::getWrapper() const {
+sizeType ConstVector::size() const {
+  if (direction_ == DIRECTION_COLUMN) {
+    return wrapper_.getRowsSize();
+  }
+  return wrapper_.getColumnsSize();
+}
+
+const Wrapper& ConstVector::getWrapper() const {
   return wrapper_;
 }
 
-sizeType ConstColumn::getColumn() const {
-  return column_;
+sizeType ConstVector::getIndex(bool) const {
+  return index_;
+}
+
+void ConstVector::setIndex(sizeType index, bool) {
+  index_ = index;
+  if (direction_ == DIRECTION_COLUMN) {
+    validate(*this, 0, index_, 0, 0, true);
+  } else {
+    validate(*this, index_, 0, 0, 0, true);
+  }
+}
+
+bool ConstVector::getDirection() const {
+  return direction_;
+}
+
+bool ConstVector::compare(const ConstVector& vector) const {
+  bool b1 = &getWrapper() == &vector.getWrapper(),
+       b2 = getIndex() == vector.getIndex(),
+       b3 = getDirection() == vector.getDirection();
+  return b1 && b2 && b3;
 }
 
 /**********
@@ -375,32 +366,87 @@ real Wrapper::getData(sizeType, sizeType) const {
 
 void Wrapper::setData(sizeType, sizeType, real) {}
 
-Row Wrapper::getRow(sizeType row) {
-  return Row(*this, row);
+Wrapper& Wrapper::operator=(const Wrapper& wrapper) {
+  bool b1 = getRowsSize() != wrapper.getRowsSize();
+  bool b2 = getColumnsSize() != wrapper.getColumnsSize();
+  if (b1 || b2) {
+    throw std::domain_error("Wrong size on copy minors");
+  }
+  std::copy(wrapper.begin(), wrapper.end(), begin());
+  return *this;
 }
 
-ConstRow Wrapper::getRow(sizeType row) const {
-  return ConstRow(*this, row);
+
+Vector Wrapper::operator[](sizeType row) {
+  return getRow(row);
 }
 
-Column Wrapper::getColumn(sizeType column) {
-  return Column(*this, column);
+ConstVector Wrapper::operator[](sizeType row) const {
+  return getRow(row);
 }
 
-ConstColumn Wrapper::getColumn(sizeType column) const {
-  return ConstColumn(*this, column);
+Iterator<Vector> Wrapper::begin() {
+  auto v = Vector(*this, 0, DIRECTION_ROW);
+  return Iterator<Vector>(v, DIRECTION_ROW);
+}
+
+Iterator<ConstVector> Wrapper::begin() const {
+  auto v = ConstVector(*this, 0, DIRECTION_ROW);
+  return Iterator<ConstVector>(v, DIRECTION_ROW);
+}
+
+Iterator<Vector> Wrapper::beginColumn() {
+  auto v = Vector(*this, 0, DIRECTION_COLUMN);
+  return Iterator<Vector>(v, DIRECTION_COLUMN);
+}
+
+Iterator<ConstVector> Wrapper::beginColumn() const {
+  auto v = ConstVector(*this, 0, DIRECTION_COLUMN);
+  return Iterator<ConstVector>(v, DIRECTION_COLUMN);
+}
+
+Iterator<Vector> Wrapper::end() {
+  sizeType size = getRowsSize();
+  auto v = Vector(*this, size, DIRECTION_ROW);
+  return Iterator<Vector>(v, DIRECTION_ROW);
+}
+
+Iterator<ConstVector> Wrapper::end() const {
+  sizeType size = getRowsSize();
+  auto v = ConstVector(*this, size, DIRECTION_ROW);
+  return Iterator<ConstVector>(v, DIRECTION_ROW);
+}
+
+Iterator<Vector> Wrapper::endColumn() {
+  sizeType size = getColumnsSize();
+  auto v = Vector(*this, size, DIRECTION_COLUMN);
+  return Iterator<Vector>(v, DIRECTION_COLUMN);
+}
+
+Iterator<ConstVector> Wrapper::endColumn() const {
+  sizeType size = getColumnsSize();
+  auto v = ConstVector(*this, size, DIRECTION_COLUMN);
+  return Iterator<ConstVector>(v, DIRECTION_COLUMN);
+}
+
+Vector Wrapper::getRow(sizeType row) {
+  return Vector(*this, row, DIRECTION_ROW);
+}
+
+ConstVector Wrapper::getRow(sizeType row) const {
+  return ConstVector(*this, row, DIRECTION_ROW);
+}
+
+Vector Wrapper::getColumn(sizeType column) {
+  return Vector(*this, column, DIRECTION_COLUMN);
+}
+
+ConstVector Wrapper::getColumn(sizeType column) const {
+  return ConstVector(*this, column, DIRECTION_COLUMN);
 }
 
 sizeType Wrapper::size() {
   return getRowsSize();
-}
-
-Row Wrapper::operator[](sizeType row) {
-  return getRow(row);
-}
-
-ConstRow Wrapper::operator[](sizeType row) const {
-  return getRow(row);
 }
 
 /********
@@ -410,31 +456,36 @@ Minor::Minor(Wrapper& wrapper, sizeType row,
              sizeType column, sizeType rows, sizeType columns)
   : wrapper_(wrapper), row_(row), column_(column),
     rows_(rows), columns_(columns) {
-  validate();
+  validateMinor();
 }
 
-Minor::Minor(Column column)
-  : wrapper_(column.getWrapper()), row_(0),
-    column_(column.getColumn()),
-    rows_(wrapper_.getRowsSize()), columns_(1) {
-  validate();
+Minor::Minor(const Vector& vector)
+  : wrapper_(vector.getWrapper()), row_(0), column_(0), rows_(1),
+    columns_(1) {
+  if (vector.getDirection() == DIRECTION_COLUMN) {
+    column_ = vector.getIndex();
+    rows_ = wrapper_.getRowsSize();
+  } else {
+    row_ = vector.getIndex();
+    columns_ = wrapper_.getColumnsSize();
+  }
+  validateMinor();
 }
 
-Minor::Minor(Row row)
-  : wrapper_(row.getWrapper()), row_(row.getRow()),
-    column_(0),
-    rows_(1), columns_(wrapper_.getColumnsSize() - 1) {
-  validate();
+Minor& Minor::operator=(const ConstMinor& minor) {
+  *this = minor;
+  return *this;
 }
 
-Minor& Minor::operator=(ConstMinor minor) {
+/*Minor& Minor::operator=(const ConstMinor& minor) {
   bool b1 = getRowsSize() != minor.getRowsSize();
   bool b2 = getColumnsSize() != minor.getColumnsSize();
   if (b1 || b2) {
     throw std::domain_error("Wrong size on copy minors");
   }
-  std::copy();
-}
+  std::copy(minor.begin(), minor.end(), begin());
+  return *this;
+}*/
 
 sizeType Minor::getColumnsSize() const {
   return columns_;
@@ -452,36 +503,24 @@ void Minor::setData(sizeType row, sizeType column, real data) {
   wrapper_.setData(row_ + row, column_ + column, data);
 }
 
-Wrapper& Minor::getWrapper() {
+Wrapper& Minor::getWrapper() const {
   return wrapper_;
 }
 
-sizeType Minor::getRowMinor() {
+sizeType Minor::getRowMinor() const {
   return row_;
 }
 
-sizeType Minor::getColumnMinor() {
+sizeType Minor::getColumnMinor() const {
   return column_;
 }
 
-void Minor::validate() {
-  if (rows_ == autoSizeMask) {
+void Minor::validateMinor() {
+  if (rows_ == AUTO_SIZE) {
     rows_ = wrapper_.getRowsSize();
   }
-  if (columns_ == autoSizeMask) {
+  if (columns_ == AUTO_SIZE) {
     columns_ = wrapper_.getColumnsSize();
-  }
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such row");
-  }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such column");
-  }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong Minor: no such rows");
-  }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong Minor: no such columns");
   }
 }
 
@@ -489,47 +528,42 @@ void Minor::validate() {
 * ConstMinor *
 *************/
 ConstMinor::ConstMinor(const Wrapper& wrapper, sizeType row,
-                       sizeType column, sizeType rows, sizeType columns)
+                       sizeType column, sizeType rows,
+                       sizeType columns)
   : wrapper_(wrapper), row_(row), column_(column),
     rows_(rows), columns_(columns) {
-  validate();
+  validateMinor();
 }
 
-ConstMinor::ConstMinor(ConstColumn column)
-  : wrapper_(column.getWrapper()), row_(0),
-    column_(column.getColumn()),
-    rows_(wrapper_.getRowsSize() - 1), columns_(1) {
-  validate();
+ConstMinor::ConstMinor(const Vector& vector)
+  : wrapper_(vector.getWrapper()), row_(0), column_(0), rows_(1),
+    columns_(1) {
+  if (vector.getDirection() == DIRECTION_COLUMN) {
+    column_ = vector.getIndex();
+    rows_ = wrapper_.getRowsSize();
+  } else {
+    row_ = vector.getIndex();
+    columns_ = wrapper_.getColumnsSize();
+  }
+  validateMinor();
 }
 
-ConstMinor::ConstMinor(ConstRow row)
-  : wrapper_(row.getWrapper()), row_(row.getRow()),
-    column_(0),
-    rows_(1), columns_(wrapper_.getColumnsSize() - 1) {
-  validate();
+ConstMinor::ConstMinor(const ConstVector& vector)
+  : wrapper_(vector.getWrapper()), row_(0), column_(0), rows_(1),
+    columns_(1) {
+  if (vector.getDirection() == DIRECTION_COLUMN) {
+    column_ = vector.getIndex();
+    rows_ = wrapper_.getRowsSize();
+  } else {
+    row_ = vector.getIndex();
+    columns_ = wrapper_.getColumnsSize();
+  }
 }
 
-ConstMinor::ConstMinor(Minor minor)
-  : wrapper_(minor.getWrapper()), row_(minor.getRowMinor()),
-    column_(minor.getColumnMinor()),
-    rows_(minor.getRowsSize()), columns_(minor.getColumnsSize()) {
-  validate();
-
-}
-
-ConstMinor::ConstMinor(Column column)
-  : wrapper_(column.getWrapper()), row_(0),
-    column_(column.getColumn()),
-    rows_(wrapper_.getRowsSize()), columns_(1) {
-  validate();
-}
-
-ConstMinor::ConstMinor(Row row)
-  : wrapper_(row.getWrapper()), row_(row.getRow()),
-    column_(0),
-    rows_(1), columns_(wrapper_.getColumnsSize() - 1) {
-  validate();
-}
+ConstMinor::ConstMinor(const Minor& minor)
+  : ConstMinor(minor.getWrapper(), minor.getRowMinor(),
+               minor.getColumnMinor(), minor.getRowsSize(),
+               minor.getColumnsSize()) {}
 
 sizeType ConstMinor::getColumnsSize() const {
   return columns_;
@@ -543,25 +577,118 @@ real ConstMinor::getData(sizeType row, sizeType column) const {
   return wrapper_.getData(row_ + row, column_ + column);
 }
 
-void ConstMinor::validate() {
-  if (rows_ == autoSizeMask) {
+const Wrapper& ConstMinor::getWrapper() const {
+  return wrapper_;
+}
+
+void ConstMinor::validateMinor() {
+  if (rows_ == AUTO_SIZE) {
     rows_ = wrapper_.getRowsSize();
   }
-  if (columns_ == autoSizeMask) {
+  if (columns_ == AUTO_SIZE) {
     columns_ = wrapper_.getColumnsSize();
   }
-  if (row_ >= wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong ConstMinor: no such row");
+  validate(*this, row_, column_, rows_, columns_);
+}
+
+/********
+* Merge *
+********/
+Merge::Merge(const std::vector<std::reference_wrapper<Wrapper>>::iterator& first,
+             const std::vector<std::reference_wrapper<Wrapper>>::iterator& last,
+             bool direction)
+  : direction_(direction) {
+  if (first != last) {
+    sizeType size;
+    if (direction_ == DIRECTION_COLUMN) {
+      size = static_cast<Wrapper&>(*first).getColumnsSize();
+    } else {
+      size = static_cast<Wrapper&>(*first).getRowsSize();
+    }
+    for (auto i = first; i != last; i++) {
+      sizeType sz;
+      std::string name;
+      if (direction_ == DIRECTION_COLUMN) {
+        sz = static_cast<Wrapper&>(*i).getColumnsSize();
+        name = "columns";
+      } else {
+        sz = static_cast<Wrapper&>(*i).getRowsSize();
+        name = "row";
+      }
+      if (size != sz) {
+        auto message = "Wrong Merge: " + name + " size not equal";
+        throw std::domain_error(message);
+      }
+      wrappers_.emplace_back(*i);
+    }
   }
-  if (column_ >= wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong ConstMinor: no such column");
+}
+
+sizeType Merge::getColumnsSize() const {
+  if (direction_ == DIRECTION_COLUMN) {
+    return static_cast<Wrapper&>(wrappers_[0]).getColumnsSize();
   }
-  if (row_ + rows_ > wrapper_.getRowsSize()) {
-    throw std::domain_error("Wrong ConstMinor: no such rows");
+  sizeType size = 0;
+  for (Wrapper& i : wrappers_) {
+    size += i.getColumnsSize();
   }
-  if (column_ + columns_ > wrapper_.getColumnsSize()) {
-    throw std::domain_error("Wrong ConstMinor: no such columns");
+  return size;
+}
+
+sizeType Merge::getRowsSize() const {
+  if (direction_ == DIRECTION_ROW) {
+    return static_cast<Wrapper&>(wrappers_[0]).getRowsSize();
   }
+  sizeType size = 0;
+  for (Wrapper& i : wrappers_) {
+    size += i.getRowsSize();
+  }
+  return size;
+}
+
+real Merge::getData(sizeType row, sizeType column) const {
+  sizeType r = row;
+  sizeType c = column;
+  for (Wrapper& i : wrappers_) {
+    if (direction_ == DIRECTION_COLUMN) {
+      if (r < i.getRowsSize()) {
+        return i.getData(r, c);
+      }
+      r -= i.getRowsSize();
+    } else {
+      if (c < i.getColumnsSize()) {
+        return i.getData(r, c);
+      }
+      c -= i.getColumnsSize();
+    }
+  }
+  return NAN;
+}
+
+void Merge::setData(sizeType row, sizeType column, real data) {
+  sizeType r = row;
+  sizeType c = column;
+  for (Wrapper& i : wrappers_) {
+    if (direction_ == DIRECTION_COLUMN) {
+      if (r < i.getRowsSize()) {
+        return i.setData(r, c, data);
+      }
+      r -= i.getRowsSize();
+    } else {
+      if (c < i.getColumnsSize()) {
+        return i.setData(r, c, data);
+      }
+      c -= i.getColumnsSize();
+    }
+  }
+}
+
+Wrapper& Merge::getWrapper(sizeType index) const {
+  return wrappers_[index];
+}
+
+bool Merge::getDirection() const {
+  return direction_;
 }
 
 /*********
@@ -594,6 +721,16 @@ Matrix::Matrix(sizeType rows, sizeType columns, real data)
   : rows_(rows), columns_(columns),
     matrix_(rows, std::vector<real>(columns, data)) {}
 
+Matrix::Matrix(const ConstMinor& minor)
+  : Matrix(minor.getRowsSize(), minor.getColumnsSize()) {
+  (*this) = minor;
+}
+
+Matrix& Matrix::operator=(const ConstMinor& minor) {
+  static_cast<Wrapper&>(*this) = static_cast<const Wrapper&>(minor);
+  return *this;
+}
+
 void Matrix::resize(sizeType rows, sizeType columns, real data) {
   rows_ = rows;
   columns_ = columns;
@@ -619,7 +756,22 @@ void Matrix::setData(sizeType row, sizeType column, real data) {
   matrix_[row][column] = data;
 }
 
-const Matrix operator*(ConstMinor lhs, ConstMinor rhs) {
+
+const Matrix operator+(const ConstMinor& rhs) {
+  return rhs;
+}
+
+const Matrix operator-(const ConstMinor& rhs) {
+  Matrix out = rhs;
+  for (auto i : out) {
+    for (auto j : i) {
+      j = -j;
+    }
+  }
+  return out;
+}
+
+const Matrix operator*(const ConstMinor& lhs, const ConstMinor& rhs) {
   if (lhs.getColumnsSize() != rhs.getRowsSize()) {
     throw std::domain_error("Can't multiply matrices");
   }
@@ -638,7 +790,7 @@ const Matrix operator*(ConstMinor lhs, ConstMinor rhs) {
   return m;
 }
 
-const Matrix operator+(ConstMinor lhs, ConstMinor rhs) {
+const Matrix operator+(const ConstMinor& lhs, const ConstMinor& rhs) {
   bool bw = lhs.getColumnsSize() != rhs.getColumnsSize();
   bool bh = lhs.getRowsSize() != rhs.getRowsSize();
   if (bw || bh) {
@@ -654,7 +806,7 @@ const Matrix operator+(ConstMinor lhs, ConstMinor rhs) {
   return m;
 }
 
-const Matrix operator-(ConstMinor lhs, ConstMinor rhs) {
+const Matrix operator-(const ConstMinor& lhs, const ConstMinor& rhs) {
   bool bw = lhs.getColumnsSize() != rhs.getColumnsSize();
   bool bh = lhs.getRowsSize() != rhs.getRowsSize();
   if (bw || bh) {
@@ -670,7 +822,8 @@ const Matrix operator-(ConstMinor lhs, ConstMinor rhs) {
   return m;
 }
 
-std::ostream& operator<<(std::ostream& output, ConstMinor data) {
+std::ostream& operator<<(std::ostream& output,
+                         const ConstMinor& data) {
   size_t a = data.getRowsSize(), b = data.getColumnsSize();
   for (sizeType i = 0; i < a; i++) {
     for (sizeType j = 0; j < b; j++) {
@@ -690,4 +843,5 @@ std::istream& operator>>(std::istream& input, Minor data) {
   }
   return input;
 }
+
 }

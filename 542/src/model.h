@@ -6,6 +6,6 @@
 
 const real eps = std::pow(2, -56);
 
-int gauss(Matrix::Minor a, Matrix::Column y, Matrix::Column x);
+int gauss(Matrix::Minor a, Matrix::Vector y, Matrix::Vector x);
 
 #endif //MODEL_H

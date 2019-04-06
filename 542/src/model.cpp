@@ -1,6 +1,6 @@
-#include "math.h"
+#include "model.h"
 
-int gauss(Matrix::Minor a, Matrix::Column y, Matrix::Column x) {
+int gauss(Matrix::Minor a, Matrix::Vector y, Matrix::Vector x) {
 	size_t n = a.size(), k = 0, index, i, j;
 	real max, temp;
 	while (k < n) {
