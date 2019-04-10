@@ -71,7 +71,7 @@ enc_print('''Content-type: text/html\n
               <a class="nav-link" href="/books">Books</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/book_author">Books and authors</a>
+              <a class="nav-link" href="/book_author">Book author</a>
             </li>
           </ul>
         </div>
@@ -89,23 +89,29 @@ html = {
 try:
   import mysql.connector
 
+  def make_singular(string):
+    return string[:-1] if string[-1] == 's' else string
+
+  def humanize(string):
+    return string.replace("_", " ").replace("s ", " ")
+
   def create_table(name, thead, data):
-    head = '<h1 class="mt-2">%s <a href="/%s/edit/0">+</a></h1>'% \
-              (name.capitalize(), name)
-    content = '''<table class="table"><thead><tr>'''
+    args = (humanize(name).capitalize(), name)
+    head = '<h1 class="mt-2">%s <a href="/%s/edit/0">+</a></h1>' % args
+    content = '<table class="table"><thead><tr>'
     content += '<th scope="col">#</th>'
     for i in thead:
       content += '<th scope="col">%s</th>' % i
-    content += '<th scope="col">Handle</th></tr></thead><tbody>'
+    content += '<th scope="col"></th></tr></thead><tbody>'
     for i in data:
-      content += \
-        '<tr><th scope="row"><a href="/%s/edit/%s">%s</td></th>' \
-        % (name, i[0], i[0])
+      s = '<tr><th scope="row"><a href="/%s/edit/%s">%s</td></th>'
+      content += s % (name, i[0], i[0])
       for j in range(len(thead)):
-        content += '<td><a href="/%s/edit/%s">%s</td>'\
-                      % (name, i[0], i[j + 1])
-      content += '<td><a href="/%s/delete/%s">-</a></td></tr>'\
-              % (name, i[0])
+        args = (name, i[0], i[j + 1])
+        content += '<td><a href="/%s/edit/%s">%s</td>' % args
+      h = '<td><a href="/%s/delete/%s" class="close">'
+      h += '&times;</a></td></tr>'
+      content += h % (name, i[0])
     content += '</tbody></table>'
     return head, content
 
@@ -114,11 +120,15 @@ try:
 <div class="form-group row">
   <label for="{0}" class="col-sm-2 col-form-label">{1}</label>
   <div class="col-sm-10">
-    <input type="name" class="form-control" name="{0}" id="{0}" placeholder="{1}" value="{2}">
+    <input type="name" class="form-control" name="{0}"
+      id="{0}" placeholder="{1}" value="{2}">
   </div>
 </div>'''.format(name_id, name, data)
 
   def create_select(name_id, name, data_id, data):
+    s = lambda i : "selected" if str(i[0]) == data_id else ""
+    l = lambda i : (i[0], s(i), i[1])
+    a = ["<option value='%s' %s>%s</option>" % l(i) for i in data]
     return '''
 <div class="form-group row">
   <label for="{0}" class="col-sm-2 col-form-label">{1}</label>
@@ -128,21 +138,14 @@ try:
       {2}
     </select>
   </div>
-</div>'''.format(
-      name_id, name,
-      "".join([
-        "<option value='%s' %s>%s</option>" % (
-          i[0], "selected" if str(i[0]) == data_id else "", i[1]
-        )
-       for i in data])
-    )
+</div>'''.format(name_id, name, "".join(a))
 
   def create_error(message):
     return "<h1 class='mt-2 text-danger'>%s</h1>" % message
 
   def create_alert(name, message):
-    return '<div class="alert alert-%s" role="alert">%s</div>' \
-      % (name, message)
+    args = (name, message)
+    return '<div class="alert alert-%s" role="alert">%s</div>' % args
 
   ##############
   # DataColumn #
@@ -190,9 +193,8 @@ try:
         raise TypeError("data_columns argument must be list or tuple")
       for i in data_columns:
         if not isinstance(i, int):
-          raise TypeError(
-            "data_columns argument must contain only integers"
-          )
+          msg = "data_columns argument must contain only integers"
+          raise TypeError(msg)
       self._name = name
       self._pattern = pattern
       self._data_columns = data_columns
@@ -212,9 +214,7 @@ try:
   # ViewColumnLink #
   ##################
   class ViewColumnLink:
-    def __init__(
-      self, name, column
-    ):
+    def __init__(self, name, column):
       if not isinstance(name, str):
         raise TypeError("name argument must be string")
       if not isinstance(column, int):
@@ -246,20 +246,17 @@ try:
         raise TypeError("data argument must be list or tuple")
       for i in data:
         if not isinstance(i, DataColumn):
-          raise TypeError(
-            "data argument must contain only DataColumn"
-          )
+          msg = "data argument must contain only DataColumn"
+          raise TypeError(msg)
       if not isinstance(view, (list, tuple)):
         raise TypeError("data argument must be list or tuple")
       for i in view:
         if not isinstance(i, (ViewColumn, ViewColumnLink)):
-          raise TypeError(
-            "view argument must contain ViewColumn or ViewColumnLink"
-          )
+          msg = "view argument must contain ViewColumn or ViewColumnLink"
+          raise TypeError(msg)
       if not isinstance(main_view, (ViewColumn, ViewColumnLink)):
-        raise TypeError(
-          "main_view argument must be ViewColumn or ViewColumnLink"
-        )
+        msg = "main_view argument must be ViewColumn or ViewColumnLink"
+        raise TypeError(msg)
       self._name = name
       self._data = data
       self._view = view
@@ -267,6 +264,8 @@ try:
 
     def get_name(self):
       return self._name
+    def get_singular(self):
+      return make_singular(humanize(self._name))
     def get_data(self, index = False):
       if isinstance(index, int) and index is not False:
         return self._data[index]
@@ -281,14 +280,10 @@ try:
       return self._main_view
 
   class Query:
-    def __init__(
-      self, database, table, parent_table = -1,
-      parent_column = "", link_column = "id"
-    ):
+    def __init__(self, database, table, parent_table = -1,
+    parent_column = "", link_column = "id"):
       self._database = database
-      self._tables = [(
-        table, link_column, parent_table, parent_column
-      )]
+      self._tables = [(table, link_column, parent_table, parent_column)]
       self._data_columns = []
       self._data_columns_dict = {}
       self._view_columns = []
@@ -308,16 +303,14 @@ try:
         raise TypeError("table argument must be int")
       data_set = (table, column)
       if data_set not in self._data_columns_dict:
-        self._data_columns.append((
-          data_set, self.get_table(table).get_data(column)
-        ))
+        s = (data_set, self.get_table(table).get_data(column))
+        self._data_columns.append(s)
         self._data_columns_dict[data_set] = len(self._data_columns) - 1
 
     def append_view(self, column, table = 0):
       if not isinstance(column, (ViewColumn, ViewColumnLink)):
-        raise TypeError(
-          "column argument must be ViewColumn or ViewColumnLink"
-        )
+        msg = "column argument must be ViewColumn or ViewColumnLink"
+        raise TypeError(msg)
       if not isinstance(table, int):
         raise TypeError("table argument must be int")
       view_set = (table, column.get_name())
@@ -333,9 +326,8 @@ try:
         raise TypeError("column argument must be int")
       if not isinstance(table, int):
         raise TypeError("table argument must be int")
-      return self._data_columns[
-        self.get_data_column_id(column, table)
-      ][1]
+      i = self.get_data_column_id(column, table)
+      return self._data_columns[i][1]
 
     def get_data_column_id(self, column, table = 0):
       if not isinstance(column, int):
@@ -349,10 +341,8 @@ try:
         raise TypeError("column argument must be string")
       if not isinstance(table, int):
         raise TypeError("table argument must be int")
-      return next(
-        k for k, v in enumerate(self._data_columns)
-          if v[1].get_name() == column
-      )
+      e = enumerate(self._data_columns)
+      return next(k for k, v in e if v[1].get_name() == column)
 
     def get_view_columns(self):
       return (i[1] for i in self._view_columns)
@@ -362,9 +352,8 @@ try:
         raise TypeError("column argument must be string")
       if not isinstance(table, int):
         raise TypeError("table argument must be int")
-      return self._view_columns[
-        self.get_view_column_id(column, table)
-      ][1]
+      i = self.get_view_column_id(column, table)
+      return self._view_columns[i][1]
 
     def get_view_column_id(self, column, table = 0):
       if not isinstance(column, str):
@@ -383,10 +372,8 @@ try:
       for i in query._view_columns:
         self.append_view(i[1], i[0] + tables_size)
 
-    def collect_view(
-      self, main = False, with_id = True, recursive = True,
-      new_main_name = False, current_table = 0
-    ):
+    def collect_view(self, main = False, with_id = True,
+    recursive = True,new_main_name = False, current_table = 0):
       table = self._tables[0][0]
       data = table.get_data()
       views = table.get_view()
@@ -397,36 +384,32 @@ try:
       for k, v in enumerate(views):
         if type(v) is ViewColumn:
           if main and new_main_name:
-            self.append_view(ViewColumn(
-              new_main_name, v.get_pattern(), v.get_data_columns()
-            ))
+            args = [new_main_name, v.get_pattern(), v.get_data_columns()]
+            self.append_view(ViewColumn(*args))
           else:
             self.append_view(v)
           for j in v.get_data_columns():
             self.append_data(j)
-        elif type(v) is ViewColumnLink \
-            and data[v.get_data_column()].get_related_table() in \
-            self._database.tables:
-          col = v.get_data_column()
-          if recursive:
-            if data[col].get_kind() in [1, 2]:
-              t = self._database.tables[data[col].get_related_table()]
-              r = data[col].get_name()
-              if data[col].get_kind() == 2:
-                r = "id"
-              q = Query(
-                self._database, t, current_table, r,
-                data[col].get_related_column()
-              )
-              q.collect_view(
-                True, False, True, v.get_name(),
-                current_table + len(self._tables)
-              )
-              self.merge(q)
-          else:
-            if data[col].get_kind() == 1:
-              self.append_view(v)
-              self.append_data(col)
+        elif type(v) is ViewColumnLink:
+          rt = data[v.get_data_column()].get_related_table()
+          if rt in self._database.tables:
+            col = v.get_data_column()
+            if recursive:
+              if data[col].get_kind() in [1, 2]:
+                t = self._database.tables[data[col].get_related_table()]
+                r = data[col].get_name()
+                if data[col].get_kind() == 2:
+                  r = "id"
+                rc = data[col].get_related_column()
+                q = Query(self._database, t, current_table, r, rc)
+                ct = current_table + len(self._tables)
+                nmn = new_main_name if new_main_name else v.get_name()
+                q.collect_view(True, False, True, nmn, ct)
+                self.merge(q)
+            else:
+              if data[col].get_kind() == 1:
+                self.append_view(v)
+                self.append_data(col)
       self._generated = 1
 
     def generate_select(
@@ -451,10 +434,9 @@ try:
       for k, v in data.items():
         if k not in cols:
           return self
-      k, v = zip(*(("`%s`" % k, "\"%s\"" % v) for k, v in data.items()))
-      self._query = "INSERT INTO %s (%s) VALUES (%s)" % (
-        self.get_table(0).get_name(),  ", ".join(k), ", ".join(v)
-      )
+      k, v = zip(*(("`%s`" % k, '"%s"' % v) for k, v in data.items()))
+      args = (self.get_table(0).get_name(),  ", ".join(k), ", ".join(v))
+      self._query = "INSERT INTO %s (%s) VALUES (%s)" % args
       return self
 
     def generate_update(self, data, data_id):
@@ -476,15 +458,14 @@ try:
       out = []
       for k, v in enumerate(self._tables[:]):
         if v[2] != -1:
-          s = "INNER JOIN `%s` `%s` ON `%s`.`%s` = `%s`.`%s`" % (
-            v[0].get_name(), k, v[2], v[3], k, v[1]
-          )
+          args = (v[0].get_name(), k, v[2], v[3], k, v[1])
+          s = "INNER JOIN `%s` `%s` ON `%s`.`%s` = `%s`.`%s`" % args
           out.append(s)
       return " ".join(out)
 
     def where(self, column, data, table = 0):
       if self._query:
-        self._query += " WHERE `%s`.`%s` = \"%s\""%(table, column, data)
+        self._query += " WHERE `%s`.`%s` = \"%s\"" % (table, column, data)
       return self
 
     def execute(self):
@@ -726,11 +707,12 @@ try:
           return self.get_edit(table_name, data_id,
               create_alert("success", "Done"))
       except mysql.connector.Error as error:
-        return self.get_edit(
-          table_name, 0,
-          create_alert("danger", error),
-          data
-        )
+        errorMessage = error
+        if error.errno == mysql.connector.errorcode.ER_DUP_ENTRY:
+          name = str(query.get_table().get_singular())
+          errorMessage = "Same %s already exists" % name
+        alert = create_alert("danger", errorMessage)
+        return self.get_edit(table_name, 0, alert, data)
       return ("","","")
 
     def delete(self, table_name, id):
@@ -743,7 +725,13 @@ try:
         cursor.close()
         return create_alert("success", "Done")
       except mysql.connector.Error as error:
-        return create_alert("danger", error)
+        message = error
+        if error.errno == mysql.connector.errorcode.ER_ROW_IS_REFERENCED_2:
+          name = str(make_singular(table_name))
+          arr = str(error).split("`")
+          table = humanize(arr[3]).capitalize()
+          message = "This %s is used in table '%s'" % (name, table)
+        return create_alert("danger", message)
 
 
 
