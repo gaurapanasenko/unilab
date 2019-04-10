@@ -151,9 +151,8 @@ try:
   # DataColumn #
   ##############
   class DataColumn:
-    def __init__(
-      self, name, kind = 0, related_table = "", related_column = "id"
-    ):
+    def __init__(self, name, kind = 0, related_table = "",
+    related_column = "id"):
       if not isinstance(name, str):
         raise TypeError("name argument must be string")
       if not isinstance(kind, int) or kind < 0 or kind > 2:
@@ -182,9 +181,7 @@ try:
   # ViewColumn #
   ##############
   class ViewColumn:
-    def __init__(
-      self, name, pattern = "", data_columns = []
-    ):
+    def __init__(self, name, pattern = "", data_columns = []):
       if not isinstance(name, str):
         raise TypeError("name argument must be string")
       if not isinstance(pattern, str):
@@ -237,9 +234,8 @@ try:
   # Table #
   #########
   class Table:
-    def __init__(
-      self, name, data, view, main_view = ViewColumn("", "%s", [1])
-    ):
+    def __init__(self, name, data, view,
+    main_view = ViewColumn("", "%s", [1])):
       if not isinstance(name, str):
         raise TypeError("name argument must be string")
       if not isinstance(data, (list, tuple)):
@@ -475,14 +471,15 @@ try:
         cursor.execute(self._query)
         if self._fetchable:
           result = cursor.fetchall()
-          self._data = [
-            [i[0]] + [(
-              j[1].get_pattern() % tuple(
-                i[self._data_columns_dict[(j[0], k)]]
-                for k in j[1].get_data_columns()
-              )
-            ) for j in self._view_columns] for i in result
-          ]
+          self._data = []
+          for i in result:
+            r = [i[0]]
+            for j in self._view_columns:
+              s = []
+              for k in j[1].get_data_columns():
+                s.append(i[self._data_columns_dict[(j[0], k)]])
+              r.append(j[1].get_pattern() % tuple(s))
+            self._data.append(r)
           return self._data
         else:
           return cursor
@@ -614,7 +611,8 @@ try:
       data = query.generate_select().execute()
       return (query.get_column_names(), data)
 
-    def get_edit(self, table_name, id, error = "", new_data = {}):
+    def get_edit(self, table_name, id, error = "", new_data = {},
+    create = False):
       if table_name not in self.tables:
         return create_error("No such table " % table_name)
       query = Query(self, self.tables[table_name])
@@ -637,33 +635,34 @@ try:
           if v.get_pattern() == "%s":
             col_id = v.get_data_column()
             col = query.get_data_column(col_id)
-            form += create_input_text(
-              col, v.get_name(), data[query.get_data_column_id(col_id)]
-            )
+            dt_cid = data[query.get_data_column_id(col_id)]
+            form += create_input_text(col, v.get_name(), dt_cid)
         elif type(v) is ViewColumnLink:
             col_id = v.get_data_column()
             col = query.get_data_column(col_id)
             if col.get_kind() == 1:
               q = Query(self, self.tables[col.get_related_table()])
               dt = q.generate_select(True, True, True).execute()
-              form += create_select(
-                col, v.get_name(),
-                data[query.get_data_column_id(col_id)], dt
-              )
-
-      head = '<h1 class="mt-2">Edit %s</h1>' % page_name
+              dt_cid = data[query.get_data_column_id(col_id)]
+              form += create_select(col, v.get_name(), dt_cid, dt)
+      coe = "Create" if create else "Edit"
+      head = '<h1 class="mt-2">%s %s</h1>' % (coe, humanize(page_name))
+      btns = '''
+      <button type="submit" class="btn btn-primary">Edit</button>
+      <a class="btn btn-primary" href="/%s/delete/%s">
+      Delete</a>''' % (table_name, id)
+      if create:
+        btns = '''<button type="submit"
+        class="btn btn-primary">Create</button>'''
       content = '''
 <form>
   <input type="hidden" name="id" value="%s">
   %s
   <div class="form-group row">
-    <div class="col-sm-10">
-      <button type="submit" class="btn btn-primary">Edit</button>
-      <a class="btn btn-primary" href="/%s/delete/%s">Delete</a>
-    </div>
+    <div class="col-sm-10">%s</div>
   </div>
 </form>
-''' % (id, form, table_name, id)
+''' % (id, form, btns)
       return head, error, content
 
     def create_or_edit(self, table_name, parsed_query):
@@ -693,16 +692,11 @@ try:
         cursor = query.execute()
         if data_id == 0:
           if cursor.lastrowid:
-            return self.get_edit(
-            table_name, cursor.lastrowid,
-              create_alert("success", "Done")
-            )
+            alrt = create_alert("success", "Done")
+            return self.get_edit(table_name, cursor.lastrowid, alrt)
           else:
-            return self.get_edit(
-              table_name, 0,
-              create_alert("danger", "Failed to create or edit"),
-              data
-            )
+            alrt = create_alert("danger", "Failed to create or edit")
+            return self.get_edit(table_name, 0, alrt, data)
         else:
           return self.get_edit(table_name, data_id,
               create_alert("success", "Done"))
@@ -737,12 +731,13 @@ try:
 
   class App:
     def __init__(self):
-      self.db = mysql.connector.connect(
-        host="localhost",
-        database="library",
-        user="library",
-        passwd="V9KaCHDIGSzAHyzj"
-      )
+      mysql_data = {
+        "host": "localhost",
+        "database": "library",
+        "user": "library",
+        "passwd": "V9KaCHDIGSzAHyzj"
+      }
+      self.db = mysql.connector.connect(**mysql_data)
 
       url = os.environ["REQUEST_URI"]
       parsed_url = urllib.parse.urlparse(url)
@@ -762,17 +757,20 @@ try:
       if self.table in self.database.tables:
         if self.operation == "edit":
           if 'id' in self.parsed_query:
-            html['head'], html['error'], html['content'] = \
-                self.database.create_or_edit(self.table, self.parsed_query)
+            args = (self.table, self.parsed_query)
+            h = self.database.create_or_edit(*args)
+            html['head'], html['error'], html['content'] = h
           else:
-            html['head'], html['error'], html['content'] = \
-                self.database.get_edit(self.table, self.selected_id)
+            c = self.selected_id == 0
+            h = self.database.get_edit(self.table, self.selected_id, create = c)
+            html['head'], html['error'], html['content'] = h
         elif self.operation == "delete":
-          html['error'] = self.database.delete(self.table, self.selected_id)
+          he = self.database.delete(self.table, self.selected_id)
+          html['error'] = he
           try:
             names, result = self.database.get_list(self.table)
-            html['head'], html['content'] = \
-              create_table(self.table, names, result)
+            t = create_table(self.table, names, result)
+            html['head'], html['content'] = t
           except:
             pass
         else:
