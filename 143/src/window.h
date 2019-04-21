@@ -20,15 +20,19 @@
 #include <glibmm/dispatcher.h>
 
 #include <thread>
+#include <mutex>
 
 class Timer
 {
 public:
   Timer(Glib::Dispatcher& dispatcher);
-  void do_work();
+  void doWork();
+  void stop();
 
 private:
   Glib::Dispatcher& dispatcher_;
+  std::mutex mutex;
+  bool continue_;
 };
 
 class Window : public Gtk::ApplicationWindow {

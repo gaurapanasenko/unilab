@@ -13,11 +13,24 @@
 #include <thread>
 #include <ctime>
 
-Timer::Timer(Glib::Dispatcher& dispatcher) : dispatcher_(dispatcher) {}
+Timer::Timer(Glib::Dispatcher& dispatcher)
+  : dispatcher_(dispatcher), continue_(true) {}
 
-void Timer::do_work() {
-  std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  dispatcher_.emit();
+void Timer::doWork() {
+  bool c = true;
+  while(c) {
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      c = continue_;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    dispatcher_.emit();
+  }
+}
+
+void Timer::stop() {
+  std::lock_guard<std::mutex> lock(mutex);
+  continue_ = false;
 }
 
 template<class T>
@@ -91,14 +104,16 @@ Window::Window(BaseObjectType* cobject,
   drawingArea_->signal_button_release_event().connect(mfr);
   drawingArea_->signal_scroll_event().connect(mfs);
 
-  dispatcher.connect(sigc::mem_fun(*this, &Window::thread));
-  //thread();
+  dispatcher.connect(sigc::mem_fun(*this, &Window::update));
+  thread_ = new std::thread(&Timer::doWork, &timer);
   parametersChanged();
 }
 
 Window::~Window() {
-  if (thread_->joinable())
+  if (thread_ && thread_->joinable()) {
+    timer.stop();
     thread_->join();
+  }
   delete thread_;
 }
 
@@ -108,11 +123,6 @@ void Window::quit[[noreturn]]() {
 
 void Window::update() {
   drawingArea_->queue_draw();
-}
-
-void Window::thread() {
-  update();
-  thread_ = new std::thread(&Timer::do_work, &timer);
 }
 
 bool Window::draw(const Cairo::RefPtr<Cairo::Context>& context) {
@@ -253,6 +263,10 @@ bool Window::activate(GdkEventButton* event) {
     auto p = Point(float(event->x), float(event->y));
     if (event->button == 1) {
       shapes_.activate(p);
+      auto a = shapes_.getActive();
+      if (a) {
+        a->startRecordingPath();
+      }
     } else if (event->button == 3) {
       shapes_.toggleSelection(shapes_.getTopIterator(p));
     }
@@ -268,6 +282,10 @@ bool Window::moveActive(GdkEventMotion* event) {
 }
 
 bool Window::release(GdkEventButton*) {
+  auto a = shapes_.getActive();
+  if (a) {
+    a->stopRecordingPath();
+  }
   shapes_.release();
   update();
   return true;

@@ -127,6 +127,10 @@ public:
   /// \brief Toggles trace of shape
   void toggleTrace();
 
+  void clearPath();
+  void startRecordingPath();
+  void stopRecordingPath();
+
 private:
   /// \brief Current frame of object
   Point position_;
@@ -139,7 +143,13 @@ private:
   /// \brief Current color of shape
   Color color_;
   /// \brief Saved path for automated motion
-  //Array<Point> path_;
+  std::vector<Point> path_;
+  std::vector<Point>::iterator currentPathPoint_;
+  /// \brief Last time when shape was automatically moved
+  clock_t time_;
+  bool directionPath_;
+  /// \brief if true setPosition will save all points to path_
+  bool recordPath_;
   /// \brief Defines visibility of shape
   bool visible_;
   /// \brief Defines visibility of shape

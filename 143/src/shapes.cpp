@@ -42,8 +42,8 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context,
       queue_.resize(size);
       tail_ = 0;
     }
-    if ((clock() - time_) * 1000.0f / CLOCKS_PER_SEC
-        > SHAPE.getTraceTime()) {
+    float t = (clock() - time_) * 1000.0f / CLOCKS_PER_SEC;
+    if (t > SHAPE.getTraceTime()) {
       time_ = clock();
       queue_[tail_] = shape_->clone();
       tail_ = (tail_ + 1) % size;
@@ -63,6 +63,8 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context,
 Shape::Shape()
   : size_(SHAPE.getDefaultSize()), zoom_(1.0),
     defaultColor_(randomColor()), color_(defaultColor_),
+    currentPathPoint_(path_.end()), time_(0),
+    directionPath_(false), recordPath_(false),
     visible_(true), trace_(false) {
   if (SHAPE_DEBUG) {
     std::cout << "Created " << this << "\n";
@@ -72,7 +74,10 @@ Shape::Shape()
 Shape::Shape(const Shape& shape)
   : position_(shape.position_), size_(shape.size_),
     zoom_(shape.zoom_), defaultColor_(shape.defaultColor_),
-    color_(shape.color_), visible_(shape.visible_),
+    color_(shape.color_), path_(shape.path_),
+    currentPathPoint_(shape.currentPathPoint_), time_(shape.time_),
+    directionPath_(shape.directionPath_),
+    recordPath_(shape.recordPath_), visible_(shape.visible_),
     trace_(shape.trace_)  {
   if (SHAPE_DEBUG) {
     std::cout << "Cloned " << this << " from " << &shape << "\n";
@@ -105,6 +110,30 @@ const std::shared_ptr<Shape> Shape::clone() {
 }
 
 void Shape::render(bool selected) {
+  float t = (clock() - time_) * 1000.0f / CLOCKS_PER_SEC;
+  if (!recordPath_ && !path_.empty() && t > SHAPE.getTraceTime()) {
+    time_ = clock();
+    if (directionPath_) {
+      if (currentPathPoint_ == path_.begin()) {
+        directionPath_ = !directionPath_;
+      } else {
+        currentPathPoint_--;
+      }
+    } else {
+      if (currentPathPoint_ == path_.end() - 1) {
+        directionPath_ = !directionPath_;
+      } else {
+        currentPathPoint_++;
+      }
+    }
+    if (currentPathPoint_ >= path_.end()) {
+      currentPathPoint_ = path_.end() - 1;
+    }
+    if (currentPathPoint_ < path_.begin()) {
+      currentPathPoint_ = path_.begin();
+    }
+    position_ = *currentPathPoint_;
+  }
   Point minSize = getSize();
   auto s = SHAPE.getSizes();
   if (!selected) {
@@ -119,7 +148,7 @@ void Shape::render(bool selected) {
   if (x > w - minSize.getX()) x = w - minSize.getX();
   if (y > h - minSize.getY()) y = h - minSize.getY();
 
-  setPosition(Point(x, y));
+  position_ = (Point(x, y));
   if (!selected) {
     Point sz = Point(2, 2) / getSize();
     float minX = std::min(x * sz.getX(), (w - x) * sz.getX());
@@ -189,6 +218,9 @@ const Point& Shape::getPosition() const {
 
 void Shape::setPosition(const Point& position) {
   position_ = position;
+  if (recordPath_) {
+    path_.emplace_back(position_);
+  }
 }
 
 const Size&Shape::getSize() const {
@@ -236,6 +268,23 @@ bool Shape::hasTrace() {
 
 void Shape::toggleTrace() {
   trace_ = !trace_;
+}
+
+void Shape::clearPath() {
+  directionPath_ = true;
+  currentPathPoint_ = path_.end();
+  path_.clear();
+}
+
+void Shape::startRecordingPath() {
+  clearPath();
+  recordPath_ = true;
+}
+
+void Shape::stopRecordingPath() {
+  directionPath_ = true;
+  currentPathPoint_ = path_.end();
+  recordPath_ = false;
 }
 
 /*********
