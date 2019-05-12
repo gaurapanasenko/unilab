@@ -90,6 +90,18 @@ bool isOneSizePointsToStraight(const Point& a, const Point& b,
          calculatePseudoscalarProduct(d, a, b) > 0;
 }
 
+std::ostream& operator<<(std::ostream& out, const Point& rhs) {
+  return out << rhs.getX() << ' ' << rhs.getY();
+}
+
+std::istream& operator>>(std::istream& in,  Point& rhs) {
+  float x, y;
+  in >> x >> y;
+  rhs.setX(x);
+  rhs.setY(y);
+  return in;
+}
+
 /*******
 * Size *
 *******/
@@ -123,16 +135,27 @@ Color::Color() : r_(0), g_(0), b_(0) {}
 Color::Color(unsigned char r, unsigned char g, unsigned char b) :
 r_(r), g_(g), b_(b) {}
 
-double Color::getR() {
+double Color::getR() const {
   return double(r_) / 255;
 }
 
-double Color::getG() {
+double Color::getG() const {
   return double(g_) / 255;
 }
 
-double Color::getB() {
+double Color::getB() const {
   return double(b_) / 255;
+}
+
+std::ostream& operator<<(std::ostream& out, const Color& rhs) {
+  return out << +rhs.r_ << ' ' << +rhs.g_ << ' '  << +rhs.b_;
+}
+
+std::istream& operator>>(std::istream& in,  Color& rhs) {
+  unsigned int r, g, b;
+  in >> r >> g >> b;
+  rhs = Color(r, g, b);
+  return in;
 }
 
 /// \brief Creates random color

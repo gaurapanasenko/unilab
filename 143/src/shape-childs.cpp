@@ -13,12 +13,20 @@ namespace ShapeChilds {
 /***********
 * Triangle *
 ***********/
+const std::string Triangle::getClassName() {
+  return "Triangle";
+}
+
+const std::string Triangle::getClassNameVirtual() const {
+  return getClassName();
+}
+
 const std::shared_ptr<Shape> Triangle::create() {
   return std::make_shared<Triangle>();
 }
 
 const std::shared_ptr<Shape> Triangle::cloneVirtual() {
-  return std::make_shared<Shape>(*this);
+  return std::make_shared<Triangle>(*this);
 }
 
 void Triangle::drawShape(const Cairo::RefPtr<Cairo::Context>& context,
@@ -42,6 +50,14 @@ bool Triangle::isInShapeVirtual(const Point& p) const {
 /************
 * Rectangle *
 ************/
+const std::string Rectangle::getClassName() {
+  return "Rectangle";
+}
+
+const std::string Rectangle::getClassNameVirtual() const {
+  return getClassName();
+}
+
 const std::shared_ptr<Shape> Rectangle::create() {
   return std::make_shared<Rectangle>();
 }
@@ -64,6 +80,14 @@ bool Rectangle::isInShapeVirtual(const Point&) const {
 /**********
 * Ellipse *
 **********/
+const std::string Ellipse::getClassName() {
+  return "Ellipse";
+}
+
+const std::string Ellipse::getClassNameVirtual() const {
+  return getClassName();
+}
+
 const std::shared_ptr<Shape> Ellipse::create() {
   return std::make_shared<Ellipse>();
 }

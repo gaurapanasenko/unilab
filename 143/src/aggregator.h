@@ -21,13 +21,20 @@ public:
   Aggregator& operator=(const Aggregator& object);
   Aggregator& operator=(Aggregator&& object) = default;
 
+  static const std::string getClassName();
+  const std::string getClassNameVirtual() const override;
+
   static const std::shared_ptr<Shape>
   create(const std::vector< std::shared_ptr<Shape> >& array);
+  static const std::shared_ptr<Shape> create();
 
   const std::shared_ptr<Shape> cloneVirtual() override;
   void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
                  bool selected, float alpha = 0.8f) override;
   bool isInShapeVirtual(const Point& p) const override;
+
+  std::ostream& outputVirtual(std::ostream& out) const override;
+  std::istream& inputVirtual(std::istream& in) override;
 
   const std::vector< std::shared_ptr<Shape> > deaggregate();
 

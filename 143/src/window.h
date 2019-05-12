@@ -51,9 +51,12 @@ private:
   void thread();
   bool draw(const Cairo::RefPtr<Cairo::Context>& context);
   void parametersChanged();
+  void save();
+  void load();
   void addRectangle();
   void addTriangle();
   void addEllipse();
+  void toggleAutomove();
   void toggleTrace();
   void reset();
   void changeColor();

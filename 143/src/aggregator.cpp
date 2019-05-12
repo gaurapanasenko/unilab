@@ -58,9 +58,22 @@ Aggregator::Aggregator(const Aggregator& object) : Shape(object) {
   }
 }
 
+const std::string Aggregator::getClassName() {
+  return "Aggregator";
+}
+
+const std::string Aggregator::getClassNameVirtual() const {
+  return getClassName();
+}
+
 const std::shared_ptr<Shape>
 Aggregator::create(const std::vector< std::shared_ptr<Shape> >& array) {
   return std::make_shared<Aggregator>(array);
+}
+
+const std::shared_ptr<Shape> Aggregator::create() {
+  auto arr = std::vector< std::shared_ptr<Shape> >();
+  return std::make_shared<Aggregator>(arr);
 }
 
 const std::shared_ptr<Shape> Aggregator::cloneVirtual() {
@@ -82,6 +95,30 @@ bool Aggregator::isInShapeVirtual(const Point& point) const {
       return true;
   }
   return false;
+}
+
+std::ostream& Aggregator::outputVirtual(std::ostream& out) const {
+  out << array_.size() << '\n';
+  for (auto& i : array_) {
+    out << *i;
+  }
+  return out;
+}
+
+std::istream& Aggregator::inputVirtual(std::istream& in) {
+  array_.clear();
+  size_t size;
+  in >> size;
+  array_.reserve(size);
+  ShapesMap map = SHAPES_REGISTRY.getShapesMap();
+  for (size_t i = 0; i < size; i++) {
+    std::string str;
+    in >> str;
+    auto shape = map[str]();
+    in >> (*shape);
+    array_.emplace_back(shape);
+  }
+  return in;
 }
 
 const std::vector< std::shared_ptr<Shape> > Aggregator::deaggregate() {

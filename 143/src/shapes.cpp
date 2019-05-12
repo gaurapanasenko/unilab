@@ -63,7 +63,7 @@ void ShapeTrace::draw(const Cairo::RefPtr<Cairo::Context>& context,
 Shape::Shape()
   : size_(SHAPE.getDefaultSize()), zoom_(1.0),
     defaultColor_(randomColor()), color_(defaultColor_),
-    currentPathPoint_(path_.end()), time_(0),
+    currentPathPoint_(path_.end()), time_(0), automove_(false),
     directionPath_(false), recordPath_(false),
     visible_(true), trace_(false) {
   if (SHAPE_DEBUG) {
@@ -76,7 +76,7 @@ Shape::Shape(const Shape& shape)
     zoom_(shape.zoom_), defaultColor_(shape.defaultColor_),
     color_(shape.color_), path_(shape.path_),
     currentPathPoint_(shape.currentPathPoint_), time_(shape.time_),
-    directionPath_(shape.directionPath_),
+    automove_(false), directionPath_(shape.directionPath_),
     recordPath_(shape.recordPath_), visible_(shape.visible_),
     trace_(shape.trace_)  {
   if (SHAPE_DEBUG) {
@@ -90,6 +90,10 @@ Shape::~Shape() {
   }
 }
 
+const std::string Shape::getClassNameVirtual() const {
+  return "Shape";
+}
+
 void Shape::drawShape(const Cairo::RefPtr<Cairo::Context>&,
                       bool, float) {}
 
@@ -99,6 +103,14 @@ const std::shared_ptr<Shape> Shape::cloneVirtual() {
 
 bool Shape::isInShapeVirtual(const Point&) const {
   return true;
+}
+
+std::ostream& Shape::outputVirtual(std::ostream& out) const {
+  return out;
+}
+
+std::istream& Shape::inputVirtual(std::istream& in) {
+  return in;
 }
 
 const std::shared_ptr<Shape> Shape::clone() {
@@ -111,7 +123,8 @@ const std::shared_ptr<Shape> Shape::clone() {
 
 void Shape::render(bool selected) {
   float t = (clock() - time_) * 1000.0f / CLOCKS_PER_SEC;
-  if (!recordPath_ && !path_.empty() && t > SHAPE.getTraceTime()) {
+  bool b = t > SHAPE.getTraceTime();
+  if (automove_ && !recordPath_ && !path_.empty() && b) {
     time_ = clock();
     if (directionPath_) {
       if (currentPathPoint_ == path_.begin()) {
@@ -270,6 +283,14 @@ void Shape::toggleTrace() {
   trace_ = !trace_;
 }
 
+void Shape::toggleAutomove() {
+  automove_ = !automove_;
+  if (!automove_) {
+    clearPath();
+    recordPath_ = false;
+  }
+}
+
 void Shape::clearPath() {
   directionPath_ = true;
   currentPathPoint_ = path_.end();
@@ -277,14 +298,33 @@ void Shape::clearPath() {
 }
 
 void Shape::startRecordingPath() {
-  clearPath();
-  recordPath_ = true;
+  if (automove_) {
+    clearPath();
+    recordPath_ = true;
+  }
 }
 
 void Shape::stopRecordingPath() {
   directionPath_ = true;
   currentPathPoint_ = path_.end();
   recordPath_ = false;
+}
+
+std::ostream& operator<<(std::ostream& out, const Shape& rhs) {
+  out << rhs.getClassNameVirtual() << ' ' << rhs.position_ << ' '
+      << rhs.size_ << ' '
+      << rhs.defaultColor_ << ' ' << rhs.color_ << ' '
+      << rhs.automove_ << ' ' << rhs.visible_ << ' '
+      << rhs.trace_ << '\n';
+  rhs.outputVirtual(out);
+  return out;
+}
+
+std::istream& operator>>(std::istream& in,  Shape& rhs) {
+  in >> rhs.position_ >> rhs.size_ >> rhs.defaultColor_
+     >> rhs.color_ >> rhs.automove_ >> rhs.visible_ >> rhs.trace_;
+  rhs.inputVirtual(in);
+  return in;
 }
 
 /*********
@@ -334,7 +374,7 @@ void Shapes::add(const std::shared_ptr<Shape>& pointer) {
 void Shapes::erase(const std::vector<Element>::iterator& iterator) {
   activated_ = false;
   if (iterator != array_.end()) {
-    size_t index = iterator - array_.begin();
+    long index = iterator - array_.begin();
     if (iterator->isSelected()) {
       toggleSelection(iterator);
     }
@@ -417,13 +457,37 @@ const std::vector< std::shared_ptr<Shape> > Shapes::getSelected() {
   return array;
 }
 
+std::ostream& operator<<(std::ostream& out, const Shapes& rhs) {
+  out << rhs.array_.size() << '\n';
+  for (auto& i : rhs.array_) {
+    out << **i;
+  }
+  return out;
+}
+
+std::istream& operator>>(std::istream& in,  Shapes& rhs) {
+  rhs.array_.clear();
+  size_t size;
+  in >> size;
+  rhs.array_.reserve(size);
+  ShapesMap map = SHAPES_REGISTRY.getShapesMap();
+  for (size_t i = 0; i < size; i++) {
+    std::string str;
+    in >> str;
+    auto shape = map[str]();
+    in >> (*shape);
+    rhs.add(shape);
+  }
+  return in;
+}
+
 /******************
 * Shapes::Element *
 ******************/
 Shapes::Element::Element(std::shared_ptr<Shape> pointer)
   : pointer_(std::move(pointer)), selected_(false) {}
 
-const std::shared_ptr<Shape>& Shapes::Element::operator*() {
+const std::shared_ptr<Shape>& Shapes::Element::operator*() const {
   return pointer_;
 }
 
@@ -459,3 +523,14 @@ bool Shapes::Element::isSelected() const {
 void Shapes::Element::toggleSelection() {
   selected_ = !selected_;
 }
+
+ShapesMap ShapesRegistry::getShapesMap() {
+  return shapesMap_;
+}
+
+void ShapesRegistry::setShapesMap(const ShapesMap& shapesMap) {
+  shapesMap_.clear();
+  shapesMap_ = shapesMap;
+}
+
+ShapesRegistry SHAPES_REGISTRY;

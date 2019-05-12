@@ -9,6 +9,8 @@
 #include "window.h"
 #include "shape-childs.h"
 #include "aggregator.h"
+#include <gtkmm/filechooserdialog.h>
+#include <fstream>
 #include <chrono>
 #include <thread>
 #include <ctime>
@@ -52,6 +54,9 @@ Window::Window(BaseObjectType* cobject,
                Glib::RefPtr<Gtk::Builder> builder)
   : Gtk::ApplicationWindow(cobject), builder_(std::move(builder)),
     timer(dispatcher), thread_(nullptr) {
+  connectButton(builder_, "save_button"         , *this, &Window::save);
+  connectButton(builder_, "load_button"         , *this, &Window::load);
+
   connectButton(builder_, "add_rectangle_button", *this, &Window::addRectangle);
   connectButton(builder_, "add_triangle_button" , *this, &Window::addTriangle );
   connectButton(builder_, "add_ellipse_button"  , *this, &Window::addEllipse  );
@@ -64,6 +69,7 @@ Window::Window(BaseObjectType* cobject,
   connectButton(builder_, "deaggregate_button"  , *this, &Window::deaggregate );
   connectButton(builder_, "clone_button"        , *this, &Window::cloneShape  );
   connectButton(builder_, "delete_button"       , *this, &Window::deleteShape );
+  connectButton(builder_, "automove_button"   , *this, &Window::toggleAutomove);
 
   getObject(builder_, drawingArea_, "drawing_area");
   getObject(builder_, statusbar_, "statusbar");
@@ -103,6 +109,13 @@ Window::Window(BaseObjectType* cobject,
   drawingArea_->signal_motion_notify_event().connect(mfm);
   drawingArea_->signal_button_release_event().connect(mfr);
   drawingArea_->signal_scroll_event().connect(mfs);
+
+  ShapesMap map;
+  map["Triangle"] = ShapeChilds::Triangle::create;
+  map["Rectangle"] = ShapeChilds::Rectangle::create;
+  map["Ellipse"] = ShapeChilds::Ellipse::create;
+  map["Aggregator"] = Aggregator::create;
+  SHAPES_REGISTRY.setShapesMap(map);
 
   dispatcher.connect(sigc::mem_fun(*this, &Window::update));
   thread_ = new std::thread(&Timer::doWork, &timer);
@@ -154,6 +167,38 @@ void Window::parametersChanged() {
   update();
 }
 
+void Window::save() {
+  Gtk::FileChooserDialog dialog("Please choose a folder",
+           Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dialog.set_transient_for(*this);
+
+  dialog.add_button("_Cancel", Gtk::RESPONSE_CANCEL);
+  dialog.add_button("Save", Gtk::RESPONSE_OK);
+
+  int result = dialog.run();
+
+  if (result == Gtk::RESPONSE_OK) {
+    std::ofstream out(dialog.get_filename());
+    out << shapes_;
+  }
+}
+
+
+void Window::load() {
+  Gtk::FileChooserDialog dialog("Please choose a folder",
+           Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dialog.set_transient_for(*this);
+
+  dialog.add_button("_Cancel", Gtk::RESPONSE_CANCEL);
+  dialog.add_button("Open", Gtk::RESPONSE_OK);
+
+  int result = dialog.run();
+  if (result == Gtk::RESPONSE_OK) {
+    std::ifstream in(dialog.get_filename());
+    in >> shapes_;
+  }
+}
+
 void Window::addRectangle() {
   int n = int(nAdjustment_->get_value());
   for (int i = 0; i < n; i++) {
@@ -176,6 +221,14 @@ void Window::addEllipse() {
     shapes_.add(ShapeChilds::Ellipse::create());
   }
   update();
+}
+
+void Window::toggleAutomove() {
+  auto s = shapes_.getActive();
+  if (s) {
+    s->toggleAutomove();
+    update();
+  }
 }
 
 void Window::toggleTrace() {

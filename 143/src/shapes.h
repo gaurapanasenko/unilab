@@ -17,6 +17,8 @@
 #include <glibmm/refptr.h>
 #include <vector>
 #include <memory>
+#include <string>
+#include <map>
 
 #ifndef DEBUG
 const bool SHAPE_DEBUG = false;
@@ -72,6 +74,7 @@ public:
 
   /// \brief Virtual destructor to support inheritance
   virtual ~Shape();
+  virtual const std::string getClassNameVirtual() const;
   /// \brief Virtual method to draw specific inherited shape
   virtual void drawShape(const Cairo::RefPtr<Cairo::Context>& context,
                          bool selected, float alpha = 0.8f);
@@ -81,6 +84,8 @@ public:
   /// \param p checking point
   /// \return true if point in shape, else false
   virtual bool isInShapeVirtual(const Point& p) const;
+  virtual std::ostream& outputVirtual(std::ostream& out) const;
+  virtual std::istream& inputVirtual(std::istream& in);
 
   const std::shared_ptr<Shape> clone();
 
@@ -126,10 +131,15 @@ public:
   bool hasTrace();
   /// \brief Toggles trace of shape
   void toggleTrace();
+  /// \brief Toggles automove for shape
+  void toggleAutomove();
 
   void clearPath();
   void startRecordingPath();
   void stopRecordingPath();
+
+  friend std::ostream& operator <<(std::ostream& out, const Shape& rhs);
+  friend std::istream& operator >>(std::istream& in,  Shape& rhs);
 
 private:
   /// \brief Current frame of object
@@ -147,6 +157,7 @@ private:
   std::vector<Point>::iterator currentPathPoint_;
   /// \brief Last time when shape was automatically moved
   clock_t time_;
+  bool automove_;
   bool directionPath_;
   /// \brief if true setPosition will save all points to path_
   bool recordPath_;
@@ -196,6 +207,9 @@ public:
 
   const std::vector< std::shared_ptr<Shape> > getSelected();
 
+  friend std::ostream& operator<<(std::ostream& out, const Shapes& rhs);
+  friend std::istream& operator>>(std::istream& in,  Shapes& rhs);
+
 private:
   /// \brief Array of elements
   std::vector<Element> array_;
@@ -205,7 +219,6 @@ private:
   bool activated_;
   /// \brief Activation point of Shape object
   Point activationPoint_;
-
 };
 
 /// \brief Element of object for correct processing Shape object and
@@ -218,7 +231,7 @@ public:
   Element(std::shared_ptr<Shape> pointer);
   /// \brief Member operator to access Shape object
   /// \return Reference to Shape object
-  const std::shared_ptr<Shape>& operator*();
+  const std::shared_ptr<Shape>& operator*() const;
   /// \brief Member operator to access members of Shape object
   /// \return Glib::RefPtr to Shape object
   Shape* operator->();
@@ -237,5 +250,18 @@ private:
   std::shared_ptr<ShapeTrace> shapeTrace_;
   bool selected_;
 };
+
+using CreateFunctionType = const std::shared_ptr<Shape>(*)();
+using ShapesMap = std::map<std::string, CreateFunctionType>;
+
+class ShapesRegistry {
+public:
+  ShapesMap getShapesMap();
+  void setShapesMap(const ShapesMap& shapesMap);
+private:
+  ShapesMap shapesMap_;
+};
+
+extern ShapesRegistry SHAPES_REGISTRY;
 
 #endif // SHAPES_H

@@ -8,6 +8,7 @@
  **************************************************************/
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
+#include <iostream>
 
 class Point {
 public:
@@ -57,6 +58,9 @@ float calculatePseudoscalarProduct(const Point& a, const Point& b,
 bool isOneSizePointsToStraight(const Point& a, const Point& b,
                                const Point& c, const Point& d);
 
+std::ostream& operator <<(std::ostream& out, const Point& rhs);
+std::istream& operator >>(std::istream& in,  Point& rhs);
+
 class Size : public Point {
 public:
   Size();
@@ -74,9 +78,11 @@ class Color {
 public:
   Color();
   Color(unsigned char r, unsigned char g, unsigned char b);
-  double getR();
-  double getG();
-  double getB();
+  double getR() const;
+  double getG() const;
+  double getB() const;
+  friend std::ostream& operator <<(std::ostream& out, const Color& rhs);
+  friend std::istream& operator >>(std::istream& in,  Color& rhs);
 
 private:
   unsigned char r_, g_, b_;
@@ -92,6 +98,7 @@ Color randomColor();
 /// \param size size of ellipse
 /// \return distance
 float calculateDistanceToEllipse(const Point& point, const Point& size);
+
 
 class Sizes {
 public:
