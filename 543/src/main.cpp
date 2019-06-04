@@ -47,8 +47,8 @@ int main (int argc, char *argv[]) {
   int n;
   cin >> a >> b >> x0 >> y0 >> n;
   double h = (b - a) / n;
-  vector< vector<double> > e(n+1, vector<double>(4, 0));
   MiniParser mp(fun);
+  vector< vector<double> > e(n+1, vector<double>(4, 0));
   e[0][0] = x0; e[0][1] = y0;
   e[0][2] = mpxy(mp, e[0][0], e[0][1]);
   e[0][3] = h * e[0][2];
@@ -70,6 +70,42 @@ int main (int argc, char *argv[]) {
          << setw(10) << e[i][1] << " "
          << setw(10) << e[i][2] << " "
          << setw(15) << e[i][3] << "\n";
+  }
+  e.clear();
+  e.resize(n+1, vector<double>(7, 0));
+  e[0][0] = x0; e[0][1] = y0;
+  e[0][2] = e[0][0] + h / 2;
+  e[0][3] = mpxy(mp, e[0][0], e[0][1]);
+  e[0][4] = e[0][1] + h * e[0][3] / 2;
+  e[0][5] = mpxy(mp, e[0][2], e[0][4]);
+  e[0][6] = h * e[0][5];
+  for (int i = 1; i <= n; i++) {
+    e[i][0] = h * i + x0;
+    e[i][1] = e[i - 1][1] + e[i - 1][6];
+    e[i][2] = e[i][0] + h / 2;
+    e[i][3] = mpxy(mp, e[i][0], e[i][1]);
+    e[i][4] = e[i][1] + h * e[i][3] / 2;
+    e[i][5] = mpxy(mp, e[i][2], e[i][4]);
+    e[i][6] = h * e[i][5];
+  }
+  cout << "Эйлера +:\n";
+  cout << setw(6) << "i" << setw(11) << "xi"
+       << setw(11) << "yi"
+       << setw(11) << "xi+h/2"
+       << setw(11) << "f(xi, yi)"
+       << setw(11) << "yi+h/2*f"
+       << setw(21) << "f(xi+h/2, yi+h/2*f)"
+       << setw(11) << "dyi"
+       << "\n";
+  for (int i = 0; i <= n; i++) {
+    cout << setw(6) << i << " "
+         << setw(10) << e[i][0] << " "
+         << setw(10) << e[i][1] << " "
+         << setw(10) << e[i][2] << " "
+         << setw(10) << e[i][3] << " "
+         << setw(10) << e[i][4] << " "
+         << setw(20) << e[i][5] << " "
+         << setw(10) << e[i][6] << "\n";
   }
   vector< vector<double> > m(n+1, vector<double>(7, 0));
   m[0][0] = x0; m[0][1] = y0;
