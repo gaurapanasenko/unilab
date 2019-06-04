@@ -37,13 +37,13 @@ file(COPY ${data} DESTINATION resources)
 ###############################################################################
 
 # GTKMM
-find_package(PkgConfig)
-pkg_check_modules(GTKMM gtkmm-3.0)
+#find_package(PkgConfig)
+#pkg_check_modules(GTKMM gtkmm-3.0)
 #find_package(GTKMM REQUIRED)
-include_directories(${GTKMM_INCLUDE_DIRS})
+#include_directories(${GTKMM_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${GTKMM_LIBRARIES}
+#  ${GTKMM_LIBRARIES}
 )
 
 ###############################################################################
