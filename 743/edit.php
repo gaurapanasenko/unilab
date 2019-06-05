@@ -35,7 +35,7 @@ if (isset($_REQUEST["id"]) and is_numeric($_REQUEST["id"]) and intval($_REQUEST[
 	} else {
 		include "header.php"; ?>
 			<div class="alert alert-secondary" role="alert">
-				Не існує такого елемента. <a href="<?=$base_path?>/edit/0">Додати новий.</a>
+				Не існує такого елемента. <a href="<?=$base_path?>edit/0">Додати новий.</a>
 			</div>
 		<?php include "footer.php";
 		exit();
@@ -76,7 +76,7 @@ include "header.php";
 	if (!empty($error)) { ?>
 		<div class="alert alert-secondary" role="alert"><?=$error?></div>
 	<?php } ?>
-	<form action="<?=$base_path?>/edit" method="get">
+	<form action="<?=$base_path?>edit" method="get">
 		<input type="hidden" name="id" value="<?=$id?>">
 		<input type="hidden" name="parent_id" value="<?=$parent_id?>">
 		<div class="form-group row">

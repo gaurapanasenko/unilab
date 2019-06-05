@@ -12,9 +12,9 @@ if ($mysqli->connect_errno) {
 	exit();
 }
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path_check = substr($path, 0, strlen($base_path));
-if ($path_check == $base_path) {
-	$path = explode("/", substr($path, strlen($base_path) + 1));
+$path_check = substr($path, 0, strlen($base_path) - 1);
+if ($path_check == substr($base_path, 0, strlen($base_path) - 1)) {
+	$path = explode("/", substr($path, strlen($base_path)));
 	if (in_array($path[0], array("edit", "list", "delete")))
 		include "$path[0].php";
 	else include "list.php";

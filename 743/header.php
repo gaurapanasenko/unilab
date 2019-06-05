@@ -31,6 +31,19 @@
 		</script>
 
 		<title><?=$title?></title>
+
+		<style>
+			.list-element {
+				font-size: 1.5rem;
+			}
+			.list-link {
+				color: green !important;
+				font-size: 0.5rem;
+			}
+			.list-link-head {
+				font-size: inherit;
+			}
+		</style>
 	</head>
 	<body>
 		<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">

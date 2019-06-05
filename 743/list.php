@@ -56,29 +56,31 @@ function print_data($data) {
 	?>
 	<ul>
 	<?php foreach($data as $value) { ?>
-		<li>
+		<li class="list-element">
 			<?=$value[2]?>
-			<a href="<?=$base_path?>/edit?id=<?=$value[0]?>"
+			<small class="ml-4">
+			<a class="list-link" href="<?=$base_path?>edit?id=<?=$value[0]?>"
 			data-toggle="tooltip" title="Змінити елемент"><i class="fa fa-edit"></i></a>
-			<a href="<?=$base_path?>/edit?parent_id=<?=$value[0]?>"
+			<a class="list-link" href="<?=$base_path?>edit?parent_id=<?=$value[0]?>"
 			data-toggle="tooltip" title="Додати дочірній елемент"><i class="fa fa-plus-circle"></i></a>
-			<a href="<?=$base_path?>/delete?id=<?=$value[0]?>"
+			<a class="list-link" href="<?=$base_path?>delete?id=<?=$value[0]?>"
 			data-toggle="tooltip" title="Видалити елемент"><i class="fa fa-trash"></i></a>
-			<a href="<?=$base_path?>/list?mode=root&id=<?=$value[0]?>"
+			<a class="list-link" href="<?=$base_path?>list?mode=root&id=<?=$value[0]?>"
 			data-toggle="tooltip" title="Знайти шлях до кореневого елементу"><i class="fa fa-square-root-alt"></i></a>
-			<a href="<?=$base_path?>/list?mode=childs&id=<?=$value[0]?>"
+			<a class="list-link" href="<?=$base_path?>list?mode=childs&id=<?=$value[0]?>"
 			data-toggle="tooltip" title="Вивести усі дорічні елементи"><i class="fa fa-leaf"></i></a>
-			<a href="<?=$base_path?>/list?mode=path&id1=<?=$value[0]?>&id2=<?=$id2?>"
+			<a class="list-link" href="<?=$base_path?>list?mode=path&id1=<?=$value[0]?>&id2=<?=$id2?>"
 			data-toggle="tooltip" title="Знайти шлях з цього елементу"><i class="fa fa-fast-backward"></i></a>
-			<a href="<?=$base_path?>/list?mode=path&id1=<?=$id1?>&id2=<?=$value[0]?>"
+			<a class="list-link" href="<?=$base_path?>list?mode=path&id1=<?=$id1?>&id2=<?=$value[0]?>"
 			data-toggle="tooltip" title="Знайти шлях до цього елементу"><i class="fa fa-fast-forward"></i></a>
+			</small>
 		<?php print_data($value[3]); ?>
 		</li>
 	<?php } ?>
 	</ul>
 <?php }
 
-$heading = $heading . " <a href='$base_path/edit' data-toggle='tooltip' title='Додати новий елемент'><i class='fa fa-plus-circle'></i></a>";
+$heading = $heading . " <a class='list-link list-link-head' href='{$base_path}edit' data-toggle='tooltip' title='Додати новий елемент'><i class='fa fa-plus-circle'></i></a>";
 if ($_REQUEST["mode"] == "root" and !empty($_REQUEST["id"]) and is_numeric($_REQUEST["id"]) and intval($_REQUEST["id"]) != 0) {
 	$id = intval($_REQUEST["id"]);
 	$data = get_root_path($id);
@@ -116,7 +118,6 @@ if ($_REQUEST["mode"] == "root" and !empty($_REQUEST["id"]) and is_numeric($_REQ
 	$data = format_data(NULL, $raw_data);
 }
 include "header.php";
-//~ print_r($data);
 print_data($data);
 include "footer.php";
 ?>
