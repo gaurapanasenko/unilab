@@ -105,7 +105,12 @@ if ($_REQUEST["mode"] == "root" and !empty($_REQUEST["id"]) and is_numeric($_REQ
 		$data = $arr1;
 		$data[0][3] = array_merge(empty($arr1[0][3]) ? array() : $arr1[0][3], empty($arr2[0][3]) ? array() : $arr2[0][3]);
 	} else {
-		$data = array_merge($arr1, $arr2);
+		include "header.php"; ?>
+		<div class="alert alert-secondary" role="alert">
+			Ці елементи не зв'язані.
+		</div>
+		<?php include "footer.php";
+		exit();
 	}
 } else {
 	$query = "SELECT `id`, `parent_id`, `name` FROM `tree`";
