@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      graphics.h
+ * Name:      graphics.cpp
  * Purpose:   Declaration of Point, Size and Sizes
  * Author:    Egor Panasenko (gaura.panasenko@gmail.com)
  * Created:   2019-01-20
