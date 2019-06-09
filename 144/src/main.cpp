@@ -13,7 +13,6 @@ using namespace gaura;
 #endif
 
 typedef unsigned int ui;
-
 template <class Arg1, class Arg2, class Arg3, class Result>
 struct ternary_function {
 	typedef Arg1 first_argument_type;
