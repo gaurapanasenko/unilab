@@ -16,16 +16,16 @@ using namespace gaura;
 typedef unsigned int ui;
 template <class Arg1, class Arg2, class Arg3, class Result>
 struct ternary_function {
-	typedef Arg1 first_argument_type;
-	typedef Arg2 second_argument_type;
-	typedef Arg3 third_argument_type;
-	typedef Result result_type;
+  typedef Arg1 first_argument_type;
+  typedef Arg2 second_argument_type;
+  typedef Arg3 third_argument_type;
+  typedef Result result_type;
 };
 
 template <class T> struct in_range : ternary_function <T,T,T,bool> {
   bool operator() (const T& x, const T& y, const T& z) const {
     return (y <= z) ? y <= x && x <= z : z <= x && x <= y;
-	}
+  }
 };
 
 template <class T> struct linear_function : ternary_function <T,T,T,T> {
@@ -36,28 +36,28 @@ template <class T> struct linear_function : ternary_function <T,T,T,T> {
 
 template <class Operation>
 class binder3
-	: public unary_function <typename Operation::first_argument_type,
-													 typename Operation::result_type> {
+  : public unary_function <typename Operation::first_argument_type,
+                           typename Operation::result_type> {
 protected:
-	Operation op;
-	typename Operation::second_argument_type second;
-	typename Operation::third_argument_type third;
+  Operation op;
+  typename Operation::second_argument_type second;
+  typename Operation::third_argument_type third;
 public:
-	binder3 (const Operation& x,
-					 const typename Operation::second_argument_type& y,
-					 const typename Operation::third_argument_type& z) :
-		op (x), second(y), third(z) {}
-	typename Operation::result_type
-	operator() (const typename Operation::first_argument_type& x) const {
-		return op(x, second, third);
-	}
+  binder3 (const Operation& x,
+           const typename Operation::second_argument_type& y,
+           const typename Operation::third_argument_type& z) :
+    op (x), second(y), third(z) {}
+  typename Operation::result_type
+  operator() (const typename Operation::first_argument_type& x) const {
+    return op(x, second, third);
+  }
 };
 
 template <class Operation, class T>
 binder3<Operation> bind3 (const Operation& op, const T& x, const T& y) {
-	typedef typename Operation::second_argument_type s;
-	typedef typename Operation::third_argument_type t;
-	return binder3<Operation>(op, s(x), t(y));
+  typedef typename Operation::second_argument_type s;
+  typedef typename Operation::third_argument_type t;
+  return binder3<Operation>(op, s(x), t(y));
 }
 
 template <class F, class T>
