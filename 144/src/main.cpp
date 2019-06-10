@@ -1,3 +1,4 @@
+#include <cstdlib>
 #ifndef NOSTL
 #include <iostream>
 #include <vector>
@@ -22,13 +23,13 @@ struct ternary_function {
 };
 
 template <class T> struct in_range : ternary_function <T,T,T,bool> {
-	bool operator() (const T& x, const T& y , const T& z) const {
+  bool operator() (const T& x, const T& y, const T& z) const {
     return (y <= z) ? y <= x && x <= z : z <= x && x <= y;
 	}
 };
 
 template <class T> struct linear_function : ternary_function <T,T,T,T> {
-  T operator() (const T& x, const T& a , const T& b) const {
+  T operator() (const T& x, const T& a, const T& b) const {
     return a * x + b;
   }
 };
@@ -72,15 +73,15 @@ int main() {
   vector<ui> a(0, 0);
   int answer = -1;
   streamsize mstrm = numeric_limits<streamsize>::max();
+  cout << "Choose option:\n"
+       << "    0. Exit.\n"
+       << "    1. Input array.\n"
+       << "    2. Output array.\n"
+       << "    3. Count elements that in value range.\n"
+       << "    4. Smart sort vector.\n"
+       << "    5. Transform by linear function.\n";
   while (answer != 0) {
-    cout << "Choose option:\n"
-         << "    0. Exit.\n"
-         << "    1. Input array.\n"
-         << "    2. Output array.\n"
-         << "    3. Count elements that in value range.\n"
-         << "    4. Smart sort vector.\n"
-         << "    5. Transform by linear function.\n"
-         << ">>> ";
+    cout << ">>> ";
     cin >> answer;
     cin.ignore(mstrm,'\n');
     switch (answer) {
@@ -90,7 +91,6 @@ int main() {
         cout << "Type new size of array:\n>>> ";
         ui size;
         cin >> size;
-        cout << size;
         a.resize(size, 0);
         cout << "Type elements:\n";
         vector<ui>::iterator i;
@@ -116,6 +116,7 @@ int main() {
         cout << "Type value interval:\n>>> ";
         ui b, e;
         cin >> b >> e;
+        cin.ignore(mstrm,'\n');
         cout << "Array has "
              << count_if(a.begin(), a.end(), bind3(in_range<ui>(), b, e))
              << " elements between this interval\n";
@@ -138,9 +139,6 @@ int main() {
     default :
         cout << "You typed wrong option, try again\n";
     }
-    cout << "Press ENTER to continue\n";
-    cin.ignore(mstrm,'\n');
-    cout << "\n\n\n\n\n";
   }
   return 0;
 }

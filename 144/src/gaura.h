@@ -77,11 +77,11 @@ typedef unsigned long size_type;
 template<class InputIterator, class OutputIterator>
 OutputIterator copy (InputIterator first, InputIterator last,
                      OutputIterator result) {
-	while (first != last) {
-		*result = *first;
-		++result; ++first;
-	}
-	return result;
+  while (first != last) {
+    *result = *first;
+    ++result; ++first;
+  }
+  return result;
 }
 
 template <class T> const T& min (const T& a, const T& b) {
@@ -91,106 +91,106 @@ template <class T> const T& min (const T& a, const T& b) {
 template<class T>
 class VectorIterator {
 public:
-	typedef vector<T> vector_type;
-	typedef VectorIterator<T> iterator;
+  typedef vector<T> vector_type;
+  typedef VectorIterator<T> iterator;
 
-	typedef size_type difference_type;
-	typedef T value_type;
-	typedef value_type& reference;
+  typedef size_type difference_type;
+  typedef T value_type;
+  typedef value_type& reference;
   typedef value_type* pointer;
 
-	explicit VectorIterator(vector_type* vector = nullptr,
-													size_type index = 0) :
-		vector_(vector), index_(index) {}
+  explicit VectorIterator(vector_type* vector = nullptr,
+                          size_type index = 0) :
+        vector_(vector), index_(index) {}
 
-	iterator& operator++() {
-		return *this += 1;
-	}
+  iterator& operator++() {
+    return *this += 1;
+  }
 
-	iterator operator++(int) {
-		iterator out = *this;
-		*this += 1;
-		return out;
-	}
+  iterator operator++(int) {
+    iterator out = *this;
+    *this += 1;
+    return out;
+  }
 
-	iterator& operator--() {
-		return *this -= 1;
-	}
+  iterator& operator--() {
+    return *this -= 1;
+  }
 
-	iterator operator--(int) {
-		iterator out = *this;
-		*this -= 1;
-		return out;
-	}
+  iterator operator--(int) {
+    iterator out = *this;
+    *this -= 1;
+    return out;
+  }
 
-	iterator& operator+=(size_type index) {
-		return *this = *this + index;
-	}
+  iterator& operator+=(size_type index) {
+    return *this = *this + index;
+  }
 
-	friend iterator operator+(const iterator& lhs, size_type rhs) {
-		return iterator(lhs.vector_, lhs.index_ + rhs);
-	}
+  friend iterator operator+(const iterator& lhs, size_type rhs) {
+    return iterator(lhs.vector_, lhs.index_ + rhs);
+  }
 
-	friend iterator operator+(size_type lhs, const iterator& rhs) {
-		return rhs + lhs;
-	}
+  friend iterator operator+(size_type lhs, const iterator& rhs) {
+    return rhs + lhs;
+  }
 
-	iterator& operator-=(size_type value) {
-		return *this = *this - value;
-	}
+  iterator& operator-=(size_type value) {
+    return *this = *this - value;
+  }
 
-	friend iterator operator-(const iterator& lhs, size_type rhs) {
-		return iterator(lhs.vector_, lhs.index_ - rhs);
-	}
+  friend iterator operator-(const iterator& lhs, size_type rhs) {
+    return iterator(lhs.vector_, lhs.index_ - rhs);
+  }
 
-	friend difference_type operator-(const iterator& lhs,
-																	 const iterator& rhs) {
-		if (lhs.vector_ != rhs.vector_)
+  friend difference_type operator-(const iterator& lhs,
+                                   const iterator& rhs) {
+    if (lhs.vector_ != rhs.vector_)
       throw MyException("Iterators from different vectors");
-		return lhs.index_ - rhs.index_;
-	}
+    return lhs.index_ - rhs.index_;
+  }
 
-	reference operator*(){
-		return (*vector_)[index_];
-	}
+  reference operator*(){
+    return (*vector_)[index_];
+  }
 
-	pointer operator->() const {
-		return &(*vector_)[index_];
-	}
+  pointer operator->() const {
+    return &(*vector_)[index_];
+  }
 
-	friend bool operator==(const iterator& lhs, const iterator& rhs) {
-		bool s = lhs.vector_ == rhs.vector_;
-		bool i = lhs.index_ == rhs.index_;
-		return s && i;
-	}
+  friend bool operator==(const iterator& lhs, const iterator& rhs) {
+    bool s = lhs.vector_ == rhs.vector_;
+    bool i = lhs.index_ == rhs.index_;
+    return s && i;
+  }
 
-	friend bool operator!=(const iterator& lhs, const iterator& rhs) {
-		return !(lhs == rhs);
-	}
+  friend bool operator!=(const iterator& lhs, const iterator& rhs) {
+    return !(lhs == rhs);
+  }
 
-	friend bool operator<(const iterator& lhs, const iterator& rhs) {
-		bool s = lhs.vector_ == rhs.vector_;
-		bool i = lhs.index_ < rhs.index_;
-		return s && i;
-	}
+  friend bool operator<(const iterator& lhs, const iterator& rhs) {
+    bool s = lhs.vector_ == rhs.vector_;
+    bool i = lhs.index_ < rhs.index_;
+    return s && i;
+  }
 
-	friend bool operator>(const iterator& lhs, const iterator& rhs) {
-		bool s = lhs.vector_ == rhs.vector_;
-		bool i = lhs.index_ > rhs.index_;
-		return s && i;
-	}
+  friend bool operator>(const iterator& lhs, const iterator& rhs) {
+    bool s = lhs.vector_ == rhs.vector_;
+    bool i = lhs.index_ > rhs.index_;
+    return s && i;
+  }
 
-	friend bool operator<=(const iterator& lhs, const iterator& rhs) {
-		return lhs < rhs || lhs == rhs;
-	}
+  friend bool operator<=(const iterator& lhs, const iterator& rhs) {
+    return lhs < rhs || lhs == rhs;
+  }
 
-	friend bool operator>=(const iterator& lhs, const iterator& rhs) {
-		return lhs > rhs || lhs == rhs;
-	}
+  friend bool operator>=(const iterator& lhs, const iterator& rhs) {
+    return lhs > rhs || lhs == rhs;
+  }
 
 private:
-	vector_type* vector_;
-	size_type index_;
+  vector_type* vector_;
+  size_type index_;
 };
 
 template<class T>
@@ -301,41 +301,41 @@ private:
 template<class T>
 class vector {
 public:
-	typedef T value_type;
-	typedef VectorIterator<T> iterator;
+  typedef T value_type;
+  typedef VectorIterator<T> iterator;
   typedef ConstVectorIterator<T> const_iterator;
 
-	explicit vector(size_type size = 0, value_type value = value_type()) :
-		size_(size), array_(nullptr) {
-		array_ = new value_type[size];
-		for (iterator i = begin(); i != end(); i++) {
-			*i = value;
-		}
-	}
+  explicit vector(size_type size = 0, value_type value = value_type()) :
+    size_(size), array_(nullptr) {
+    array_ = new value_type[size];
+    for (iterator i = begin(); i != end(); i++) {
+      *i = value;
+    }
+  }
 
-	vector(const vector& vector_) : size_(vector_.size_), array_(nullptr) {
+  vector(const vector& vector_) : size_(vector_.size_), array_(nullptr) {
     array_ = new value_type[size_];
-		copy(vector_.begin(), vector_.end(), begin());
-	}
+    copy(vector_.begin(), vector_.end(), begin());
+  }
 
-	vector& operator=(const vector& vector_) {
-		delete [] array_;
+  vector& operator=(const vector& vector_) {
+    delete [] array_;
     size_ = vector_.size_;
     array_ = new value_type[size_];
-		copy(vector_.begin(), vector_.end(), begin());
+    copy(vector_.begin(), vector_.end(), begin());
     return *this;
-	}
+  }
 
-	~vector() {
-		delete [] array_;
-		array_ = nullptr;
-	}
+  ~vector() {
+    delete [] array_;
+    array_ = nullptr;
+  }
 
-	void resize(size_type size, value_type value = value_type()) {
-		vector vector_(size, value);
+  void resize(size_type size, value_type value = value_type()) {
+    vector vector_(size, value);
     copy(begin(), begin() + min(size, size_), vector_.begin());
-		*this = vector_;
-	}
+    *this = vector_;
+  }
 
   size_type size() const { return size_; }
 
@@ -345,17 +345,17 @@ public:
   iterator end() { return iterator(this, size_); }
   const_iterator end() const { return const_iterator(this, size_); }
 
-	value_type& operator[](size_type index) {
-		return array_[index];
-	}
+  value_type& operator[](size_type index) {
+    return array_[index];
+  }
 
   value_type operator[](size_type index) const {
     return array_[index];
   }
 
 private:
-	size_type size_;
-	T* array_;
+  size_type size_;
+  T* array_;
 };
 
 template <class Arg, class Result>

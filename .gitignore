@@ -8,6 +8,7 @@ build/
 doxygen
 CMakeLists.txt.user
 /build-*
+/*/Readme.pdf
 
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
