@@ -35,18 +35,238 @@
 
 Ця лабораторна робота розроблялася на бібліотеці GTKMM.
 
-
 Опис вихідних файлів:
 
-1. CMakeLists.txt - Compilation rules
-2. main.ui - UI of window
-3. main.cpp - Starts program
-4. window.{h,cpp} -  Sets common behavior
-5. graphics.{h,cpp} - Common useful classes for graphics
-6. shape-parameters.{h,cpp} - Global class for all parameters
-7. shapes.{h,cpp} - Shape class and smart shape container
-8. shape-childs.{h,cpp} - Certain shape drawing rules
-9. aggregator.{h,cpp} - Class to create aggregations
+1. CMakeLists.txt - для компіляції за допомогою CMake
+2. main.ui - задається графічний інтерфейс
+3. main.cpp - запускає програму
+4. window.{h,cpp} -  задає поведінку графічного інтерфейсу
+5. graphics.{h,cpp} - допоміжні класи для обробки фігур
+6. shape-parameters.{h,cpp} - ініціований глобально клас для налаштувань
+7. shapes.{h,cpp} - базовий клас фігури та контейнеру з фігурами
+8. shape-childs.{h,cpp} - класи фігур
+9. aggregator.{h,cpp} - клас агрегатор
+
+Файли з пункту 1 до 6 є допоміжними для роботи інтерфейсу і не відносяться до постановки задачі напряму, тому ми не будемо їх описувати. А пункти 7-9 безпосередньо реалізують постановку задачі.
+
+### Опис файлу shapes.h
+
+У цьому файлі задаються класи:
+
+1. ShapeTrace - реалізує слід фігури за допомогою її дублювання.
+2. Shape - реалізує саму фігуру з всіма параметрами.
+3. Shapes - реалізує контейнер для фігур.
+4. Shapes::Element - зберігає та оброблює фігуру з її слідом.
+
+#### Клас ShapeTrace
+
+##### Поля
+
+1. `std::shared_ptr<Shape> shape_;` - зберігає вказівник на фігуру
+2. `std::vector< std::shared_ptr<Shape> > queue_;` - зберігає вказівники на дубльовані фігури, які утворюють слід.
+3. `unsigned char tail_;` - індекс останнього елемента у queue_
+4. `clock_t time_;` - час останнього додавання нової фігури у queue_
+
+##### Функції
+
+1. `ShapeTrace(std::shared_ptr<Shape> pointer);`
+    1. Конструктор з параметром.
+    2. Має єдиний аргумент pointer - вказівник на фігуру.
+    3. Нічого не виводить.
+2. `ShapeTrace(const ShapeTrace&) = default;` - стандартний конструктор копіювання.
+3. `ShapeTrace(ShapeTrace&&) noexcept = default;` - стандартний конструктор переносу.
+4. `~ShapeTrace();` - деструктор
+5. `static std::shared_ptr<ShapeTrace> create(const std::shared_ptr<Shape>& pointer);`
+    1. Динамічно створює об'єкт сліду.
+    2. Має єдиний аргумент pointer - вказівник на фігуру.
+    3. Виводить вказівник на слід.
+6. `ShapeTrace& operator=(const ShapeTrace&) = default;` - стандартний оператор присвоювання з копіюванням.
+7. `ShapeTrace& operator=(ShapeTrace&&) = default;` - стандартний оператор присвоювання з переносом.
+8. `void draw(const Cairo::RefPtr<Cairo::Context>& context, bool selected);`
+    1. Малює слід фігури і раз у деякий час дублює фігуру для створення сліду.
+    2. Аргументи:
+        1. context - вказівник на клас для малювання.
+        2. selected - вказує чи виділена фігура.
+    3. Нічого не виводить.
+
+#### Клас Shape
+
+##### Поля
+
+1. `Point position_;` - поточна позиція фігури
+2. `Size size_;` - поточний розмір фігури
+3. `float zoom_;` - поточне наближення фігури при деформації
+4. `Color defaultColor_;` - початковий колір
+5. `Color color_;` - поточний колір
+6. `std::vector<Point> path_;` - траєкторія фігури для автоматичного руху
+7. `std::vector<Point>::iterator currentPathPoint_;` - поточна позиція фігури при автоматичному русі
+8. `clock_t time_;` - час останьої зміни позиції при автоматичному русі
+9. `bool automove_;` - чи рухається фігура автоматично
+10. `bool directionPath_;` - задає напрямок зміни позиції при автоматичному русі.  Якщо true, то зміна позиції йде вперед по path_, якщо false, то в зворотньому напряму.
+11. `bool recordPath_;` - задає чи записується траєкторія при русі фігура мишкою по екрані
+12. `bool visible_;` - задає видимість фігури
+13. `bool trace_;` - чи має фігура слід
+
+##### Функції
+
+1. `Shape();` - конструктор.
+2. `Shape(const Shape& shape);` - конструктор копіювання.
+3. `Shape(Shape&&) = default;` - стандартний конструктор переносу.
+4. `Shape& operator=(const Shape&) = default;` - стандартний оператор присвоювання з копіюванням.
+5. `Shape& operator=(Shape&&) = default;` - стандартний оператор присвоювання з переносом.
+6. `virtual ~Shape();` - віртуальний деструктор для поліморфізму.
+7. `virtual const std::string getClassNameVirtual() const;` - віртуальна функція яка забирає назву поточної фігури для збереження у файл.
+8. `virtual void drawShape(const Cairo::RefPtr<Cairo::Context>& context, bool selected, float alpha = 0.8f);`
+    1. Вірнуальна функція, яка малює поточну фігуру.
+    2. Аргументи:
+        1. context - вказівник на клас для малювання.
+        2. selected - вказує чи виділена фігура.
+    3. Нічого не виводить.
+9. `virtual const std::shared_ptr<Shape> cloneVirtual();` - віртуальна функція для клонування фігури. Виводить розумний вказівник на нову фігуру
+10. `virtual bool isInShapeVirtual(const Point& p) const;` - перевіряє чи знаходиться точка у поточній фігурі.
+11. `virtual std::ostream& outputVirtual(std::ostream& out) const;` - виводить данні поточної фігури у потік.
+12. `virtual std::istream& inputVirtual(std::istream& in);` - вводить данні поточної фігури з потоку.
+13. `const std::shared_ptr<Shape> clone();` - клонує фігуру за допомогою функції cloneVirtual, а якщо не вдалося, то виводить пустий вказівник.
+14. `void render(bool selected);` - при selected = true деформує фігуру відносно краю екрану, а також реалізує автоматичний рух.
+15. `bool areIntersected(const std::shared_ptr<Shape>& shape, bool wasIntersected);` - перевіряє чи перетинається поточна фігура з фігурою shape та деформує поточну фігуру, якщо ці фігури не перетиналися у попередній ітерації, а зараз так, то змінює колір. Під перетинаються мається на увазі, якщо центр фігури shape лежить у поточній фігурі.
+16. `void draw(const Cairo::RefPtr<Cairo::Context>& context, bool selected, float alpha = 0.8f);` - малює фігуру з прозорістю alpha і червоною рамою якщо selected = true. Прозорість використовується тільки при сліді.
+17. `bool isInShape(const Point& point) const;` - перевіряє чи знаходиться точка у поточній фігурі. Спочатку перевіряє грубо, те що точка знаходиться у квадраті описаного навколо фігури, а потім використовує isInShapeVirtual.
+18. `const Point& getPosition() const;` - забирає поточну позицію фігури.
+19. `void setPosition(const Point& position);` - задає позицію фігури.
+20. `const Size& getSize() const;` - забирає розмір фігури.
+21. `void setSize(const Size& size);` - задає розмір фігури.
+22. `void setSizeForce(const Size& size);` - задає розмір фігури без перевірки на мінімальний і максимальний розмір.
+23. `float getZoom() const;` - забирає наближення фігури.
+24. `void setZoom(float zoom);` - задає наближення фігури.
+25. `void toggleVisibility();` - перемикає видимість фігури.
+26. `void changeColor();` - змінює колір на випадковий.
+27. `void reset();` - повертає всі параметри на початкові.
+28. `bool hasTrace();` - перевіряє чи має фігура слід.
+29. `void toggleTrace();` - перемикає слід фігури.
+30. `void toggleAutomove();` - перемикає автоматичний рух фігури.
+31. `void clearPath();` - затирає траєкторію руху.
+32. `void startRecordingPath();` - починає записувати траєкторію.
+33. `void stopRecordingPath();` - закінчує записувати траєкторію.
+34. `friend std::ostream& operator <<(std::ostream& out, const Shape& rhs);` - оператор виводу фігури у потік.
+35. `friend std::istream& operator >>(std::istream& in,  Shape& rhs);` - оператор вводу фігури з потоку.
+
+#### Клас Shapes
+
+##### Поля
+
+1. `std::vector<Element> array_;` - зберігає фігури.
+2. `std::vector< std::vector<bool> > intersected_;` - матриця, яка зберігає перетин фігури на попередній ітерації малювання.
+3. `std::vector< std::shared_ptr<Shape> > selected_;` - зберігає вибрані фігури.
+4. `bool activated_;` - чи утримується елемент лівою кнопкою миші.
+5. `Point activationPoint_;` - точка натиснення лівої кнопки миші відносно фігури.
+
+##### Функції
+
+
+1. `Shapes();` - конструктор.
+2. `std::vector<Element>::iterator getActiveIterator();` - забирає ітератор активної фігури.
+3. `std::shared_ptr<Shape> getActive();` - забирає активну фігуру.
+4. `std::vector<Element>::iterator getTopIterator(const Point& point);` - забирає ітератор верхньої фігури, що знаходиться к точці point.
+5. `std::shared_ptr<Shape> getTop(const Point& point);` - виводить фігуру з ітератора getTopIterator().
+6. `void add(const std::shared_ptr<Shape>& pointer);` - додає нову фігуру.
+7. `void erase(const std::vector<Element>::iterator& iterator);` - видаляє нову фігуру.
+8. `void toggleSelection(const std::vector<Element>::iterator& iterator);` - перемикає виділеність
+9. `void activate(const Point& p);` - активує переміщення фігури за допомогою миші, функція виконується при натисненні лівої кнопки миші і запам'ятовує позицію миші відносно фігури яку рухають.
+10. `void moveActive(const Point& p);` - переміщує фігуру через рух миші.
+12. `void release();` - перестає реагувати на рух миші.
+13. `void render();` - підготовлює фігури до малювання.
+14. `void draw(const Cairo::RefPtr<Cairo::Context>& context);` - малює фігури на екрані
+15. `const std::vector< std::shared_ptr<Shape> > getSelected();` - забирає виділенні елементи для агрегування.
+16. `friend std::ostream& operator<<(std::ostream& out, const Shapes& rhs);` - оператор виводу у потік, зберігає всі фігури.
+17. `friend std::istream& operator>>(std::istream& in,  Shapes& rhs);` - оператор вводу з потоку, завантажує всі фігури.
+
+#### Клас Shapes::Element
+
+##### Поля
+
+1. `std::shared_ptr<Shape> pointer_;` - розумний вказівник на поточну фігуру.
+2. `std::shared_ptr<ShapeTrace> shapeTrace_;` - розумний вказівник на слід фігури.
+3. `bool selected_;` - чи виділений елемент.
+
+##### Функції
+
+1. `Element(std::shared_ptr<Shape> pointer);` - конструктор з параметром pointer, вказівником на поточну фігуру.
+2. `const std::shared_ptr<Shape>& operator*() const;` - повертає вказівник на поточну фігуру.
+3. `Shape* operator->();` - оператор доступу до членів класу фігури.
+4. `void draw(const Cairo::RefPtr<Cairo::Context>& context);` - малює фігуру з її слідом.
+5. `operator bool() const;` - перевіряє чи вказує елемент на якусь фігуру.
+6. `bool isSelected() const;` - перевіряє чи виділена фігура.
+7. `void toggleSelection();` - перемикає виділеність
+
+### Опис файлу shape-childs.h
+
+У цьому файлі задаються класи:
+
+1. Triangle - реалізується фігура трикутник.
+2. Rectangle - реалізується фігура прямокутник.
+3. Ellipse - реалізується фігура еліпс.
+
+#### Клас Triangle
+
+##### Функції
+
+1. `static const std::string getClassName();` - виводить назву фігури: "Triangle".
+2. `const std::string getClassNameVirtual() const override;` - виводить результат функції getClassName().
+3. `static const std::shared_ptr<Shape> create();` - створює новий трикутник.
+4. `const std::shared_ptr<Shape> cloneVirtual() override;` - клонує трикутник.
+5. `void drawShape(const Cairo::RefPtr<Cairo::Context>& context, bool selected, float alpha = 0.8f) override;` - малює трикутник.
+6. `bool isInShapeVirtual(const Point& p) const override;` - перевіряє чи знаходиться точка у трикутнику.
+
+#### Клас Rectangle
+
+##### Функції
+
+1. `static const std::string getClassName();` - виводить назву фігури: "Rectangle".
+2. `const std::string getClassNameVirtual() const override;` - виводить результат функції getClassName().
+3. `static const std::shared_ptr<Shape> create();` - створює новий прямокутник.
+4. `const std::shared_ptr<Shape> cloneVirtual() override;` - клонує прямокутник.
+5. `void drawShape(const Cairo::RefPtr<Cairo::Context>& context, bool selected, float alpha = 0.8f) override;` - малює прямокутник.
+6. `bool isInShapeVirtual(const Point& p) const override;` - перевіряє чи знаходиться точка у прямокутнику.
+
+#### Клас Ellipse
+
+##### Функції
+
+1. `static const std::string getClassName();` - виводить назву фігури: "Ellipse".
+2. `const std::string getClassNameVirtual() const override;` - виводить результат функції getClassName().
+3. `static const std::shared_ptr<Shape> create();` - створює новий еліпс.
+4. `const std::shared_ptr<Shape> cloneVirtual() override;` - клонує еліпс.
+5. `void drawShape(const Cairo::RefPtr<Cairo::Context>& context, bool selected, float alpha = 0.8f) override;` - малює еліпс.
+6. `bool isInShapeVirtual(const Point& p) const override;` - перевіряє чи знаходиться точка у еліпсі.
+
+### Опис файлу aggregator.h
+
+У цьому файлі задається єдиний клас Aggregator для реалізації агрегації.
+
+#### Клас Aggregator
+
+##### Поля
+
+1. `std::vector< std::shared_ptr<Shape> > array_;` - масив агрегованих фігур.
+
+##### Функції
+
+1. `Aggregator(std::vector< std::shared_ptr<Shape> > array);` - 
+2. `Aggregator(const Aggregator& object);` - конструктор копіювання, клонує всі фігури в агрегаті.
+3. `Aggregator(Aggregator&& object) = default;` - стандартний конструктор переносу.
+4. `~Aggregator() override = default;` - стандартний деструктор.
+5. `Aggregator& operator=(const Aggregator& object);` - оператор присвоювання з копіюванням, клонує всі фігури в агрегаті.
+6. `Aggregator& operator=(Aggregator&& object) = default;` - стандартний оператор присвоювання з переносом.
+7. `static const std::string getClassName();` - виводить назву фігури: "Aggregator".
+8. `const std::string getClassNameVirtual() const override;` - виводить результат функції getClassName().
+9. `static const std::shared_ptr<Shape> create(const std::vector< std::shared_ptr<Shape> >& array);` - створює новий агрегат з фігур.
+10. `static const std::shared_ptr<Shape> create();` - створює пустий агрегат.
+11. `const std::shared_ptr<Shape> cloneVirtual() override;` - клонує агрегат фігур.
+12. `void drawShape(const Cairo::RefPtr<Cairo::Context>& context, bool selected, float alpha = 0.8f) override;` - малює агрегат фігур.
+13. `bool isInShapeVirtual(const Point& p) const override;` - перевіряє чи знаходиться точка у агрегаті фігур.
+14. `std::ostream& outputVirtual(std::ostream& out) const override;` - виводить фігури в агрегаті.
+15. `std::istream& inputVirtual(std::istream& in) override;` - вводить фігури в агрегат.
+16. `const std::vector< std::shared_ptr<Shape> > deaggregate();` - розділяє агрегат на окремі фігури.
 
 ## Опис іинтерфейсу
 
@@ -70,6 +290,7 @@
 ## Опис тестових прикладів
 
 Знімок роботи програми:
+
 ![Screenshot](Screenshot.png)
 
 ## Вихідний текст програми розв’язку задачі
