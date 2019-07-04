@@ -1,0 +1,7 @@
+<?php
+$mysql_host = "localhost";
+$mysql_database = "tree";
+$mysql_username = "tree";
+$mysql_password = "pass";
+$base_path = "/index.php/";
+?>
