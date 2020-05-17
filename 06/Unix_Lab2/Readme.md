@@ -49,7 +49,7 @@ pacman -S xdialog
 
 Запустимо скрипт із неправильним аргументом:
 ```shell
-$ "./lab2.sh" Wrong
+$ ./lab2.sh Wrong
 No such directory: "Wrong"
 ```
 

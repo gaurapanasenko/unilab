@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Лабораторна робота №1, Панасенко Єгор, ПА-17-2</title>
+    <style>
+        body {
+            line-height: 1.5;
+        }
+        h1, h2 {
+            padding-bottom: .3em;
+            border-bottom: 1px solid #eaecef;
+        }
+        code {
+            padding: .2em .4em;
+            margin: 0;
+            background-color: rgba(27,31,35,.05);
+            border-radius: 3px;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            word-wrap: normal;
+        }
+        pre code {
+            background-color: #f6f8fa;
+        }
+        .hljs-keyword, .hljs-_ {
+            color: #d73a49;
+        }
+        .hljs-meta {
+            color: #6a737d;
+        }
+        .hljs-built_in {
+            color: #005cc5;
+        }
+        .hljs-string {
+            color: #032f62;
+        }
+        .hljs-variable {
+            color: #24292e;
+        }
+    </style>
+</head>
+<body>
+<h1>Лабораторна робота №1, Панасенко Єгор, ПА-17-2</h1>
+
+<h2>Постановка задачі</h2>
+
+<p>Написати скрипт, який в якості першого параметра приймає ім&#39;я директорії, з якої будуть запускатися файли. Якщо у вказаній директорії є виконуваний файл з іменем index , то необхідно запустити його на виконання. В іншому випадку, якщо в директорії існує файл index.htm, то відкрити його з допомогою програми bareview. Якщо файлу index.htm в директорії немає, але існує файл index.html, то відкрити його з допомогою gtkmoz. Якщо ж жодного з указаних файлів не виявлено, створи діалогове вікно, в якому запитати, який файл необхідно виконати. Скрипт повинен коректно виконуватись як в графічному режимі, так і без нього.</p>
+
+<h2>Вихідний текст розв’язку</h2>
+
+<h3>Скрипт: <code>lab2.sh</code></h3>
+
+<pre><code class="lang-shell"><span class="hljs-meta">#!/bin/sh
+</span>
+DIRECTORY=<span class="hljs-string">"<span class="hljs-variable">$1</span>"</span>
+
+[ ! <span class="hljs-_">-d</span> <span class="hljs-string">"<span class="hljs-variable">$DIRECTORY</span>"</span> ] &amp;&amp; <span class="hljs-built_in">echo</span> <span class="hljs-string">"No such directory: \"<span class="hljs-variable">$DIRECTORY</span>\""</span> &amp;&amp; <span class="hljs-built_in">exit</span> 1
+INDEX=<span class="hljs-string">"<span class="hljs-variable">$DIRECTORY</span>/index"</span>
+
+<span class="hljs-keyword">if</span> [ <span class="hljs-_">-f</span> <span class="hljs-string">"<span class="hljs-variable">$INDEX</span>"</span> ]; <span class="hljs-keyword">then</span> <span class="hljs-string">"<span class="hljs-variable">$INDEX</span>"</span>
+<span class="hljs-keyword">elif</span> [ <span class="hljs-_">-f</span> <span class="hljs-string">"<span class="hljs-variable">$INDEX</span>.html"</span> ]; <span class="hljs-keyword">then</span> gtkmoz <span class="hljs-string">"<span class="hljs-variable">$INDEX</span>.html"</span>
+<span class="hljs-keyword">elif</span> [ <span class="hljs-_">-f</span> <span class="hljs-string">"<span class="hljs-variable">$INDEX</span>.htm"</span> ]; <span class="hljs-keyword">then</span> bareview <span class="hljs-string">"<span class="hljs-variable">$INDEX</span>.htm"</span>
+<span class="hljs-keyword">else</span>
+    FILE=`Xdialog --stdout --title <span class="hljs-string">"Виберіть файл"</span> --fselect <span class="hljs-string">"<span class="hljs-variable">$DIRECTORY</span>"</span> 50 150`
+    [ <span class="hljs-_">-f</span> <span class="hljs-variable">$FILE</span> ] &amp;&amp; <span class="hljs-variable">$FILE</span>
+<span class="hljs-keyword">fi</span>
+<span class="hljs-built_in">exit</span> $?
+</code></pre>
+
+<h2>Опис розв&#39;язку</h2>
+
+<h3>Підготовка</h3>
+
+<p>Встановимо необхідне ПО. Так як робота проводилася на ОС Arch Linux,
+то встановимо за допомогою такої команди:</p>
+
+<pre><code class="lang-shell"><span class="hljs-attribute">pacman -S xdialog</span>
+</code></pre>
+
+<h3>Розв&#39;язок</h3>
+
+<p>Скрипт <code>lab2.sh</code> приймає як перший аргумент деяку директорію,
+якщо цієї директорії не існує то скрипт закінчується аварійно з помилкою.
+Якщо ж існує то шукає за завданням відповідний <code>index*</code> файл,
+який за правилом оброблюється, якщо ж файл не знайдений запускається вікно
+з вибором потрібного файлу у цій директорії,
+після вибору перевіряється чи існує такий файл, якщо так то запускаємо цей файл.
+Скрипт виводить з кодом виконання останньої програми.</p>
+
+<h2>Опис тестових прикладів</h2>
+
+<p>Запустимо скрипт із неправильним аргументом:</p>
+
+<pre><code class="lang-shell"><span class="hljs-symbol">$</span> ./lab2.sh Wrong
+No such directory: <span class="hljs-string">"Wrong"</span>
+</code></pre>
+
+<p>Запустимо скрипт із директорією у якій існує відповідний <code>index*</code> файл.
+На екран виводиться вивід відповідної програми.</p>
+
+<p>Запустимо скрипт із директорією у якій не існує відповідний <code>index*</code> файл,
+наприклад директорію <code>/usr/bin</code>.
+Тоді отримаємо такий екран:</p>
+
+<p><img src="data:image/png;base64,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" alt="Filechooser"></p>
+
+<p>Якщо виберемо будь-який, то далі вивід буде таким же як і
+у попередньому випадку.</p>
+</body>
+</html>
