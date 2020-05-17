@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Встановлення Arch Linux</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+      .note {
+	  padding: 5px;
+	  margin: 0.50em 0;
+	  background-color: #DDDDFF;
+	  border: thin solid #BBBBDD;
+	  overflow: hidden;
+      }
+      .tip {
+	  padding: 5px;
+	  margin: 0.50em 0;
+	  background-color: #DDFFDD;
+	  border: thin solid #BBDDBB;
+	  overflow: hidden;
+      }
+      .code-filename {
+	  display: inline-block;
+	  margin-bottom: 0;
+	  border: 0 solid gray;
+	  border-bottom-style: dashed;
+	  border-bottom-width: thin;
+	  padding-bottom:0.3em;
+      }
+      .code {
+	  margin-top: 0;
+	  padding-top: 0.3em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 lang="ua">Встановлення Arch Linux</h1>
+    
+    <p>Arch Linux має завантажуватись на <a href="https://en.wikipedia.org/wiki/uk:X86-64" title="wikipedia">x86_64</a>-сумісному компʼютері з як мінімум of 512 МіБ ОП. Звичайне встановлення повинно зайняти менше 800 МіБ дискового простору. Оскільки процес встановлення потребує отримання пакетів із віддалених сховищ, цей посібник передбачає наявність інтернет-зʼєднання.</p>
+
+    <h2>Зміст</h2>
+    <ol>
+      <li><a href="#Підготовка_до_встановлення">Підготовка до встановлення</a>
+	<ol>
+	  <li><a href="#Перевірте_цифровий_підпис">Перевірте цифровий підпис</a></li>
+	  <li><a href="#Створіть_завантажувальний_пристрій">Створіть завантажувальний пристрій</a></li>
+	  <li><a href="#Завантажте_живе_середовище">Завантажте живе середовище</a></li>
+	  <li><a href="#Виберіть_розкладку_клавіатури">Виберіть розкладку клавіатури</a></li>
+	  <li><a href="#Перевірте_режим_завантаження">Перевірте режим завантаження</a></li>
+	  <li><a href="#Підключіться_до_інтернету">Підключіться до інтернету</a></li>
+	  <li><a href="#Оновіть_системний_годинник">Оновіть системний годинник</a></li>
+	  <li><a href="#Розбийте_диск">Розбийте диск</a>
+	    <ol>
+	      <li><a href="#Приклади_розбиття">Приклади розбиття</a></li>
+	    </ol>
+	  </li>
+	  <li><a href="#Форматуйте_розділи">Форматуйте розділи</a></li>
+	  <li><a href="#Монтуйте_файлові_системи">Монтуйте файлові системи</a></li>
+	</ol>
+      </li>
+      <li><a href="#Встановлення">Встановлення</a>
+	<ol>
+	  <li><a href="#Виберіть_дзеркало">Виберіть дзеркало</a></li>
+	  <li><a href="#Встановіть_необхідні_пакети">Встановіть необхідні пакети</a></li>
+	</ol>
+      </li>
+      <li><a href="#Налаштуйте_нову_систему">Налаштуйте нову систему</a>
+	<ol>
+	  <li><a href="#Fstab">Fstab</a></li>
+	  <li><a href="#Chroot">Chroot</a></li>
+	  <li><a href="#Часова_зона">Часова зона</a></li>
+	  <li><a href="#Локалізація">Локалізація</a></li>
+	  <li><a href="#Налаштування_мережі">Налаштування мережі</a></li>
+	  <li><a href="#Initramfs">Initramfs</a></li>
+	  <li><a href="#Пароль_root">Пароль root</a></li>
+	  <li><a href="#Завантажувач_Linux">Завантажувач Linux</a></li>
+	</ol>
+      </li>
+      <li><a href="#Перезавантажте_систему">Перезавантажте систему</a></li>
+      <li><a href="#Після_встановлення">Після встановлення</a></li>
+    </ol>
+
+    <h2 id="Підготовка_до_встановлення">Підготовка до встановлення</h2>
+    
+    <p>ISO-образ для встановлення та його GnuPG-підпис можна отримати з <a rel="nofollow" href="https://archlinux.org/download/">сторінки завантаження</a>.</p>
+    
+    <h3 id="Перевірте_цифровий_підпис">Перевірте цифровий підпис</h3>
+    
+    <p>Рекомендуємо перевірити підпис образу перед використанням, особливо при завантаженні із <i>HTTP-дзеркала</i>, де завантаження як правило вразливі до перехоплення та <a rel="nofollow" href="https://www2.cs.arizona.edu/stork/packagemanagersecurity/attacks-on-package-managers.html">роздачі шкідливих образів</a>.</p>
+    
+    <p>На системах з встановленим GnuPG завантажте <i>PGP-підпис</i> (під <i>Checksums</i>) до теки із завантаженим ISO-образом та перевірте його цифровий підпис з допомогою:</p>
+    <pre>$ gpg --keyserver-options auto-key-retrieve --verify archlinux-<i>version</i>-x86_64.iso.sig</pre>
+
+    <p>З вже встановленої Arch Linux-системи замість цього можна зробити перевірку цифрового підпису з допомогою:</p>
+    <pre>$ pacman-key -v archlinux-<i>version</i>-x86_64.iso.sig</pre>
+    
+    <div class="note">
+      <strong>Примітка:</strong>
+
+      <ul>
+	<li>Цифровий підпис може бути замінений якщо його завантажити з дзеркала, тому краще завантажуйте його з <a rel="nofollow" href="https://archlinux.org/download/">archlinux.org</a>. В такому разі переконайтесь що публічний ключ використаний для розшифрування є підписаний іншим ключем, якому можна довіряти. Використайте команду <code>gpg</code> для виводу відбитку відкритого ключа.</li>
+	
+	<li>Інший спосіб перевірити справжність підпису - це переконатись, що відбиток відкритого ключа відповідає відбитку ключа від <a rel="nofollow" href="https://www.archlinux.org/people/developers/">розробника Arch Linux</a> який підписав ISO-файл. Дивіться <a href="https://en.wikipedia.org/wiki/uk:%D0%90%D1%81%D0%B8%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%87%D0%BD%D1%96_%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC%D0%B8_%D1%88%D0%B8%D1%84%D1%80%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F" title="wikipedia:uk:Асиметричні алгоритми шифрування">Wikipedia:uk:Асиметричні алгоритми шифрування</a> для отримання додаткової інформації про процес перевірки справжності відкритого ключа.</li>
+      </ul>
+    </div>
+    
+    <h3 id="Створіть_завантажувальний_пристрій">Створіть завантажувальний пристрій</h3>
+
+    <p>Такий пристрій може бути, наприклад, USB-флешкою. Детальніше можна розглянути <a rel="nofollow" href="https://wiki.archlinux.org/index.php/USB_flash_installation_media">тут</a>.</p>
+
+    <a>Розглянемо найпростіший спосіб з використанням утіліти <code>dd</code>, який працює у будь якому операційній системі Linux, навіть у Android, але з root доступом.</a>
+
+    <p>Дізнатися ім'я вашої флешки можна за допомогою <code>lsblk</code>. Переконайтеся що вона <b>не</b> примонтована.</p>
+
+    <p>Виконайте наступну команду, замінивши <code>/dev/<b>sdx</b></code> на ваш пристрій, наприклад, на <code>/dev/sdb</code>. (<b>Не</b> додавайте номер розділу, тобто <b>не</b> використовуйте щось на зразок <code>/dev/sdb<b>1</b></code>)</p>
+
+    <pre># dd bs=4M if=путь/до/archlinux.iso of=/dev/<b>sdx</b> status=progress oflag=sync</pre>
+    
+    <p>Для отримання додаткової інформації про dd, а також про <code>oflag=sync</code> дивіться відповідно <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/dd.1" title="$ man 1 dd">dd(1)</a> та <a rel="nofollow" class="external text" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/dd.1#DESCRIPTION" title="$ man 1 dd">dd(1)</a>.
+</p>
+
+    <h3 id="Завантажте_живе_середовище">Завантажте живе середовище</h3>
+
+    <p>Живе середовище можливо завантажити з USB-флешки, оптичного диску чи мережі з PXE.</p>
+
+    <ul>
+      <li>Вказати поточний пристрій завантаження який містить образ встановлення Arch Linux. Цього зазвичай можна досягнути натиснувши клавішу протягом <a href="https://en.wikipedia.org/wiki/uk:POST" title="wikipedia:uk:POST">POST</a>-фази так, як це вказано на стартовій заставці. Для деталей зверніться до посібника своєї материнської плати.</li>
+      
+      <li>Коли зʼявиться меню Arch Linux, виберіть <i>Boot Arch Linux</i> і натисніть <code>Enter</code> щоб зайти у оточення встановлення.</li>
+      
+      <li>Для списку параметрів завантаження дивіться <a rel="nofollow" href="https://projects.archlinux.org/archiso.git/tree/docs/README.bootparams">README.bootparams</a>, а для списку встановлених пакунків — <a rel="nofollow" href="https://git.archlinux.org/archiso.git/tree/configs/releng/packages.x86_64">packages.x86_64</a>.</li>
+      
+      <li>Вас введе в систему на першій <a href="https://en.wikipedia.org/wiki/Virtual_console" class="extiw" title="wikipedia:Virtual console">віртуальній консолі</a> як користувача root та надасть командну оболонку Zsh.</li>
+    </ul>
+    
+    <p>Для перемикання в іншу консоль, наприклад щоб переглянути цю статтю в ELinks паралельно з встановленням, використовуйте скорочення клавіатури <code>Alt+<i>стрілки</i></code>. Для редагування файлів налаштування доступні nano, vi та vim.</p>
+    
+    <h3 id="Виберіть_розкладку_клавіатури">Виберіть розкладку клавіатури</h3>
+    
+    <p>Розкладка консолі за замовчуванням — <a href="https://en.wikipedia.org/wiki/File:KB_United_States-NoAltGr.svg" class="extiw" title="wikipedia:File:KB United States-NoAltGr.svg">US</a>. Перегляньте доступні розкладки з допомогою:</p>
+
+    <pre># ls /usr/share/kbd/keymaps/**/*.map.gz</pre>
+    
+    <p>Щоб змінити розкладку, додайте відповідну назву файлу до <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/loadkeys.1" title="$ man 1 loadkeys">loadkeys(1)</a>, забравши шлях та розширення. Наприклад для української розкладки:</p>
+
+    <pre># loadkeys ua-utf</pre>
+
+    <p>Консольні шрифти знаходяться в <code>/usr/share/kbd/consolefonts/</code> і їх так само можна використати з допомогою <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/setfont.8" title="$ man 8 setfont">setfont(8)</a>:</p>
+    
+    <pre># setfont UniCyr_8x16</pre>
+    
+    <h3 id="Перевірте_режим_завантаження">Перевірте режим завантаження</h3>
+    
+    <p>Якщо на UEFI материнській платі увімкнено UEFI-режим, Archiso завантажить Arch Linux з допомогою systemd-boot (Українська). Переглянтьте теку efivars щоб це перевірити:</p>
+    
+    <pre># ls /sys/firmware/efi/efivars</pre>
+
+    <p>Якщо теки не існує, систему можна завантажити в режимах <a href="https://en.wikipedia.org/wiki/uk:BIOS" class="extiw" title="wikipedia:uk:BIOS">BIOS</a> чи CSM. Дивіться посібник своєї материнської плати.</p>
+    
+    <h3 id="Підключіться_до_інтернету">Підключіться до інтернету</h3>
+    
+    <p>Щоб налаштувати інтернет-зʼєднання, пройдіться по наступних кроках:</p>
+    
+    <ul>
+      <li>Переконайтесь що ваш мережевий інтерфейс є в списку і ввімкнено, наприклад з допомогою <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/ip-link.8" title="$ man 8 ip-link">ip-link(8)</a>: <pre># ip link</pre></li>
+      
+      <li>Приєднайтесь до мережі. Вставте Ethernet кабель чи приєднайтесь до локальної безпровідної мережі.</li>
+
+      <li>
+	Налаштуйте ваше інтернет-зʼєднання:
+	<ul>
+	  <li>Постійна IP-адреса</li>
+	  <li>Змінна IP-адреса: використайте DHCP.</li>
+	</ul>
+	<dl><dd><div class="note"><strong>Примітка:</strong> Образ встановлення вмикає dhcpcd (<code>dhcpcd@<i>interface</i>.service</code>) для <a rel="nofollow" href="https://git.archlinux.org/archiso.git/tree/configs/releng/airootfs/etc/udev/rules.d/81-dhcpcd.rules">дротових мережевих пристроїв</a> при завантаженні.</div></dd></dl>
+      </li>
+
+      <li>Зʼєднання можна перевірити з допомогою <a href="https://en.wikipedia.org/wiki/uk:ping" title="wikipedia:uk:ping">ping</a>: <pre># ping archlinux.org</pre></li></ul>
+
+    <h3><span id="Оновіть_системний_годинник">Оновіть системний годинник</span></h3>
+
+    <p>Використайте <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/timedatectl.1" title="$ man 1 timedatectl">timedatectl(1)</a> щоб задати правильний системний час:</p>
+    <pre># timedatectl set-ntp true</pre>
+
+    <p>Щоб перевірити статус сервісу використайте <code>timedatectl status</code>.</p>
+
+    <h3 id="Розбийте_диск">Розбийте диск</h3>
+
+    <p>Коли роспізнані живою системою, дискам присвоєно блоковий пристрій такий як <code>/dev/sda</code> чи <code>/dev/nvme0n1</code>. Щоб опізнати ці пристрої використайте lsblk або <i>fdisk</i>:</p>
+    <pre># fdisk -l</pre>
+    
+    <p>На результати що закінчуються <code>rom</code>, <code>loop</code> чи <code>airoot</code> можна не зважати.</p>
+
+    <p>Наступні розділи є <b>необхідними</b> для вибраного пристрою:</p>
+
+    <ul>
+      <li>Один розділ для кореневої теки <code>/</code>.</li>
+
+      <li>Якщо увімкнено UEFI – Системний розділ EFI.</li>
+    </ul>
+    
+    <p>Якщо ви хочете створити будь-які складені блокові пристрої для LVM, шифрування системи чи RAID, то робіть це зараз.</p>
+    
+    <h4><span id="Приклади_розбиття">Приклади розбиття</h4>
+
+    <table border=1>
+      <tbody>
+	<tr><th colspan="5">BIOS з MBR</th></tr>
+	<tr><th>Точка монтування</th><th>Розділ</th><th>Тип розділу</th><th>Пропонований розмір</th></tr>
+	<tr><td><code>/mnt</code></td><td><code>/dev/sd<i>X</i>1</code></td><td>Linux</td><td>Залишок пристрою</td></tr>
+	<tr><td>[SWAP]</td><td><code>/dev/sd<i>X</i>2</code></td><td>Linux swap</td><td>Більше ніж 512 МіБ</td></tr>
+
+	<tr><th colspan="5">UEFI з GPT</th></tr>
+	<tr><th>Точка монтування</th><th>Розділ</th><th><a href="https://en.wikipedia.org/wiki/GUID_Partition_Table#Partition_type_GUIDs" class="extiw" title="wikipedia:GUID Partition Table">Partition type</a></th><th>Пропонований розмір</th></tr>
+	<tr><td><code>/mnt/boot</code> or <code>/mnt/efi</code></td><td><code>/dev/sd<i>X</i>1</code></td><td>Системний розділ EFI</td><td>260–512 МіБ</td></tr>
+	<tr><td><code>/mnt</code></td><td><code>/dev/sd<i>X</i>2</code></td><td>Linux x86-64 root (/)</td><td>Залишок пристрою</td></tr>
+	<tr><td>[SWAP]</td><td><code>/dev/sd<i>X</i>3</code></td><td>Linux swap</td><td>Більше ніж 512 МіБ</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note"><strong>Примітка:</strong>
+      <ul>
+	<li>Використовуйте fdisk або parted для редагування таблиці розділів, наприклад: <code>fdisk /dev/sd<i>X</i></code>.</li>
+	<li>Swap простір може бути розміщений на swap-файлі на файловій системі що їх підтримує.</li>
+      </ul>
+    </div>
+    
+    <h3 id="Форматуйте_розділи">Форматуйте розділи</h3>
+
+    <p>Створені розділи потрібно форматувати, кожен відповідною файловою системою. Наприклад якщо коренева тека є на <code>/dev/sd<i>X</i>1</code> та буде містити файлову систему <code><i>ext4</i></code> то виконайте:</p>
+    <pre># mkfs.<i>ext4</i> /dev/sd<i>X1</i></pre>
+
+    <p>Якщо ви створили розділ для swap, започаткуйте його з допомогою <i>mkswap</i> та увімкніть з допомогою <i>swapon</i>:</p>
+
+    <pre># mkswap /dev/sd<i>X2</i><br># swapon /dev/sd<i>X2</i></pre>
+
+    <h3 id="Монтуйте_файлові_системи">Монтуйте файлові системи</h3>
+
+    <p>Монтуйте файлову систему на кореневу теку до <code>/mnt</code>, наприклад:</p>
+
+    <pre># mount /dev/sd<i>X1</i> /mnt</pre>
+
+    <p>Створіть всі решту точок монтувань, що залишилися (такі як <code>/mnt/efi</code>) та змонтуйте їх відповідні розділи.</p>
+    
+    <p>Опісля, <a rel="nofollow" href="https://git.archlinux.org/arch-install-scripts.git/tree/genfstab.in">genfstab</a> знайде монтовані файлові системи та swap-простір.</p>
+    
+    <h2 id="Встановлення">Встановлення</h2>
+
+    <h3 id="Виберіть_дзеркало">Виберіть дзеркало</h3>
+
+    <p>Пакунки що будуть встановлені мають бути завантажені з серверів-здеркал, які визначені в <code>/etc/pacman.d/mirrorlist</code>. На живій системі усі дзеркала є увімкненими та сортованими за їх статусом синхронізації та швидкості на час коли образ встановлення був створений.</p>
+
+    <p>Чим вище дзеркало в списку, тим більший воно має пріоритет коли заватажується пакет. Бажано відредагувати файл відповідним чином та перемістити дзеркала, розташовані найближче географічно у верхню частині списку, хоча слід враховувати й інші критерії.</p>
+
+    <p>Цей файл буде скопійовано потім до новоствореної системи командою <i>pacstrap</i>, тому вартує його виправити вже зараз.</p>
+    
+    <h3 id="Встановіть_необхідні_пакети">Встановіть необхідні пакети</h3>
+    <p>Використайте скрипт <a rel="nofollow" href="https://projects.archlinux.org/arch-install-scripts.git/tree/pacstrap.in">pacstrap</a> для встановлення пакунку <span class="plainlinks archwiki-template-pkg"><a rel="nofollow" href="https://www.archlinux.org/packages/?name=base">base</a></span>, ядра Linux та прошивок для поширених пристроїв:</p>
+    
+    <pre># pacstrap /mnt base linux linux-firmware</pre>
+    <div class="tip"><strong>Порада:</strong> Можна замінити <a rel="nofollow" href="https://www.archlinux.org/packages/?name=linux">linux</a> на пакунок ядра Linux на ваш вибір. Ви можете пропустити встановлення ядра Linux або пакету прошивок якщо ви дійсно знаєте що робите&#160;;-)</div>
+    
+    <p>Пакунок <a rel="nofollow" href="https://www.archlinux.org/packages/?name=base">base</a> не містить усіх засобів присутніх на живій системі, тому встановлення інших пакетів може знадобитися для повністю функціональної базової системи. Зокрема, розгляньте встановлення:</p>
+    
+    <ul>
+      <li>користувацьких засобів для роботи з файловими системами, що будуть використовуватися в системі,</li>
+      <li>засоби доступу до розділів RAID чи LVM,</li>
+      <li>особливі прошивки для інших пристроїв відсутні у <a rel="nofollow" href="https://www.archlinux.org/packages/?name=linux-firmware">linux-firmware</a>,</li>
+      <li>програми необхідні для <a href="/index.php?title=%D0%9C%D0%B5%D1%80%D0%B5%D0%B6%D1%96&amp;action=edit&amp;redlink=1" class="new" title="Мережі (page does not exist)">мережі</a>,</li>
+      <li>редактор тексту,</li>
+      <li>пакунки для доступу до документації в сторінках man та сторінках info: <a rel="nofollow" href="https://www.archlinux.org/packages/?name=man-db">man-db</a>, <a rel="nofollow" href="https://www.archlinux.org/packages/?name=man-pages">man-pages</a> та <a rel="nofollow" href="https://www.archlinux.org/packages/?name=texinfo">texinfo</a>.</li>
+      <li>Файловий менеджер: <a rel="nofollow" href="https://www.archlinux.org/packages/?name=mc">mc</a></li>
+      <li>Диспечер задач: <a rel="nofollow" href="https://www.archlinux.org/packages/?name=htop">htop</a></li>
+      <li>Мультиплексор консолі: <a rel="nofollow" href="https://www.archlinux.org/packages/?name=tmux">tmux</a></li>
+    </ul>
+
+    <p>Для встановлення інших пакунків чи груп пакунків, додайте їх назви до команди <i>pacstrap</i> вище (розділено пробілами) або використайте pacman коли <a href="#Chroot">зайшли chroot в нову систему</a>. Для порівняння, пакунки доступні в живій системі можна знайти в <a rel="nofollow" href="https://projects.archlinux.org/archiso.git/tree/configs/releng/packages.x86_64">packages.x86_64</a>.</p>
+    
+    <h2 id="Налаштуйте_нову_систему">Налаштуйте нову систему</h2>
+
+    <h3 id="Fstab">Fstab</h3>
+    
+    <p>Генеруйте файл fstab (використайте <code>-U</code> або <code>-L</code> щоб визначити диск за UUID або підписом, відповідно):</p>
+    
+    <pre># genfstab -U /mnt &gt;&gt; /mnt/etc/fstab</pre>
+    
+    <p>Перевірте результат у <code>/mnt/etc/fstab</code> та відредагуйте його в разі помилки.</p>
+    
+    <h3 id="Chroot">Chroot</h3>
+
+    <p>Змініть кореневу теку в нову систему:</p>
+
+    <pre># arch-chroot /mnt</pre>
+
+    <h3 id="Часова_зона">Часова зона</h3>
+
+    <p>Встановіть часову зону:</p>
+
+    <pre># ln -sf /usr/share/zoneinfo/<i>Region</i>/<i>City</i> /etc/localtime</pre>
+
+    <p>Виконайте <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/hwclock.8" title="$ man 8 hwclock">hwclock(8)</a> щоб створити <code>/etc/adjtime</code>:</p>
+
+    <pre># hwclock --systohc</pre>
+
+    <p>Ця команда має на увазі, що апаратний годинник встановлений на <a href="https://en.wikipedia.org/wiki/uk:UTC" class="extiw" title="wikipedia:uk:UTC">UTC</a>.</p>
+
+    <h3 id="Локалізація">Локалізація</h3>
+
+    <p>Розкоментуйте <code>en_US.UTF-8 UTF-8</code> та інші потрібні локалі в <code>/etc/locale.gen</code>, та створіть їх з допомогою:</p>
+
+    <pre># locale-gen</pre>
+    
+    <p>Створіть <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/locale.conf.5"  title="$ man 5 locale.conf">locale.conf(5)</a> та встановіть змінну <code>LANG</code> відповідно:</p>
+
+    <pre class="code-filename">/etc/locale.conf</pre>
+    <pre class="code">LANG=<i>uk_UA.UTF-8</i></pre>
+    
+    <p>Якщо ви <a href="#Виберіть_розкладку_клавіатури">вибрали розкладку клавіатури</a>, зробіть зміни постійними в <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/vconsole.conf.5" title="$ man 5 vconsole.conf">vconsole.conf(5)</a>:</p>
+    
+    <pre class="code-filename">/etc/vconsole.conf</pre>
+    <pre class="code">KEYMAP=<i>ua-utf</i><br>FONT=<i>UniCyr_8x16</i></pre>
+
+    <h3 id="Налаштування_мережі">Налаштування мережі</h3>
+
+    <p>Створіть файл hostname:</p>
+
+    <pre class="code-filename">/etc/hostname</pre>
+    <pre class="code"><i>myhostname</i></pre>
+    
+    <p>Додайте відповідні записи в <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/hosts.5" title="$ man 5 hosts">hosts(5)</a>:</p>
+    
+    <pre class="code-filename">/etc/hosts</pre>
+    <pre class="code">127.0.0.1	localhost
+::1		localhost
+127.0.1.1	<i>myhostname</i>.localdomain	<i>myhostname</i></pre>
+    
+    <p>Якщо система має постійну IP-адресу, то вона повинна бути записана замість <code>127.0.1.1</code>.</p>
+
+    <p>Завершіть налаштування мережі для нововстановленої системи, включно з встановленням програм для мережі на ваш смак.</p>
+
+    <h3 id="Initramfs">Initramfs</h3>
+
+    <p>Створення нової <i>initramfs</i> зазвичай не потрібно, бо mkinitcpio було виконано при встановленні пакунка ядра Linux з <i>pacstrap</i>.</p>
+
+    <p>Для LVM, шифрування системи чи RAID, змініть <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/mkinitcpio.conf.5" title="$ man 5 mkinitcpio.conf">mkinitcpio.conf(5)</a> та пересворіть образ initramfs:</p>
+
+    <pre># mkinitcpio -P</pre>
+    
+    <h3 id="Пароль_root">Пароль root</span></h3>
+
+    <p>Встановіть пароль для root:</p>
+
+    <pre># passwd</pre>
+
+    <h3 id="Завантажувач_Linux">Завантажувач Linux</h3>
+
+    <p>Виберіть та встановіть Linux-сумісний завантажувач Linux. Якщо у вас Intel або AMD процесор, додатково увімкніть оновлення Мікрокоду.</p>
+
+    <h2 id="Перезавантажте_систему">Перезавантажте систему</h2>
+
+    <p>Вийдіть з оточення chroot з допомогою команди <code>exit</code> або комбінації клавіш <code>Ctrl+d</code>.</p>
+
+    <p>Обовʼязково вручну відмонтуйте всі розділи з допомогою <code>umount -R /mnt</code>: це дозволяє помітити "зайняті" розділи, та знайдіть причину з допомогою <a rel="nofollow" href="https://jlk.fjfi.cvut.cz/arch/manpages/man/fuser.1" title="$ man 1 fuser">fuser(1)</a>.</p>
+
+    <p>Насамкінець перезавантажте компʼютер ввівши команду <code>reboot</code>: будь-які змонтовані розділи будуть автоматично відмонтовані <i>systemd</i>. Не забудьте вийняти засіб встановлення та потім увійти в нову систему як користувач root.</p>
+
+    <h2 id="Після_встановлення">Після встановлення</h2>
+
+    <p>Для керування системою та інструкцій після встановлення (наприклад налаштування графічного інтерфейсу користувача, звуку чи тачпада) дивіться Загальні рекомендації.</p>
+    <p>Для переліку програм що можуть вас зацікавити дивіться Список програм.</p>
+  </body>
+</html>
