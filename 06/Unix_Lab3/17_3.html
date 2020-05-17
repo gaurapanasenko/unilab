@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Лабораторна робота №3, Панасенко Єгор, ПА-17-2</title>
+    <style>
+        body {
+            line-height: 1.5;
+            text-align: justify;
+        }
+        h1, h2 {
+            padding-bottom: .3em;
+            border-bottom: 1px solid #eaecef;
+        }
+        code {
+            padding: .2em .4em;
+            margin: 0;
+            background-color: rgba(27,31,35,.05);
+            border-radius: 3px;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            word-wrap: normal;
+        }
+        pre code {
+            background-color: #f6f8fa;
+        }
+        .hljs-keyword, .hljs-_ {
+            color: #d73a49;
+        }
+        .hljs-meta {
+            color: #6a737d;
+        }
+        .hljs-built_in {
+            color: #005cc5;
+        }
+        .hljs-string {
+            color: #032f62;
+        }
+        .hljs-variable {
+            color: #24292e;
+        }
+    </style>
+</head>
+<body>
+<h1>Лабораторна робота №3, Панасенко Єгор, ПА-17-2</h1>
+<h2>Постановка задачі</h2>
+<p>Написати скрипт, який використовує програму gtkdialog3/gtkdialog2. Вхідні параметри: група та ФІП студента. Необхідно перевірити, чи існує файл з іменем групи, якщо існує, тоді необхідно перевірити, чи студент з вказаним іменем навчається в цій групі. Видати відповідне повідомлення користувачу.</p>
+<h2>Вихідний текст розв’язку</h2>
+<h3>Скрипт: <code>lab3.sh</code></h3>
+<pre><code class="lang-shell"><span class="hljs-meta">#!/bin/sh
+</span>
+TEMPLATE=<span class="hljs-string">"&lt;vbox&gt;&lt;text&gt;&lt;label&gt;MESSAGE&lt;/label&gt;&lt;/text&gt;&lt;button ok&gt;&lt;/button&gt;&lt;/vbox&gt;"</span>
+
+[ -z <span class="hljs-string">"<span class="hljs-variable">$1</span>"</span> ] || [ -z <span class="hljs-string">"<span class="hljs-variable">$2</span>"</span> ] &amp;&amp; {
+    MAIN_DIALOG=<span class="hljs-variable">${TEMPLATE/MESSAGE/Немає потрібних аргументів}</span> gtkdialog
+    <span class="hljs-built_in">exit</span> 1
+}
+
+GROUP=<span class="hljs-string">"<span class="hljs-variable">$1</span>"</span>
+FILE=<span class="hljs-string">"<span class="hljs-variable">$GROUP</span>.txt"</span>
+QUERY=<span class="hljs-string">"<span class="hljs-variable">$2</span>"</span>
+
+<span class="hljs-keyword">if</span> [ <span class="hljs-_">-f</span> <span class="hljs-string">"<span class="hljs-variable">$FILE</span>"</span> ]
+<span class="hljs-keyword">then</span>
+    STUDENT=`grep <span class="hljs-string">"<span class="hljs-variable">$QUERY</span>"</span> <span class="hljs-string">"<span class="hljs-variable">$FILE</span>"</span> | head -n 1`
+    <span class="hljs-keyword">if</span> [ -z <span class="hljs-variable">$STUDENT</span> ]; <span class="hljs-keyword">then</span> MAIN_DIALOG=<span class="hljs-variable">${TEMPLATE/MESSAGE/Студент(ка) по запиту \"$QUERY\" не знайдений у групі $GROUP}</span> gtkdialog
+    <span class="hljs-keyword">else</span> MAIN_DIALOG=<span class="hljs-variable">${TEMPLATE/MESSAGE/Студент(ка) \"$STUDENT\" належить групі $GROUP}</span> gtkdialog
+    <span class="hljs-keyword">fi</span>
+<span class="hljs-keyword">else</span> MAIN_DIALOG=<span class="hljs-variable">${TEMPLATE/MESSAGE/Немає такої групи $GROUP}</span> gtkdialog
+<span class="hljs-keyword">fi</span>
+</code></pre>
+<h2>Опис розв&#39;язку</h2>
+<h3>Підготовка</h3>
+<p>Встановимо необхідне ПО. Так як робота проводилася на ОС Arch Linux,
+то встановимо за допомогою такої команди:</p>
+<pre><code class="lang-shell"><span class="hljs-attribute">pacaur -S gtkdialog vte-legacy</span>
+</code></pre>
+<h3>Розв&#39;язок</h3>
+<p>Скрипт <code>lab3.sh</code> приймає як перший аргумент назву групи та за другий аргумент
+деякий запит на пошук студента. Якщо ці аргументи відсутні то програма виходить
+з помилкою. Далі виконуються відповідні перевірки та виводиться на екран
+відповідне повідомлення.</p>
+<h2>Опис тестових прикладів</h2>
+<p>Нехай запустимо скрипт без аргументів, тоді отримаємо таке вікно:</p>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKgAAAA/BAMAAACGBp58AAAAD1BMVEX////MzMxmZmaZmZkzMzNXn3QfAAABuUlEQVRYw+2YUW7DIAyGDVzAQA5gSA4AISdIe/8zzQ7NmmlV2wcyaRVui4jt/8OuEEWFeIIBQXPTHfoxUIX189r2rA2aIT1LJTAxvQWlAzTwk+UXqgxQZDlfZM6jtbK+Q4nWt4gziL/snk0rEgSfD1A3p2h4RFcCu12RebmkJSZHsExYFHlOMFIyh9ivS5otbarEUU7mTA7doFMk9k6OVKFipQGvxANBJpwhGkt+IBO3NguxXyOYLKoa5WTOdC7dK+WVxwuvyROs0HyAZkkgP5K6wFbpDQqjqFjL0QodpgO0AAakYsjDDVq40wCuVmqkwSGTlu74kVyFLpsKsLYllQpvh+opBSC3ko6hQjWXHGBYEWJwq8hc/U640pXYL1DHKaK9QWMYYnq0T9WPJ//Lc/ezjQ+1rza/f+pfUj9QOvTvoLah7dD3zvX3TO1Hn2rZu+3QDv00qMcToPKDDnNQybeD6pUHQ7PJoR10EZZGbWZsBjUrVqhfG0HVCMPWtFQ6UiPoNV+3+kziu2Rp1P6wXio9BpM0toGqazph8/t+oHRoh74PbXlBs2dcJb+hqiET+53/H0HP+FfyC3D2YOOYRcf2AAAAAElFTkSuQmCC" alt="Немає потрібних аргументів"></p>
+<p>Запустимо скрипт з неправильною групою, файл якої не існує. Наприклад
+<code>./lab3.sh PA-17-3 Пан</code>, тоді отримаємо таке вікно:</p>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAA/BAMAAACRJA61AAAAD1BMVEX////MzMxmZmaZmZkzMzNXn3QfAAABsUlEQVRYw+2Yi23tIAyG7bCAgQxgkgxAIAs06f4z1SaHPnSrStV1pVaCIyHLkM82kPDrwGLdgMG2TYP4d4kxfp+4Q/5iSgj0uX8hSM2qYqvl1k5MyODlR7jLsD4fq9rYPNiAWMm3OTIkvXKQ8dQhd4L3WmrU2J0YSl6c9BSqRqtXVvv2tHWZaj6WXDyHytFxy4xduYuQYY2BpRO3hSXgFhgrV98KSZKU4DSRe6XlkYjsdpY+zo0YeYqEnkCIBcTA7V2OEn+9BCEG3USx5yfYPxJhzUpc1VVWmhcOCytR5ovh8huxAiXi6jjCgyi27EmVSZ0YhHiQEOf9rhrK3rYmALY5+3vitOUEHE6e2q5pzJMFMUnKzSPE+dQChRjwQUzQibnv/ifnEf85Jt2j53L98izSN98ZIR55fCkG8ceJ3qp1IpJRftjfQjQr2Q/iIP5NoqoNW+J0qRxZ5G7NRsSt3fmOayAbojupXeJck1HVx0MWpMOEGDKeD+nCpVgQ50skFdyKUXXQ/xPxectd1VZIFus4X9YnHPP4UgziIH4gmikpb672XoloBaSh7H8z0fy/vRe+PFisnkmU4QAAAABJRU5ErkJggg==" alt="Немає такої групи PA-17-3"></p>
+<p>Запустимо скрипт із студентом який не в групі. Наприклад
+<code>./lab3.sh PA-17-2 Example</code>, тоді отримаємо таке вікно:</p>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXQAAAA/BAMAAAACpS57AAAAD1BMVEX////MzMxmZmaZmZkzMzNXn3QfAAADCklEQVRo3u2aYXKkIBCFQS7QgAdAnQOgeIGY3P9M+7obnZ3d2WQ2VflBFWYqaaH79UeDaEzM3Oxhkmn0GDp6R+/oDaO7rD8DfS3j4p9OMT9vr2l9/uT0Oix9hW7nZy5LbbTTCxUIFOaH9DHV9udDfczo5uduVkQCepWhwJ7E/0QPPsdC3pBdyXh8EU4RZrkF3YJSxIbcyh/11++KWIwRBeM9eW9Y11d09vE1tvr8lks/1Q0+hcMrg4yo2GQPGeEBcR5N4DkVdGQt73nzyc05bBmuOMV6CS6FjczAAqGIDWODD+E0uqRRsjBM8fDnrnlOO2YgsSfaNTdsjRWbEHvlgo0PelVqKBnhsDlj0lont0n5UUSBie5E5zmYjFsT1hxzQ2Jin7ChBql6o13mz8aMRpzGMWmUTu5WeB7RNU3cC13159z+Hgubw8d7LtgsZaoUsiEctopweExDJOuJ5x9IbFBFXwXdLHmwPOJ9FiYy4xvo7+irpp8JjYy+JI2qfOh6Z/8LfT9X/67zILGwOXxJVy7YLGWqlKLDvtC3hUZEgSowJwy5/HStm8wQOwWbiyGu0MQbTMAKxlQOplZd9hxig+HGNWnUhT5s7A/0oFU3ZxdCxCaZOvgg9soFe9SpEymebYTvdK866Fe5TsN54dKJ7m6CHszt9jbcsqJjZJAIByMo+iD7wHbLaMRpEDe9iLW0RfynaRoPMvMEqQtd7U3E4YPYK1dQKVOlgM7hQWov+0nhWp/oIjnO+XFfX06PynLu659vjsuTtvjCHeUh16NUvGz72i0JqFn3sMf7gf+UYM/fRM9/CV9S8R+y/Rmmo3f0jt7RX0T3zR3XrxrUWsXt+eRo21stvqN39I7e0Tt6R/+PI1Kz6PoWYLI5toY+8ItClza3Tq2h7/KOiga3UWPo7tCXWUM8mkK3ixllmXDVl9QU+sf6IbV2Obhcmlow4/GuY5gnlwdqCd1+ZPODx49eptE0i96fYTp6R+/oHb2jfwO9vdelvt2X1Be6bY6c+h9kOnpHbwK93f+k/gWxCrzXoWzunQAAAABJRU5ErkJggg==" alt="Студент(ка) по запиту &quot;Example&quot; не знайдений у групі PA-17-2"></p>
+<p>Запустимо скрипт із студентом який є у групі. Наприклад
+<code>./lab3.sh PA-17-2 Пан</code>, тоді отримаємо таке вікно:</p>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAT4AAAA/BAMAAACLPbkSAAAAD1BMVEX////MzMxmZmaZmZkzMzNXn3QfAAACrklEQVRo3u2aC27kIAyGeVzAODkAeRyAhFygmd7/TPvbkExXu+q2q1bLSmRGTAh/7A8bmAwaM7d9mGhaPlzn63yd72/4fCqfTFob6ONWPyW29Cc+O/9OstSLdlIh0z6/F2s/S3+KKcef4VOrjBvVkck4n9TgxcchDZmCIbuRCXgRqrjNyhU0V75sI6qhXAymKKtGwiwfMHXzFaXNYpMoFLOhMGWpV0faFzF+aj9PE4Ig85AqX8b7kfYQEQPeE6SoIr3sI+9kHGnKIJMqWlGOl7Jq1MhdQlxcoskvUZTbNHgxyyVtOR2zeOQcOZYbo9+1n1Cox8FffBLNyfgtuqBwwJ9Ewzs6Gou6mEAVrVKqe5xDkzVDq6SjpqjqVelDhMAtaRjFLGuwYXKwER5RlhmQh+gGsoEkXfArJ1T5tmJ4Sc5Kt45ZDHky4wsQf+JDFa0ocUtRQrMpn/qtZTmK0gXcktwrDYvy7fHmg8ebb1+Qk8hwzQKDEx33ZfyZJHwHsU3ZSAaFD/nFmPPgMzcfqhI2lKYqVSNjjg2BTkxdjEXpUGKcbXHclM9UPoaXg57xA+Km0edrxtDF51flY7OuL25NhQ/4MMFnrGOqxO8UPpSQFSU0TuesPyfzUFOPJx+UixXxtG2sZked5uAbT0ml8OlszRK1i09XNlW+Xf+WS1HTc61/07esvIN61Mn8sfUZPMmEX9fNYL6L74pA//7tfJ2v8/0zvtDmcT+fUpOxs9fzi200uaHzdb7O1/k631ct+VvbfO6hGyf42Zia5FvlaWPHz2OmFvn8SboVEfPUZH6PqezBTEeDfJyshk/it+/t8Y2P8eW579Le/LCva4HimbKZ2ht/46Pt9flL1rz+/dv5Ol/n63z/EV+j+0Oh8f21m8+2iUd9f7fzdb73+Rr//9oPCSuiNtV6EegAAAAASUVORK5CYII=" alt="Студент(ка) &quot;Панасенко Є.С.&quot; належить групі PA-17-2"></p>
+</body>
+</html>
