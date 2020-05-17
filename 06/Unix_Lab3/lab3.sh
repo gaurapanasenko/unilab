@@ -14,8 +14,8 @@ QUERY="$2"
 if [ -f "$FILE" ]
 then
     STUDENT=`grep "$QUERY" "$FILE" | head -n 1`
-    if [ -z $STUDENT ]; then MAIN_DIALOG=${TEMPLATE/MESSAGE/Студент(ка) по запиту \"$QUERY\" не знайдений у группі $GROUP} gtkdialog
-    else MAIN_DIALOG=${TEMPLATE/MESSAGE/Студент(ка) $STUDENT належить группі $GROUP} gtkdialog
+    if [ -z "$STUDENT" ]; then MAIN_DIALOG=${TEMPLATE/MESSAGE/Студент(ка) по запиту \"$QUERY\" не знайдений у групі $GROUP} gtkdialog
+    else MAIN_DIALOG=${TEMPLATE/MESSAGE/Студент(ка) \"$STUDENT\" належить групі $GROUP} gtkdialog
     fi
-else MAIN_DIALOG=${TEMPLATE/MESSAGE/Немає такої группи $GROUP} gtkdialog
+else MAIN_DIALOG=${TEMPLATE/MESSAGE/Немає такої групи $GROUP} gtkdialog
 fi
