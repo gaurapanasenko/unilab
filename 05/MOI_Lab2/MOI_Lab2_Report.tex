@@ -1,0 +1,496 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[14pt,a4paper]{extarticle}
+
+\usepackage{mathtools} % Mathematical tools to use with amsmath
+\usepackage{amsfonts} % TeX fonts from the American Mathematical Society
+\usepackage{mathspec} % Specify arbitrary fonts for mathematics in XeTeX
+\usepackage{fontspec} % Advanced font selection in XeLaTeX and LuaLaTeX
+\usepackage{indentfirst} % Indent first paragraph after section header
+\usepackage{polyglossia} % Multilingual support for XeLaTeX
+\usepackage[
+  left=2cm,right=2cm,top=2cm,bottom=2cm,headheight=5mm,headsep=5mm,includehead
+]{geometry} % Flexible and complete interface to document dimensions
+\usepackage{makeidx} % Standard LaTeX package for creating indexes
+\usepackage[
+  colorlinks=true, allcolors=blue,
+]{hyperref} % Extensive support for hypertext in LaTeX
+\usepackage{titlesec} % Select alternative section titles
+\usepackage{array} % Extending the array and tabular environments
+\usepackage{amsthm} % Typesetting theorems (AMS style)
+\usepackage{mathrsfs} % Support for using RSFS fonts in maths
+\usepackage{listings} % Typeset source code listings using LaTeX
+
+% latex
+\pagestyle{myheadings}
+
+% mathspec
+\setmathsfont(Digits,Latin,Greek){Times New Roman}
+
+% fontspec
+\defaultfontfeatures{Mapping=tex-text}
+\setmainfont{Times New Roman}
+\setmonofont[Mapping=tex-text]{Fantasque Sans Mono}
+\newfontfamily\cyrillicfont{Times New Roman}
+\newfontfamily\cyrillicfontsf[Script=Cyrillic]{Fantasque Sans Mono}
+\newfontfamily\cyrillicfonttt[Script=Cyrillic]{Fantasque Sans Mono}
+
+% polyglossia
+\setdefaultlanguage{ukrainian}
+
+% titlesec
+\titleformat{\section}
+  {\normalfont\Large\bfseries\centering}{\thesection. }{0pt}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\centering}{\thesubsection. }{0pt}{}
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries\centering}{\thesubsubsection. }{0pt}{}
+
+% array
+\def\arraystretch{1.5}
+
+% amsthm
+\newtheorem{theorem}{Теорема}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Визначення}[section]
+
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \begin{center}%
+    {\scshape
+    Міністерство освіти і науки України \\
+    Дніпровський національний університет імені Олеся Гончара \\
+    Факультет прикладної математики \\
+    Кафедра комп'ютерних технологій \par}
+    \let \footnote \thanks
+    {\LARGE \@title \par}%
+  \end{center}%
+  \begin{flushright}
+    {\scshape
+      \begin{tabular}[t]{p{0.2\textwidth}%
+        >{\raggedright\arraybackslash}p{0.3\textwidth}}%
+        Виконавець: & \@author \\
+        & \@date
+      \end{tabular}\par}%
+  \end{flushright}}
+\makeatother
+
+\title{%
+  \uppercase{\textbf{Лабораторна робота №2}}\\
+  \large з курсу ``Математичні основи інформатики''\\
+  Тема: ``Автоматизація доведення програм, що містять розгалуження за
+    допомогою ПЗ Simplify''\\
+  Варіант 25}
+\author{Панасенко Єгор Сергійович \newline студент групи ПА-17-2}
+\date{}
+
+\begin{document}
+\sloppy % Stretches spaces to correct align of text
+\allowdisplaybreaks % Breaks equations between pages
+
+\maketitle
+\thispagestyle{empty}
+
+\section{Постановка задачі}
+
+Написати специфікацію. Написати код програми.
+
+Довести програму двома способами:
+\begin{enumerate}
+  \item за допомогою теореми про розгалуження;
+  \item без застосування теореми про розгалуження.
+\end{enumerate}
+
+у двох режимах:
+\begin{enumerate}
+  \item Вручну у вигляді тексту.
+  \item В автоматизованому режимі за допомогою ПЗ simplify.
+\end{enumerate}
+
+Індивідуальні завдання:
+\begin{enumerate}
+  \item умови завдань отримати за номером у папці .\textbackslash{}umovy
+  \item для кожної задачі навести доведення "вручну" (на папері) та за
+допомогою Simplify.
+\end{enumerate}
+
+\textbf{Примітка.} У варіантах завдань із номерами 04 та більше
+результат роботи програми - це
+\begin{enumerate}
+  \item координати шахового поля - у випадку стверджувальної відповіді на
+  запитання задачі;
+
+  \item координати шахового поля (0,0) - у випадку спростовної відповіді.
+\end{enumerate}
+
+\textbf{Індивідуальний варіант.}
+Поле шахової доска визначається парою натуральних чисел,
+кожне з яких не перевищує восьми:
+перше число - номер вертикалі (при рахунку зліва направо),
+друге - номер горизонталі (при рахунку від низу до верху).
+Дано натуральні числа $ a, b, c, d, e, f $, кожне з яких не перевищує восьми.
+
+На поле $ (a, b) $ розташована біла фігура,
+на поле $ (c, d) $ - чорна. Визначити,
+чи може біла фігура піти на поле $ (e, f) $,
+не потрапивши при цьому під удар чорної фігури.
+
+Розглянути наступні варіанти поєднань білої і чорної фігур: п) слон і кінь.
+
+\section{Хід виконання}
+
+\subsection{Специфікація}
+
+Напишемо специфікацію.
+
+Cлон рухається тільки по діагоналі.
+Нехай маємо безкінечна дошка, у якому $(x,y)$ - це будь яке поле на дошці
+описане цілими координатами $x,\ y \in \mathbb{Z}$.
+Нехай $(0,0)$ - це центр дошки.
+Тоді рух слона з центру дошки можна описати за формулою $|x|=|y|$.
+Таким чином, щоб описати рух слона з поля $(a,b)$, потрібно взяти $(a,b)$ за
+центр дошки, тоді усі координати будуть $(x-a,y-b)$.
+Таким чином щоб перевірити, чи може рухатися слон з поля $(a,b)$ у поле
+$(e,f)$, потрібно перевірити, чи виконується рівність $|e-a|=|f-b|$.
+Перепишемо це мовою предикатів $abs(e-a)=abs(f-b)$ та розкриємо модулі
+$e-a=f-b \lor e-a=b-f$
+
+Кінь завжди рухается на два поля вперед і на одне поле в сторону,
+якщо кінь рухається з центру дошки, то це можна описати так:
+\[abs(x)=1 \land abs(y)=2 \lor abs(x)=2 \land abs(y)=1\]
+Розкриємо модулі:
+\[(x=1 \lor x=-1) \land (y=2 \lor y=-2) \lor (x=2 \lor x=-2)
+\land (y=1 \lor y=-1)\]
+Тепер перевіримо, чи може кінь перейти з $(c,d)$ до $(e,f)$, взявши за
+центр поле $(c,d)$:
+\begin{multline*}
+  (e-c=1 \lor e-c=-1) \land (f-d=2 \lor f-d=-2) \lor \\
+  \lor (e-c=2 \lor e-c=-2) \land (f-d=1 \lor f-d=-1)
+\end{multline*}
+
+По задачі нам потрібно, щоб слон попав з $(a,b)$ до $(e,f)$,
+але не був під ударом коня, тобто кінь не міг попасти з $(c,f)$ до $(e,f)$,
+також слон не може попасти на $(e,f)$, коли кінь вже стоїть на $(e,f)$
+
+\begin{align*}
+  \begin{split}
+    \{Q:\ & 1 \leq a \land a \leq 8 \land 1 \leq b \land b \leq 8 \land 1 \leq c
+    \land c \leq 8 \\& \land 1 \leq d \land d \leq 8
+    \land 1 \leq e \land e \leq 8 \land 1 \leq f \land f \leq 8\}
+  \end{split}\\
+  \begin{split}
+    S:\ & if\\
+    &\quad(e-a=f-b \lor e-a=b-f) \land \lnot (e = c \land f = d) \land \\
+    &\quad\quad\land\lnot ((e-c=1 \lor e-c=-1) \land (f-d=2 \lor f-d=-2) \lor \\
+    &\quad\quad\quad\lor (e-c=2 \lor e-c=-2) \land (f-d=1 \lor f-d=-1)) \\
+    &\quad\quad\to x,y := c, d \\
+    &\quad|\lnot((e-a=f-b \lor e-a=b-f) \land \lnot (e = c \land f = d) \land \\
+    &\quad|\quad\land\lnot ((e-c=1 \lor e-c=-1) \land (f-d=2 \lor f-d=-2) \lor \\
+    &\quad|\quad\quad\lor (e-c=2 \lor e-c=-2) \land (f-d=1 \lor f-d=-1))) \\
+    &\quad|\quad\to x,y := 0,0 \\
+    &fi
+  \end{split}\\
+  \begin{split}
+    \{R:\ & ((e-a=f-b \lor e-a=b-f) \land \lnot (e = c \land f = d) \land \\
+    &\quad\land\lnot ((e-c=1 \lor e-c=-1) \land (f-d=2 \lor f-d=-2) \lor \\
+    &\quad\quad\lor (e-c=2 \lor e-c=-2) \land (f-d=1 \lor f-d=-1)) \land \\
+    &\quad\land x = c \land y = d) \lor \\
+    &\lor(\lnot((e-a=f-b \lor e-a=b-f) \land \lnot (e = c \land f = d) \land \\
+    &\quad\land\lnot ((e-c=1 \lor e-c=-1) \land (f-d=2 \lor f-d=-2) \lor \\
+    &\quad\quad\lor (e-c=2 \lor e-c=-2) \land (f-d=1 \lor f-d=-1))) \land \\
+    &\quad\land x = 0 \land y = 0)\}
+  \end{split}
+\end{align*}
+
+Нехай
+\begin{align*}
+  \begin{split}
+    CH =& (e-a=f-b \lor e-a=b-f) \land \lnot (e = c \land f = d) \land \\
+    &\quad\land\lnot ((e-c=1 \lor e-c=-1) \land (f-d=2 \lor f-d=-2) \lor \\
+    &\quad\quad\lor (e-c=2 \lor e-c=-2) \land (f-d=1 \lor f-d=-1))
+  \end{split}
+\end{align*}
+
+Тоді специфікацію можна записати так:
+\begin{align*}
+  \begin{split}
+    \{Q:\ & 1 \leq a \land a \leq 8 \land 1 \leq b \land b \leq 8 \land 1 \leq c
+    \land c \leq 8 \\& \land 1 \leq d \land d \leq 8
+    \land 1 \leq e \land e \leq 8 \land 1 \leq f \land f \leq 8\}
+  \end{split}\\
+  \begin{split}
+    S:\ & if\\
+    &\quad CH \to x,y := c,d \\
+    &\quad|\lnot(CH) \to x,y := 0,0 \\
+    &fi
+  \end{split}\\
+  \begin{split}
+    \{R:\ & (CH \land x = c \land y = d)
+    \lor (\lnot(CH) \land x = 0 \land y = 0)\}
+  \end{split}
+\end{align*}
+
+
+\subsection{Доведення}
+
+\subsection{Доведення з теоремою про розгалуження}
+Наведемо теорему про розгалуження.
+\begin{theorem}[про розгалуження]
+  Розглянемо команду $IF$.
+  Нехай предикат $Q$ задовільняє умовам:
+  \begin{enumerate}
+    \item $Q \Rightarrow BB$
+    \item $Q \land B_i \Rightarrow \mathit{wp}(S_i, R)$ для всіх $i$,
+    $1 \leq i \leq n$.
+  \end{enumerate}
+  Тоді і тільки тоді $Q \Rightarrow \mathit{wp}(IF, R)$.
+\end{theorem}
+
+\begin{enumerate}
+  \item $Q \Rightarrow BB$
+  \begin{align*}
+    \begin{split}
+      &Q \Rightarrow B1 \lor B2 \text{, (за означенням IF)} \\
+    \end{split}\\
+    \begin{split}
+      &Q \Rightarrow CH \lor \lnot CH \\
+    \end{split}\\
+    \begin{split}
+      &Q \Rightarrow TRUE
+      \text{, (закон виключення третього: }E1 \lor \lnot E2 = T\text{ )} \\
+    \end{split}\\
+    \begin{split}
+      &\lnot Q \lor TRUE
+      \text{, (закон імплікації)} \\
+    \end{split}\\
+    &TRUE\text{, (закон спрощення $\lor$)}
+  \end{align*}
+
+  Таким чином ми довели, що
+  \begin{equation}
+    Q \Rightarrow BB = TRUE
+  \end{equation}
+
+  \item $(\forall i: 1 \leq i \leq 2: Q \land Bi \Rightarrow
+  \mathit{wp}(S_i, R))$
+  \begin{align*}
+    &Q \land CH \Rightarrow  \mathit{wp}(x,y := c,d,R)
+      \land Q \land \lnot CH \Rightarrow \mathit{wp}(x,y := 0,0,R))\\\\
+    &(Q \land CH \Rightarrow R_{c,d}^{x,y})
+      \land (Q \land \lnot CH \Rightarrow R_{0,0}^{x,y})
+      \text{, (за озн. присвоювання)} \\\\
+    \begin{split}
+      &(Q \land CH \Rightarrow (CH \land c = c \land d = d)
+        \lor (\lnot(CH) \land c = 0 \land d = 0)) \land \\
+      &\land (Q \land \lnot CH \Rightarrow (CH \land 0 = c \land 0 = d)
+        \lor (\lnot(CH) \land 0 = 0 \land 0 = 0)) \\
+    \end{split}\\\\
+    \begin{split}
+      &(Q \land CH \Rightarrow (CH \land TRUE \land TRUE)
+        \lor (\lnot(CH) \land c = 0 \land d = 0)) \land \\
+      &\land (Q \land \lnot CH \Rightarrow (CH \land 0 = c \land 0 = d)
+        \lor (\lnot(CH) \land TRUE \land TRUE)) \\
+    \end{split}\\\\
+    \begin{split}
+      &(Q \land CH \Rightarrow CH
+        \lor (\lnot(CH) \land c = 0 \land d = 0)) \land \\
+      &\land (Q \land \lnot CH \Rightarrow (CH \land 0 = c \land 0 = d)
+        \lor \lnot CH) \\
+    \end{split}\\\\
+    \begin{split}
+      &(\lnot(Q \land CH) \lor CH
+        \lor (\lnot(CH) \land c = 0 \land d = 0)) \land \\
+      &\land (\lnot(Q \land \lnot CH) \lor (CH \land 0 = c \land 0 = d)
+        \lor \lnot CH) \text{, (закон імплікації)} \\
+    \end{split}\\\\
+    \begin{split}
+      &(\lnot Q \lor \lnot CH \lor CH
+        \lor (\lnot(CH) \land c = 0 \land d = 0)) \land \\
+      &\land (\lnot Q \lor CH \lor (CH \land 0 = c \land 0 = d)
+        \lor \lnot CH) \text{, (закон де Моргана)} \\
+    \end{split}\\\\
+    \begin{split}
+      &(\lnot Q \lor TRUE
+        \lor (\lnot(CH) \land c = 0 \land d = 0)) \land \\
+      &\land (\lnot Q \lor TRUE \lor (CH \land 0 = c \land 0 = d))
+        \text{, (закон виключення третього)} \\
+    \end{split}\\\\
+    &TRUE \land TRUE\text{, (закон спрощення $\lor$)} \\\\
+    &TRUE
+  \end{align*}
+
+  Таким чином ми довели, що
+  \begin{equation}
+    (\forall i: 1 \leq i \leq 2: Q \land Bi \Rightarrow
+      \mathit{wp}(S_i, R)) = TRUE
+  \end{equation}
+\end{enumerate}
+
+Ми довели, що для нашої задачі $Q \Rightarrow \mathit{wp}(S,R)$
+
+\subsection{Доведення без теореми про розгалуження}
+
+\begin{definition}
+  \[\mathit{wp}(IF, R) = (\exists i:1 \leq i \leq n:B_i)\land
+    (\forall i: 1 \leq i \leq n: B_i \Rightarrow \mathit{wp}(S_i, R))\]
+\end{definition}
+
+Для того, щоб довести програму, потрібно довести, що
+$Q \Rightarrow \mathit{wp}(S,R)$ тавтологія.
+
+Спочатку приведемо вираження до виду, який буде легко перевести на мову
+Simplify.
+\begin{align*}
+  &Q \Rightarrow \mathit{wp}(IF,R) \\\\
+  &Q \Rightarrow (\exists i:1 \leq i \leq 2:B_i)\land
+    (\forall i: 1 \leq i \leq 2: B_i \Rightarrow \mathit{wp}(S_i, R)) \\\\
+  &Q \Rightarrow (B1 \lor B2)\land
+    (\forall i: 1 \leq i \leq 2: B_i \Rightarrow \mathit{wp}(S_i, R)) \\\\
+  &Q \Rightarrow (B1 \lor B2)\land (B_1 \Rightarrow \mathit{wp}(S_1, R))
+    \land (B_2 \Rightarrow \mathit{wp}(S_2, R)) \\\\
+  \begin{split}
+    &Q \Rightarrow (CH \lor \lnot CH)
+      \land (CH \Rightarrow \mathit{wp}(x,y := c,d, R))\\
+      &\land (\lnot CH \Rightarrow \mathit{wp}(x,y := 0,0, R))\\
+  \end{split}\\\\
+  &Q \Rightarrow (CH \lor \lnot CH)
+    \land (CH \Rightarrow R_{c,d}^{x,y})
+    \land (\lnot CH \Rightarrow R_{0,0}^{x,y})\\\\
+  \begin{split}
+    &Q \Rightarrow (CH \lor \lnot CH)
+      \land (CH \Rightarrow (CH \land c = c \land d = d)
+        \lor (\lnot(CH) \land c = 0 \land d = 0))\\
+      &\land (\lnot CH \Rightarrow (CH \land 0 = c \land 0 = d)
+        \lor (\lnot(CH) \land 0 = 0 \land 0 = 0))\\
+  \end{split}
+\end{align*}
+
+Ми привели до простого виду, якщо підставити $CH$,
+то ми отримаємо предикат у якому тільки операції
+$\lnot, \land, \lor, =, \Rightarrow$.
+Тепер можна доводити вручну.
+
+\begin{align*}
+  \begin{split}
+    &Q \Rightarrow (CH \lor \lnot CH)
+      \land (CH \Rightarrow (CH \land TRUE \land TRUE)
+        \lor (\lnot(CH) \land c = 0 \land d = 0))\\
+      &\land (\lnot CH \Rightarrow (CH \land 0 = c \land 0 = d)
+        \lor (\lnot(CH) \land TRUE \land TRUE))\\
+  \end{split}\\\\
+  \begin{split}
+    &Q \Rightarrow (CH \lor \lnot CH)
+      \land (CH \Rightarrow CH
+        \lor (\lnot(CH) \land c = 0 \land d = 0))\\
+      &\land (\lnot CH \Rightarrow (CH \land 0 = c \land 0 = d)
+        \lor \lnot CH)\text{, (закон спрощення $\land$)}\\
+  \end{split}\\\\
+  \begin{split}
+    &\lnot Q \lor (CH \lor \lnot CH)
+      \land (\lnot CH \lor CH
+        \lor (\lnot(CH) \land c = 0 \land d = 0))\\
+      &\land (CH \lor (CH \land 0 = c \land 0 = d)
+        \lor \lnot CH)\text{, (закон імплікації)}\\
+  \end{split}\\\\
+  \begin{split}
+    &\lnot Q \lor (TRUE)
+      \land (TRUE
+        \lor (\lnot(CH) \land c = 0 \land d = 0))\\
+      &\land (TRUE \lor (CH \land 0 = c \land 0 = d))
+        \text{, (закон виключення третього)}\\
+  \end{split}\\\\
+  &\lnot Q \lor TRUE \land TRUE \land TRUE
+    \text{, (закони спрощення $\lor$)}\\\\
+  &\lnot Q \lor TRUE \text{, (закони спрощення $\land$)}\\\\
+  &TRUE \text{, (закони спрощення $\lor$)}\\\\
+\end{align*}
+
+\subsection{Доведення за допомогою Simplify}
+Раніше ми привели предикат до зручної форми для переведення в Simplify:
+\begin{align*}
+  \begin{split}
+    &Q \Rightarrow (CH \lor \lnot CH)
+      \land (CH \Rightarrow (CH \land c = c \land d = d)
+        \lor (\lnot(CH) \land c = 0 \land d = 0))\\
+      &\land (\lnot CH \Rightarrow (CH \land 0 = c \land 0 = d)
+        \lor (\lnot(CH) \land 0 = 0 \land 0 = 0))\\
+  \end{split}
+\end{align*}
+
+Напишемо тепер мовою Simplify:
+
+\begin{lstlisting}[breaklines=true,basicstyle= \ttfamily]
+(IMPLIES Q (AND (OR CH (NOT CH))
+  (IMPLIES CH (OR (AND CH (EQ c c) (EQ d d))
+    (AND (NOT CH) (EQ c 0) (EQ d 0))))
+  (IMPLIES (NOT CH) (OR (AND CH (EQ 0 c) (EQ 0 d))
+    (AND (NOT CH) (EQ 0 0) (EQ 0 0))))))
+\end{lstlisting}
+
+Згадаймо чому дорівнює $CH$:
+\begin{align*}
+  \begin{split}
+    CH =& (e-a=f-b \lor e-a=b-f) \land \lnot (e = c \land f = d) \land \\
+    &\quad\land\lnot ((e-c=1 \lor e-c=-1) \land (f-d=2 \lor f-d=-2) \lor \\
+    &\quad\quad\lor (e-c=2 \lor e-c=-2) \land (f-d=1 \lor f-d=-1))
+  \end{split}
+\end{align*}
+
+Напишемо тепер $CH$ мовою Simplify:
+\begin{lstlisting}[breaklines=true,basicstyle= \ttfamily]
+(AND (OR (EQ (- e a) (- f b)) (EQ (- e a) (- b f)))
+  (NOT (AND (EQ e c) (EQ f d)))
+  (NOT (OR (AND (OR (EQ (- e c) 1) (EQ (- e c) -1))
+                (OR (EQ (- f d) 2) (EQ (- f d) -2)))
+           (AND (OR (EQ (- e c) 2) (EQ (- e c) -2))
+                (OR (EQ (- f d) 1) (EQ (- f d) -1))))))
+\end{lstlisting}
+
+Підставимо це у перший предикат:
+\begin{lstlisting}[breaklines=true,basicstyle= \ttfamily\footnotesize]
+(IMPLIES Q (AND (OR (AND (OR (EQ (- e a) (- f b)) (EQ (- e a) (- b f)))
+(NOT (AND (EQ e c) (EQ f d))) (NOT (OR (AND (OR (EQ (- e c) 1) (EQ (- e c) -1))
+(OR (EQ (- f d) 2) (EQ (- f d) -2))) (AND (OR (EQ (- e c) 2) (EQ (- e c) -2))
+(OR (EQ (- f d) 1) (EQ (- f d) -1)))))) (NOT (AND (OR (EQ (- e a) (- f b))
+(EQ (- e a) (- b f))) (NOT (AND (EQ e c) (EQ f d))) (NOT (OR (AND
+(OR (EQ (- e c) 1) (EQ (- e c) -1)) (OR (EQ (- f d) 2) (EQ (- f d) -2)))
+(AND (OR (EQ (- e c) 2) (EQ (- e c) -2)) (OR (EQ (- f d) 1) (EQ (- f d) -1))))))))
+(IMPLIES (AND (OR (EQ (- e a) (- f b)) (EQ (- e a) (- b f)))
+(NOT (AND (EQ e c) (EQ f d))) (NOT (OR (AND (OR (EQ (- e c) 1) (EQ (- e c) -1))
+(OR (EQ (- f d) 2) (EQ (- f d) -2))) (AND (OR (EQ (- e c) 2) (EQ (- e c) -2))
+(OR (EQ (- f d) 1) (EQ (- f d) -1))))))
+(OR (AND (AND (OR (EQ (- e a) (- f b)) (EQ (- e a) (- b f)))
+(NOT (AND (EQ e c) (EQ f d))) (NOT (OR (AND (OR (EQ (- e c) 1) (EQ (- e c) -1))
+(OR (EQ (- f d) 2)
+(EQ (- f d) -2))) (AND (OR (EQ (- e c) 2) (EQ (- e c) -2))
+(OR (EQ (- f d) 1) (EQ (- f d) -1))))))
+(EQ c c) (EQ d d)) (AND (NOT (AND (OR (EQ (- e a) (- f b))
+(EQ (- e a) (- b f))) (NOT (AND (EQ e c) (EQ f d)))
+(NOT (OR (AND (OR (EQ (- e c) 1) (EQ (- e c) -1)) (OR (EQ (- f d) 2)
+(EQ (- f d) -2))) (AND (OR (EQ (- e c) 2) (EQ (- e c) -2))
+(OR (EQ (- f d) 1) (EQ (- f d) -1))))))) (EQ c 0) (EQ d 0))))
+(IMPLIES (NOT (AND (OR (EQ (- e a) (- f b)) (EQ (- e a) (- b f)))
+(NOT (AND (EQ e c) (EQ f d))) (NOT (OR (AND (OR (EQ (- e c) 1) (EQ (- e c) -1))
+(OR (EQ (- f d) 2) (EQ (- f d) -2))) (AND (OR (EQ (- e c) 2)
+(EQ (- e c) -2)) (OR (EQ (- f d) 1) (EQ (- f d) -1)))))))
+(OR (AND (AND (OR (EQ (- e a) (- f b)) (EQ (- e a) (- b f)))
+(NOT (AND (EQ e c) (EQ f d))) (NOT (OR (AND (OR (EQ (- e c) 1)
+(EQ (- e c) -1)) (OR (EQ (- f d) 2) (EQ (- f d) -2)))
+(AND (OR (EQ (- e c) 2) (EQ (- e c) -2))
+(OR (EQ (- f d) 1) (EQ (- f d) -1)))))) (EQ 0 c) (EQ 0 d))
+(AND (NOT (AND (OR (EQ (- e a) (- f b)) (EQ (- e a) (- b f)))
+(NOT (AND (EQ e c) (EQ f d))) (NOT (OR (AND (OR (EQ (- e c) 1)
+(EQ (- e c) -1)) (OR (EQ (- f d) 2) (EQ (- f d) -2)))
+(AND (OR (EQ (- e c) 2) (EQ (- e c) -2)) (OR (EQ (- f d) 1)
+(EQ (- f d) -1))))))) (EQ 0 0) (EQ 0 0))))))
+\end{lstlisting}
+
+Збережемо це у файл, та перевіримо це у Simplify. Отримаємо такий результат:
+\begin{lstlisting}[breaklines=true,basicstyle= \ttfamily\footnotesize]
+[egor@gauramid Simplify]$ ./Simplify-1.5.4.linux lab2.txt
+1: Valid.
+\end{lstlisting}
+
+\end{document}
