@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Лабораторна робота №4, Панасенко Єгор, ПА-17-2</title>
+    <style>
+        body {
+            line-height: 1.5;
+            text-align: justify;
+            max-width: 1024px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            padding-bottom: .3em;
+            border-bottom: 1px solid #eaecef;
+        }
+        code {
+            padding: .2em .4em;
+            margin: 0;
+            background-color: rgba(27,31,35,.05);
+            border-radius: 3px;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            word-wrap: normal;
+        }
+        pre code {
+            background-color: #f6f8fa;
+            padding: 0;
+        }
+        .hljs-name, .hljs-selector-tag {
+            color: #22863a;
+        }
+        .hljs-keyword, .hljs-_ {
+            color: #d73a49;
+        }
+        .hljs-comment {
+            color: #6a737d;
+        }
+        .hljs-built_in, .hljs-meta, .hljs-attribute, .hljs-selector-pseudo {
+            color: #005cc5;
+        }
+        .hljs-string {
+            color: #032f62;
+        }
+        .hljs-variable {
+            color: #24292e;
+        }
+    </style>
+</head>
+<body>
+<h1 id="-3-17-2">Лабораторна робота №4, Панасенко Єгор, ПА-17-2</h1>
+<h2>Постановка задачі</h2>
+<p>Написати на мові Perl або bash скрипт, який прочитає зміст усіх файлів, що передані йому в командній лінії та об&#39;єднає їх в один файл. Якщо серед переданих файлів будуть файли в форматі HTML, то в них необхідно знищити всі теги.</p>
+<h2>Вихідний текст розв&#39;язку</h2>
+<h3 id="-lab4-sh-">Скрипт: <code>lab4.sh</code></h3>
+<pre><code class="lang-shell"><span class="hljs-comment">#!/bin/sh</span>
+
+[ -z <span class="hljs-string">"$1"</span> ] || [ -z <span class="hljs-string">"$2"</span> ] &amp;&amp; { echo <span class="hljs-string">"Немає потрібних аргументів"</span>; <span class="hljs-keyword">exit</span> <span class="hljs-number">1</span>; }
+
+OUTPUT_FILE=<span class="hljs-string">"${@:$#}"</span>
+FILES=<span class="hljs-string">"${@:1:$(($#-1))}"</span>
+
+find <span class="hljs-variable">$FILES</span> &gt;<span class="hljs-regexp">/dev/</span>null || { echo <span class="hljs-string">"Файли перелічені вище не існують"</span>; <span class="hljs-keyword">exit</span> <span class="hljs-number">1</span>; }
+
+sed -E <span class="hljs-string">"s/&lt;[^&gt;]*?&gt;//g"</span> <span class="hljs-variable">$FILES</span> &gt;<span class="hljs-variable">$OUTPUT_FILE</span>
+<span class="hljs-keyword">exit</span> $?
+</code></pre>
+<h2>Опис розв&#39;язку</h2>
+<p>Скрипт <code>lab4.sh</code> приймає масив файлів та об&#39;єднує з першого файлу до перед останнього у файл з назвою позначеної у останньому аргументі.
+Тому як мінімум повинно бути 2 аргументи.
+Скрипт перевіряє наявність перелічених файлів і у випадку якщо якийсь файл відсутній, виводить назви відсутніх файлів та виходить з помилкою.
+Це зроблено за допомогою програми <code>find</code>, причому стандартний потік виводу перенаправлений у <code>/dev/null</code>, тобто не виводиться нікуди,
+у той же час стандартний потік помилок виводиться на екран.</p>
+<h2>Опис тестових прикладів</h2>
+<h3>Тестові файли</h3>
+<p>Створимо якісь тестові файли.</p>
+<h4 id="-table-html-">Файл <code>table.html</code></h4>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+<span class="hljs-selector-tag">table</span> {
+  <span class="hljs-attribute">font-family</span>: arial, sans-serif;
+  <span class="hljs-attribute">border-collapse</span>: collapse;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">100%</span>;
+}
+
+<span class="hljs-selector-tag">td</span>, <span class="hljs-selector-tag">th</span> {
+  <span class="hljs-attribute">border</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#dddddd</span>;
+  <span class="hljs-attribute">text-align</span>: left;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">8px</span>;
+}
+
+<span class="hljs-selector-tag">tr</span><span class="hljs-selector-pseudo">:nth-child(even)</span> {
+  <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#dddddd</span>;
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>HTML Table<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">table</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Company<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Contact<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Country<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Alfreds Futterkiste<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Maria Anders<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Germany<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Centro comercial Moctezuma<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Francisco Chang<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Mexico<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Ernst Handel<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Roland Mendel<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Austria<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Island Trading<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Helen Bennett<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>UK<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Laughing Bacchus Winecellars<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Yoshi Tannamuri<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Canada<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Magazzini Alimentari Riuniti<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Giovanni Rovelli<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Italy<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">table</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<h4 id="-lists-html-">Файл <code>lists.html</code></h4>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>An Unordered HTML List<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Coffee<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Tea<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Milk<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>An Ordered HTML List<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">ol</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Coffee<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Tea<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Milk<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<h3>Приклад</h3>
+<p>Запустимо команду:</p>
+<pre><code class="lang-shell">./lab4<span class="hljs-selector-class">.sh</span> <span class="hljs-selector-tag">table</span><span class="hljs-selector-class">.html</span> lists<span class="hljs-selector-class">.html</span> out.txt
+</code></pre>
+<p>Тепер відкриємо <code>out.txt</code>:</p>
+<pre><code>
+
+<span class="http">
+
+<span class="css"><span class="hljs-selector-tag">table</span> {
+  <span class="hljs-attribute">font-family</span>: arial, sans-serif;
+  <span class="hljs-attribute">border-collapse</span>: collapse;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">100%</span>;
+}
+
+<span class="hljs-selector-tag">td</span>, <span class="hljs-selector-tag">th</span> {
+  <span class="hljs-attribute">border</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#dddddd</span>;
+  <span class="hljs-attribute">text-align</span>: left;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">8px</span>;
+}
+
+<span class="hljs-selector-tag">tr</span><span class="hljs-selector-pseudo">:nth-child(even)</span> {
+  <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#dddddd</span>;
+}
+
+
+
+
+<span class="hljs-selector-tag">HTML</span> <span class="hljs-selector-tag">Table</span>
+
+
+
+    <span class="hljs-selector-tag">Company</span>
+    <span class="hljs-selector-tag">Contact</span>
+    <span class="hljs-selector-tag">Country</span>
+
+
+    <span class="hljs-selector-tag">Alfreds</span> <span class="hljs-selector-tag">Futterkiste</span>
+    <span class="hljs-selector-tag">Maria</span> <span class="hljs-selector-tag">Anders</span>
+    <span class="hljs-selector-tag">Germany</span>
+
+
+    <span class="hljs-selector-tag">Centro</span> <span class="hljs-selector-tag">comercial</span> <span class="hljs-selector-tag">Moctezuma</span>
+    <span class="hljs-selector-tag">Francisco</span> <span class="hljs-selector-tag">Chang</span>
+    <span class="hljs-selector-tag">Mexico</span>
+
+
+    <span class="hljs-selector-tag">Ernst</span> <span class="hljs-selector-tag">Handel</span>
+    <span class="hljs-selector-tag">Roland</span> <span class="hljs-selector-tag">Mendel</span>
+    <span class="hljs-selector-tag">Austria</span>
+
+
+    <span class="hljs-selector-tag">Island</span> <span class="hljs-selector-tag">Trading</span>
+    <span class="hljs-selector-tag">Helen</span> <span class="hljs-selector-tag">Bennett</span>
+    <span class="hljs-selector-tag">UK</span>
+
+
+    <span class="hljs-selector-tag">Laughing</span> <span class="hljs-selector-tag">Bacchus</span> <span class="hljs-selector-tag">Winecellars</span>
+    <span class="hljs-selector-tag">Yoshi</span> <span class="hljs-selector-tag">Tannamuri</span>
+    <span class="hljs-selector-tag">Canada</span>
+
+
+    <span class="hljs-selector-tag">Magazzini</span> <span class="hljs-selector-tag">Alimentari</span> <span class="hljs-selector-tag">Riuniti</span>
+    <span class="hljs-selector-tag">Giovanni</span> <span class="hljs-selector-tag">Rovelli</span>
+    <span class="hljs-selector-tag">Italy</span>
+
+
+
+
+
+
+
+
+
+<span class="hljs-selector-tag">An</span> <span class="hljs-selector-tag">Unordered</span> <span class="hljs-selector-tag">HTML</span> <span class="hljs-selector-tag">List</span>
+
+
+  <span class="hljs-selector-tag">Coffee</span>
+  <span class="hljs-selector-tag">Tea</span>
+  <span class="hljs-selector-tag">Milk</span>
+
+
+<span class="hljs-selector-tag">An</span> <span class="hljs-selector-tag">Ordered</span> <span class="hljs-selector-tag">HTML</span> <span class="hljs-selector-tag">List</span>
+
+
+  <span class="hljs-selector-tag">Coffee</span>
+  <span class="hljs-selector-tag">Tea</span>
+  <span class="hljs-selector-tag">Milk</span></span></span>
+</code></pre>
+</body>
+</html>
