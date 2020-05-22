@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 
     write(stdin_fd[1], argv[1], sizeof(argv[1]));
     read(stderr_fd[0], buff, BUFF_SIZE);
-    printf("%s\n", buff);
+    printf("%s", buff);
 
     close(stdin_fd[1]);
     close(stderr_fd[0]);
