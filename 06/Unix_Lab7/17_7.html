@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Лабораторна робота №7, Панасенко Єгор, ПА-17-2</title>
+    <style>
+        body {
+            line-height: 1.5;
+            text-align: justify;
+            max-width: 1024px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            padding-bottom: .3em;
+            border-bottom: 1px solid #eaecef;
+        }
+        code {
+            padding: .2em .4em;
+            margin: 0;
+            background-color: rgba(27,31,35,.05);
+            border-radius: 3px;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            word-wrap: normal;
+        }
+        pre code {
+            background-color: #f6f8fa;
+            padding: 0;
+        }
+        .hljs-name, .hljs-selector-tag {
+            color: #22863a;
+        }
+        .hljs-comment {
+            color: #6a737d;
+        }
+        .hljs-built_in, .hljs-meta, .hljs-attribute,
+        .hljs-selector-pseudo, .hljs-number, .hljs-literal {
+            color: #005cc5;
+        }
+        .hljs-keyword, .hljs-meta-keyword, .hljs-_ {
+            color: #d73a49;
+        }
+        .hljs-string, .hljs-meta-string {
+            color: #032f62;
+        }
+        .hljs-variable {
+            color: #24292e;
+        }
+        .hljs-title {
+            color: #6f42c1;
+        }
+    </style>
+</head>
+<body>
+<h1 id="-7-17-2">Лабораторна робота №7, Панасенко Єгор, ПА-17-2</h1>
+<h2 id="-">Постановка задачі</h2>
+<p>Створити дві програми <code>parent.c</code> та <code>child.c</code>. Перша програма передає через командну строку число другій, яка зчитує його зі стандартного потоку вводу, множить його на 2 і передає число на стандартний потік помилок. parent.c зчитує це число і виводить перше і друге число на екран.</p>
+<h2 id="-">Вихідний текст розв&#39;язку</h2>
+<h3 id="-child-c-">Файл: <code>child.c</code></h3>
+<pre><code class="lang-c"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">int</span> number = <span class="hljs-number">0</span>;
+    <span class="hljs-built_in">scanf</span>(<span class="hljs-string">"%i"</span>, &amp;number);
+    <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">"%i"</span>, <span class="hljs-number">2</span> * number);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre>
+<h3 id="-parent-c-">Файл: <code>parent.c</code></h3>
+<pre><code class="lang-c"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span>
+
+<span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> CHILDREN <span class="hljs-meta-string">"./child"</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> BUFF_SIZE 21</span>
+
+
+<span class="hljs-keyword">int</span> main(<span class="hljs-keyword">int</span> argc, <span class="hljs-keyword">char</span> **argv) {
+    pid_t pid;
+    <span class="hljs-keyword">int</span> stdin_fd[<span class="hljs-number">2</span>];
+    <span class="hljs-keyword">int</span> stderr_fd[<span class="hljs-number">2</span>];
+    <span class="hljs-keyword">char</span> buff[BUFF_SIZE] = {<span class="hljs-number">0</span>};
+
+    <span class="hljs-built_in">if</span> (argc &lt; <span class="hljs-number">2</span>) {
+        printf(<span class="hljs-string">"Wrong arguments\n"</span>);
+        <span class="hljs-built_in">return</span> <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-built_in">if</span> (pipe(stdin_fd) == <span class="hljs-number">-1</span> || pipe(stderr_fd) == <span class="hljs-number">-1</span>) {
+        perror(<span class="hljs-string">"Failed to create pipe"</span>);
+        <span class="hljs-built_in">return</span> <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-built_in">if</span> ((pid = fork()) == <span class="hljs-number">-1</span>) {
+        perror(<span class="hljs-string">"Failed to fork"</span>);
+        <span class="hljs-built_in">return</span> <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-built_in">if</span> (pid == <span class="hljs-number">0</span>) {
+        <span class="hljs-built_in">close</span>(stdin_fd[<span class="hljs-number">1</span>]);
+        <span class="hljs-built_in">close</span>(stderr_fd[<span class="hljs-number">0</span>]);
+
+        dup2(stdin_fd[<span class="hljs-number">0</span>], <span class="hljs-number">0</span>);
+        dup2(stderr_fd[<span class="hljs-number">1</span>], <span class="hljs-number">2</span>);
+
+        <span class="hljs-built_in">close</span>(stdin_fd[<span class="hljs-number">0</span>]);
+        <span class="hljs-built_in">close</span>(stderr_fd[<span class="hljs-number">1</span>]);
+
+        execlp(CHILDREN, CHILDREN, NULL);
+        perror(<span class="hljs-string">"Failed to exec"</span>);
+        <span class="hljs-built_in">return</span> <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-built_in">close</span>(stdin_fd[<span class="hljs-number">0</span>]);
+    <span class="hljs-built_in">close</span>(stderr_fd[<span class="hljs-number">1</span>]);
+
+    <span class="hljs-built_in">write</span>(stdin_fd[<span class="hljs-number">1</span>], argv[<span class="hljs-number">1</span>], <span class="hljs-keyword">sizeof</span>(argv[<span class="hljs-number">1</span>]));
+    <span class="hljs-built_in">read</span>(stderr_fd[<span class="hljs-number">0</span>], buff, BUFF_SIZE);
+    printf(<span class="hljs-string">"%s\n"</span>, buff);
+
+    <span class="hljs-built_in">close</span>(stdin_fd[<span class="hljs-number">1</span>]);
+    <span class="hljs-built_in">close</span>(stderr_fd[<span class="hljs-number">0</span>]);
+
+    <span class="hljs-built_in">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre>
+<h2 id="-">Опис розв&#39;язку</h2>
+<h3 id="-child-c-">Файл: <code>child.c</code></h3>
+<p>Програма за допомогою <code>scanf</code> забирає число із стандартного потоку вводу та
+за допомогою <code>fprintf</code> виводить результат у стандартний потік помилок.</p>
+<h3 id="-parent-c-">Файл: <code>parent.c</code></h3>
+<p>Програма створює два канали даних: для запису та для читання,
+далі у дочірньому процесі прив&#39;язує канали до відповідних потоків
+та закриває ці канали, так як далі вони не непотрібні, так як прив&#39;язані до потоків,
+далі запускає програму.
+У головному процесі програма передає число у канал запису,
+далі очікує число та виводить його.</p>
+<h2 id="-">Опис тестових прикладів</h2>
+<p>Запустимо таку послідовність команд:</p>
+<pre><code class="lang-shell">gcc -Wall -o child child<span class="hljs-selector-class">.c</span>
+gcc -Wall -o parent parent<span class="hljs-selector-class">.c</span>
+./parent <span class="hljs-number">5</span>
+</code></pre>
+<p>Отримаємо такий результат:</p>
+<pre><code class="lang-shell">$ gcc -Wall -o child child<span class="hljs-selector-class">.c</span>
+$ gcc -Wall -o parent parent<span class="hljs-selector-class">.c</span>
+$ ./parent <span class="hljs-number">5</span>
+<span class="hljs-number">10</span>
+</code></pre>
+</body>
+</html>
