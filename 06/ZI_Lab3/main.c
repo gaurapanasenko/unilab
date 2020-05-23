@@ -4,17 +4,17 @@
 
 int main(int argc, char **argv)
 {
-	aeskey_t key;
-	RoundKeyType RoundKey;
-	state_t buf;
-	size_t size = sizeof(state_t);
-	fread(key, sizeof(aeskey_t), 1, stdin);
-	KeyExpansion(&RoundKey, key);
-	while (fread(buf, size, 1, stdin) > 0) {
-		Cipher(&buf, RoundKey);
-		//InvCipher(&buf, RoundKey);
-		fwrite(buf, size, 1, stdout);
-		memset(&buf, 0, size);
-	}
-	return 0;
+  aeskey_t key;
+  RoundKeyType RoundKey;
+  state_t buf;
+  size_t size = sizeof(state_t);
+  fread(key, sizeof(aeskey_t), 1, stdin);
+  KeyExpansion(&RoundKey, key);
+  while (fread(buf, size, 1, stdin) > 0) {
+    if (argv[0][strlen(argv[0]) - 1] != 'd') Cipher(&buf, RoundKey);
+    else InvCipher(&buf, RoundKey);
+    fwrite(buf, size, 1, stdout);
+    memset(&buf, 0, size);
+  }
+  return 0;
 }
