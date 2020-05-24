@@ -8,12 +8,12 @@ int main(int argc, char **argv)
   RoundKeyType RoundKey;
   state_t buf;
   size_t size = sizeof(state_t);
-  fread(key, sizeof(aeskey_t), 1, stdin);
+  fread(key, 1, sizeof(aeskey_t), stdin);
   KeyExpansion(&RoundKey, key);
-  while (fread(buf, size, 1, stdin) > 0) {
+  while (fread(buf, 1, size, stdin) > 0) {
     if (argv[0][strlen(argv[0]) - 1] != 'd') Cipher(&buf, RoundKey);
     else InvCipher(&buf, RoundKey);
-    fwrite(buf, size, 1, stdout);
+    fwrite(buf, 1, size, stdout);
     memset(&buf, 0, size);
   }
   return 0;

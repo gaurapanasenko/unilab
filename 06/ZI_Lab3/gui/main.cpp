@@ -1,15 +1,17 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-#include "fileio.h"
+#include "dencrypter.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
+    app.setOrganizationName("elfiny");
+    app.setOrganizationDomain("top");
 
-    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIOQML");
+    qmlRegisterType<Dencrypter>("Dencrypter", 1, 0, "Dencrypter");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
