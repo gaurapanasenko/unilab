@@ -28,11 +28,11 @@ long_line_behaviour=1
 long_line_column=80
 
 [files]
-current_page=8
+current_page=3
 FILE_NAME_0=321;Make;0;EUTF-8;1;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2FMakefile;0;2
-FILE_NAME_1=401;C;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Fmain.c;0;2
-FILE_NAME_2=199;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Faes.h;0;2
-FILE_NAME_3=964;C;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Faes.c;0;2
+FILE_NAME_1=348;C;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Fmain.c;0;2
+FILE_NAME_2=414;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Faes.h;0;4
+FILE_NAME_3=6908;C;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Faes.c;0;2
 FILE_NAME_4=2964;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Fgui%2Fdencrypter.h;0;4
 FILE_NAME_5=6703;None;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Fgui%2FHomeForm.ui.qml;0;4
 FILE_NAME_6=297;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab3%2Fgui%2Fmain.cpp;0;4

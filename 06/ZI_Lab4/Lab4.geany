@@ -28,14 +28,14 @@ long_line_behaviour=1
 long_line_column=80
 
 [files]
-current_page=3
-FILE_NAME_0=1832;Python;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fmain.py;0;4
-FILE_NAME_1=3704;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fgui%2Fdencrypter.h;0;4
-FILE_NAME_2=728;None;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fgui%2FHomeForm.ui.qml;0;4
-FILE_NAME_3=2366;Make;0;EUTF-8;1;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fgui%2Fbuild%2FMakefile;0;2
+current_page=0
+FILE_NAME_0=3291;Python;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fmain.py;0;4
+FILE_NAME_1=3436;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fgui%2Fdencrypter.h;0;4
+FILE_NAME_2=7406;None;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fgui%2FHomeForm.ui.qml;0;4
+FILE_NAME_3=2276;Make;0;EUTF-8;1;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fgui%2Fbuild%2FMakefile;0;2
 
 [VTE]
-last_dir=/home/gaura/gen/university/06/ZI_Lab4/gui/build
+last_dir=/home/gaura/gen/university/06/ZI_Lab4
 
 [build-menu]
 NF_03_LB=Run gui

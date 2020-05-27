@@ -275,7 +275,7 @@ Page {
     Connections {
         target: encryptButton
         onClicked: {
-            if (dencrypter.encrypt("crypt"))
+            if (dencrypter.encrypt("encrypt"))
                 statusLine.text = qsTr("Successfully encrypted")
             else
                 statusLine.text = qsTr("Failed to encrypt")
@@ -285,7 +285,7 @@ Page {
     Connections {
         target: decryptButton
         onClicked: {
-            if (dencrypter.decrypt("crypt"))
+            if (dencrypter.decrypt("decrypt"))
                 statusLine.text = qsTr("Successfully decrypted")
             else
                 statusLine.text = qsTr("Failed to decrypt")

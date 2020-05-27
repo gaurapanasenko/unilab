@@ -106,7 +106,7 @@ def any_crypt(data, n, k):
     return power(data, k, n)
 
 def parse_block(data, length):
-    for i in range(120 - len(data)):
+    for i in range(64 - len(data)):
         data += b'\x00'
     return int.from_bytes(data, byteorder='big')
 
@@ -117,7 +117,16 @@ def main(args):
     if 'key' in args[0]:
         for i in generate_keys():
             sys.stdout.buffer.write(i.to_bytes(128, byteorder='big'))
-    elif 'crypt' in args[0]:
+    elif 'encrypt' in args[0]:
+        n = parse_block(read_block(128), 128)
+        K = parse_block(read_block(128), 128)
+        while True:
+            data = read_block(64)
+            if not data:
+                return 0
+            out = any_crypt(parse_block(data, 64), n, K)
+            sys.stdout.buffer.write(out.to_bytes(128, byteorder='big'))
+    elif 'decrypt' in args[0]:
         n = parse_block(read_block(128), 128)
         K = parse_block(read_block(128), 128)
         while True:
@@ -125,7 +134,7 @@ def main(args):
             if not data:
                 return 0
             out = any_crypt(parse_block(data, 128), n, K)
-            sys.stdout.buffer.write(out.to_bytes(128, byteorder='big'))
+            sys.stdout.buffer.write(out.to_bytes(64, byteorder='big'))
     else:
         print(args)
     return 0
