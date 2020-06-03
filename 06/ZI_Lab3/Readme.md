@@ -1,6 +1,6 @@
 # Звіт з лабораторної роботи №3<br/>за дисципліною "Захист інформації"<br/>студента групи ПА-17-2<br/>Панасенка Єгора Сергійовича<br/>Кафедра комп'ютерних технологій, фпм, дну <br/>2018-2019 навч.р.
 
-Переглянути можна ![тут](https://github.com/gaurapanasenko/unilab/blob/master/06/ZI_Lab3/Readme.md)
+Переглянути можна [тут](https://github.com/gaurapanasenko/unilab/blob/master/06/ZI_Lab3/Readme.md)
 
 ## Постановка задачі
 
