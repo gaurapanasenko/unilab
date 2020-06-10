@@ -1,1 +1,1 @@
-тест
+Hello, world!

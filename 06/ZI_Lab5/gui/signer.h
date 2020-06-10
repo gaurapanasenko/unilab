@@ -5,14 +5,18 @@
 #include <QUrl>
 #include <QFile>
 #include <QProcess>
+#include <QDebug>
 
 
 class Signer : public QQuickItem // name is just a joke
 {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(QByteArray keyPair READ keyPair WRITE setKeyPair NOTIFY keyPairChanged)
-    Q_PROPERTY(QByteArray keyPairHex READ keyPairHex WRITE setKeyPairHex NOTIFY keyPairChanged)
+    Q_PROPERTY(bool signStatus READ signStatus WRITE setSignStatus NOTIFY signStatusChanged)
+    Q_PROPERTY(QByteArray pubKey READ pubKey WRITE setPubKey NOTIFY pubKeyChanged)
+    Q_PROPERTY(QByteArray pubKeyHex READ pubKeyHex WRITE setPubKeyHex NOTIFY pubKeyChanged)
+    Q_PROPERTY(QByteArray privKey READ privKey WRITE setPrivKey NOTIFY privKeyChanged)
+    Q_PROPERTY(QByteArray privKeyHex READ privKeyHex WRITE setPrivKeyHex NOTIFY privKeyChanged)
     Q_PROPERTY(QByteArray signature READ signature WRITE setSignature NOTIFY signatureChanged)
     Q_PROPERTY(QByteArray signatureHex READ signatureHex WRITE setSignatureHex NOTIFY signatureChanged)
     Q_PROPERTY(QByteArray data READ data WRITE setData NOTIFY dataChanged)
@@ -31,20 +35,44 @@ public:
         emit urlChanged();
     }
 
+    bool signStatus() const {
+        return m_signStatus;
+    }
+    void setSignStatus(bool signStatus) {
+        m_signStatus = signStatus;
+        emit signStatusChanged();
+    }
 
-    const QByteArray& keyPair() const {
-        return m_keyPair;
+
+    const QByteArray& pubKey() const {
+        return m_pubKey;
     }
-    void setKeyPair(const QByteArray &keyPair) {
-        m_keyPair = keyPair;
-        m_keyPairHex = keyPair.toHex(' ');
-        emit keyPairChanged();
+    void setPubKey(const QByteArray &pubKey) {
+        m_pubKey = pubKey;
+        m_pubKeyHex = pubKey.toHex(' ');
+        emit pubKeyChanged();
     }
-    const QByteArray& keyPairHex() const {
-        return m_keyPairHex;
+    const QByteArray& pubKeyHex() const {
+        return m_pubKeyHex;
     }
-    void setKeyPairHex(const QByteArray& data) {
-        setKeyPair(QByteArray::fromHex(data));
+    void setPubKeyHex(const QByteArray& data) {
+        setPubKey(QByteArray::fromHex(data));
+    }
+
+
+    const QByteArray& privKey() const {
+        return m_privKey;
+    }
+    void setPrivKey(const QByteArray &privKey) {
+        m_privKey = privKey;
+        m_privKeyHex = privKey.toHex(' ');
+        emit privKeyChanged();
+    }
+    const QByteArray& privKeyHex() const {
+        return m_privKeyHex;
+    }
+    void setPrivKeyHex(const QByteArray& data) {
+        setPrivKey(QByteArray::fromHex(data));
     }
 
 
@@ -82,7 +110,9 @@ public:
 
 signals:
     void urlChanged();
-    void keyPairChanged();
+    void signStatusChanged();
+    void pubKeyChanged();
+    void privKeyChanged();
     void signatureChanged();
     void dataChanged();
 public slots:
@@ -94,11 +124,19 @@ public slots:
     }
 
 
-    bool saveKeyPair(bool asHex = false) {
-        return save(asHex ? m_keyPairHex : m_keyPair);
+    bool savePubKey(bool asHex = false) {
+        return save(asHex ? m_pubKeyHex : m_pubKey);
     }
-    bool loadKeyPair(bool asHex = false) {
-        return load(asHex ? &Signer::setKeyPairHex : &Signer::setKeyPair);
+    bool loadPubKey(bool asHex = false) {
+        return load(asHex ? &Signer::setPubKeyHex : &Signer::setPubKey);
+    }
+
+
+    bool savePrivKey(bool asHex = false) {
+        return save(asHex ? m_privKeyHex : m_privKey);
+    }
+    bool loadPrivKey(bool asHex = false) {
+        return load(asHex ? &Signer::setPrivKeyHex : &Signer::setPrivKey);
     }
 
 
@@ -111,16 +149,27 @@ public slots:
 
 
     bool sign(const QString& path) {
-        return run(path, m_keyPair + m_data, &Signer::setSignature);
+        return run(path, m_pubKey + m_data, &Signer::setSignature);
     }
     bool check(const QString& path) {
-        return run(path, m_signature + m_data, &Signer::setData);
+        return run(path, m_privKey + m_signature + m_data, &Signer::setSignStatusPriv);
     }
 
     bool generateKey(const QString& path) {
         return run(path, "", &Signer::setKeyPair);
     }
 private:
+    void setSignStatusPriv(const QByteArray& data) {
+        QByteArray tr("True\n");
+        qDebug() << data << tr;
+        if (data == tr)
+            setSignStatus(true);
+        else setSignStatus(false);
+    }
+    void setKeyPair(const QByteArray& data) {
+        setPubKey(data.left(80));
+        setPrivKey(data.right(80));
+    }
     bool run(const QString& path, const QByteArray& data,
              void (Signer::*f)(const QByteArray&)) {
         QProcess runner;
@@ -160,7 +209,8 @@ private:
     }
 
     QUrl m_url;
-    QByteArray m_keyPair, m_keyPairHex, m_signature, m_signatureHex, m_data, m_dataHex;
+    bool m_signStatus;
+    QByteArray m_privKey, m_privKeyHex, m_pubKey, m_pubKeyHex, m_signature, m_signatureHex, m_data, m_dataHex;
 };
 
 

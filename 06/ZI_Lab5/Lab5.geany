@@ -28,8 +28,15 @@ long_line_behaviour=1
 long_line_column=80
 
 [files]
-current_page=1
-FILE_NAME_0=2536;Python;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2Fmain.py;0;4
+current_page=7
+FILE_NAME_0=2796;Python;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2Fmain.py;0;4
+FILE_NAME_1=0;Python;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab4%2Fmain.py;0;4
+FILE_NAME_2=7515;None;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2Fgui%2FHomeForm.ui.qml;0;4
+FILE_NAME_3=3123;Make;0;EUTF-8;1;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2Fgui%2Fbuild%2FMakefile;0;2
+FILE_NAME_4=3360;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2Fgui%2Fsigner.h;0;4
+FILE_NAME_5=1129;None;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2Fgui%2Fgui.pro;0;4
+FILE_NAME_6=324;C++;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2Fgui%2Fmain.cpp;0;4
+FILE_NAME_7=930;Markdown;0;EUTF-8;0;1;1;%2Fhome%2Fgaura%2Fgen%2Funiversity%2F06%2FZI_Lab5%2FReadme.md;0;4
 
 [VTE]
 last_dir=/home/gaura/gen/university/06/ZI_Lab5

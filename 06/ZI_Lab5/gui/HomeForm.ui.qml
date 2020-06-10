@@ -27,8 +27,8 @@ Page {
     }
 
     TextField {
-        id: keyPairField
-        text: hexKeyPairCheck.checked ? signer.keyPairHex : signer.keyPair
+        id: pubKeyField
+        text: hexPubKeyCheck.checked ? signer.pubKeyHex : signer.pubKey
         width: parent.width / 2 - 15
         anchors.top: parent.top
         anchors.topMargin: 10
@@ -36,23 +36,70 @@ Page {
         anchors.leftMargin: 10
 
         Connections {
-            target: keyPairField
+            target: pubKeyField
             onEditingFinished: {
-                if (hexKeyPairCheck.checked)
-                    signer.keyPairHex = keyPairField.text
+                if (hexPubKeyCheck.checked)
+                    signer.pubKeyHex = pubKeyField.text
                 else
-                    signer.keyPair = keyPairField.text
+                    signer.pubKey = pubKeyField.text
             }
+        }
+    }
+
+    TextField {
+        id: privKeyField
+        text: hexPrivKeyCheck.checked ? signer.privKeyHex : signer.privKey
+        width: parent.width / 2 - 15
+        anchors.top: parent.top
+        anchors.topMargin: 10
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+
+        Connections {
+            target: privKeyField
+            onEditingFinished: {
+                if (hexPrivKeyCheck.checked)
+                    signer.privKeyHex = privKeyField.text
+                else
+                    signer.privKey = privKeyField.text
+            }
+        }
+    }
+
+    Row {
+        id: row3
+        height: 40
+        spacing: 10
+        anchors.top: privKeyField.bottom
+        anchors.topMargin: 5
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+
+        CheckBox {
+            id: hexSignatureCheck
+            text: qsTr("HEX Sign")
+        }
+
+        Button {
+            id: loadSignatureButton
+            text: qsTr("Load signature")
+        }
+
+        Button {
+            id: saveSignatureButton
+            text: qsTr("Save signature")
         }
     }
 
     TextField {
         id: signatureField
         text: hexSignatureCheck.checked ? signer.signatureHex : signer.signature
-        width: parent.width / 2 - 15
-        anchors.top: parent.top
+        //width: parent.width / 2 - 15
+        anchors.top: pubKeyField.bottom
         anchors.topMargin: 10
-        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.leftMargin: 10
+        anchors.right: row3.left
         anchors.rightMargin: 10
 
         Connections {
@@ -70,19 +117,19 @@ Page {
         id: row
         height: 40
         spacing: 10
-        anchors.top: keyPairField.bottom
+        anchors.top: signatureField.bottom
         anchors.topMargin: 5
         anchors.left: parent.left
         anchors.leftMargin: 10
 
         CheckBox {
-            id: hexKeyPairCheck
-            text: qsTr("HEX Key pair")
+            id: hexPubKeyCheck
+            text: qsTr("HEX Pub key")
         }
 
         CheckBox {
-            id: hexSignatureCheck
-            text: qsTr("HEX Signature")
+            id: hexPrivKeyCheck
+            text: qsTr("HEX Priv key")
         }
 
         Button {
@@ -91,23 +138,23 @@ Page {
         }
 
         Button {
-            id: loadKeyPairButton
-            text: qsTr("Load key pair")
+            id: loadPubKeyButton
+            text: qsTr("Load pub key")
         }
 
         Button {
-            id: saveKeyPairButton
-            text: qsTr("Save key pair")
+            id: savePubKeyButton
+            text: qsTr("Save pub key")
         }
 
         Button {
-            id: loadSignatureButton
-            text: qsTr("Load signature")
+            id: loadPrivKeyButton
+            text: qsTr("Load priv key")
         }
 
         Button {
-            id: saveSignatureButton
-            text: qsTr("Save signature")
+            id: savePrivKeyButton
+            text: qsTr("Save priv key")
         }
     }
 
@@ -115,7 +162,7 @@ Page {
         id: row2
         height: 40
         spacing: 10
-        anchors.top: keyPairField.bottom
+        anchors.top: signatureField.bottom
         anchors.topMargin: 5
         anchors.right: parent.right
         anchors.rightMargin: 10
@@ -182,6 +229,16 @@ Page {
     }
 
     Connections {
+        target: signer
+        onSignStatusChanged: {
+            if (signer.signStatus)
+                statusLine.text = qsTr("Valid signature")
+            else
+                statusLine.text = qsTr("Invalid signature")
+        }
+    }
+
+    Connections {
         target: generateButton
         onClicked: {
             if (signer.generateKey("keygen"))
@@ -205,22 +262,30 @@ Page {
                 if (signer.saveData(hexDataCheck.checked))
                     statusLine.text = qsTr("Data file successfully saved")
                 else statusLine.text = qsTr("Failed to save data file")
-            else if (page.fileTarget == "loadKeyPair")
-                if (signer.loadKeyPair(hexKeyPairCheck.checked))
+            else if (page.fileTarget == "loadPubKey")
+                if (signer.loadPubKey(hexPubKeyCheck.checked))
                     statusLine.text = qsTr("Public key file successfully loaded")
                 else statusLine.text = qsTr("Failed to load public key file")
-            else if (page.fileTarget == "saveKeyPair")
-                if (signer.saveKeyPair(hexKeyPairCheck.checked))
+            else if (page.fileTarget == "savePubKey")
+                if (signer.savePubKey(hexPubKeyCheck.checked))
                     statusLine.text = qsTr("Public key file successfully saved")
                 else statusLine.text = qsTr("Failed to save public key file")
-            else if (page.fileTarget == "loadSignature")
-                if (signer.loadSignature(hexSignatureCheck.checked))
+            else if (page.fileTarget == "loadPrivKey")
+                if (signer.loadPrivKey(hexPrivKeyCheck.checked))
                     statusLine.text = qsTr("Private key file successfully loaded")
                 else statusLine.text = qsTr("Failed to load private key file")
-            else if (page.fileTarget == "saveSignature")
-                if (signer.saveSignature(hexSignatureCheck.checked))
+            else if (page.fileTarget == "savePrivKey")
+                if (signer.savePrivKey(hexPrivKeyCheck.checked))
                     statusLine.text = qsTr("Private key file successfully saved")
                 else statusLine.text = qsTr("Failed to save private key file")
+            else if (page.fileTarget == "loadSignature")
+                if (signer.loadSignature(hexSignatureCheck.checked))
+                    statusLine.text = qsTr("Signature file successfully loaded")
+                else statusLine.text = qsTr("Failed to load signature file")
+            else if (page.fileTarget == "saveSignature")
+                if (signer.saveSignature(hexSignatureCheck.checked))
+                    statusLine.text = qsTr("Signature file successfully saved")
+                else statusLine.text = qsTr("Failed to save signature file")
         }
     }
 
@@ -241,17 +306,33 @@ Page {
     }
 
     Connections {
-        target: loadKeyPairButton
+        target: loadPubKeyButton
         onClicked: {
-            page.fileTarget = "loadKeyPair"
+            page.fileTarget = "loadPubKey"
             fileDialog.open()
         }
     }
 
     Connections {
-        target: saveKeyPairButton
+        target: savePubKeyButton
         onClicked: {
-            page.fileTarget = "saveKeyPair"
+            page.fileTarget = "savePubKey"
+            fileDialog.open()
+        }
+    }
+
+    Connections {
+        target: loadPrivKeyButton
+        onClicked: {
+            page.fileTarget = "loadPrivKey"
+            fileDialog.open()
+        }
+    }
+
+    Connections {
+        target: savePrivKeyButton
+        onClicked: {
+            page.fileTarget = "savePrivKey"
             fileDialog.open()
         }
     }
@@ -285,10 +366,11 @@ Page {
     Connections {
         target: checkButton
         onClicked: {
-            if (signer.check("check"))
+            signer.check("check")
+            /*if ()
                 statusLine.text = qsTr("Successfully checked")
             else
-                statusLine.text = qsTr("Failed to check")
+                statusLine.text = qsTr("Failed to check")*/
         }
     }
 }

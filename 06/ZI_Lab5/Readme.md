@@ -1,3 +1,34 @@
+# Звіт з лабораторної роботи №5<br/>за дисципліною "Захист інформації"<br/>студента групи ПА-17-2<br/>Панасенка Єгора Сергійовича<br/>Кафедра комп'ютерних технологій, фпм, дну <br/>2018-2019 навч.р.
+
+Переглянути можна [https://github.com/gaurapanasenko/unilab/blob/master/06/ZI_Lab5/](https://github.com/gaurapanasenko/unilab/blob/master/06/ZI_Lab6/)
+
+## Постановка задачі
+
+Програмно реалізувати ЕЦП.
+
+## Приклад роботи
+
+### Консольний приклад
+
+Створимо деяку пару ключів та деяке повідомлення, та підпишемо повідомлення:
+```shell
+./keygen > keypair.bin
+dd if=keypair.bin of=pub.bin count=1 bs=80
+dd if=keypair.bin of=priv.bin count=1 bs=80 skip=1
+echo "Hello, world!" > data.txt
+cat pub.bin data.txt | ./sign > sign.bin
+```
+
+Перевірено повідомлення та чи правильний підпис:
+```shell
+cat priv.bin sign.bin data.txt | ./check
+```
+
+## Код роботи
+
+### Файл `main.py`
+
+```python
 #!/usr/bin/env python
 
 import sys
@@ -144,3 +175,5 @@ def main(args):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
+
+```
