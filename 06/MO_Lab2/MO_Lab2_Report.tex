@@ -1,0 +1,508 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[14pt,a4paper]{extarticle}
+
+\usepackage{mathtools} % Mathematical tools to use with amsmath
+\usepackage{amsfonts} % TeX fonts from the American Mathematical Society
+\usepackage{ifxetex}
+\usepackage{indentfirst} % Indent first paragraph after section header
+\ifxetex
+  \usepackage{mathspec} % Specify arbitrary fonts for mathematics in XeTeX
+  \usepackage{fontspec} % Advanced font selection in XeLaTeX and LuaLaTeX
+  \usepackage{polyglossia} % Multilingual support for XeLaTeX
+\else
+  \usepackage[T2A]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage[ukrainian]{babel}
+\fi
+\usepackage[
+  left=2cm,right=2cm,top=2cm,bottom=2cm,headheight=5mm,headsep=5mm,includehead
+]{geometry} % Flexible and complete interface to document dimensions
+\usepackage{makeidx} % Standard LaTeX package for creating indexes
+\usepackage[
+  colorlinks=true, allcolors=blue,
+]{hyperref} % Extensive support for hypertext in LaTeX
+\usepackage{titlesec} % Select alternative section titles
+\usepackage{array} % Extending the array and tabular environments
+\usepackage{amsthm} % Typesetting theorems (AMS style)
+%\usepackage{mathrsfs} % Support for using RSFS fonts in maths
+\usepackage{amssymb}
+
+\usepackage{listings} % Typeset source code listings using LaTeX
+\usepackage{minted}
+\usepackage{longtable}
+\usepackage{pgfplots} % Create normal/logarithmic plots !slow
+
+% latex
+\pagestyle{myheadings}
+% latex
+\pagestyle{myheadings}
+
+\ifxetex
+  % mathspec
+  \setmathsfont(Digits,Latin,Greek){Times New Roman}
+
+  % fontspec
+  \defaultfontfeatures{Mapping=tex-text}
+  \setmainfont{Times New Roman}
+  \setmonofont[Mapping=tex-text]{Fantasque Sans Mono}
+  \newfontfamily\cyrillicfont{Times New Roman}
+  \newfontfamily\cyrillicfontsf[Script=Cyrillic]{Fantasque Sans Mono}
+  \newfontfamily\cyrillicfonttt[Script=Cyrillic]{Fantasque Sans Mono}
+
+  % polyglossia
+  \setdefaultlanguage{russian}
+\fi
+
+% titlesec
+\titleformat{\section}
+  {\normalfont\Large\bfseries\centering}{\thesection. }{0pt}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\centering}{\thesubsection. }{0pt}{}
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries\centering}{\thesubsubsection. }{0pt}{}
+
+% array
+\def\arraystretch{1.5}
+
+% listed
+\lstset{language=C++,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  commentstyle=\color{green}\ttfamily,
+  morecomment=[l][\color{magenta}]{\#}
+}
+
+% minted
+\newminted{cpp}{baselinestretch=1.2,fontsize=\footnotesize,linenos}
+\newmintinline{cpp}{showspaces}
+\newminted{python}{baselinestretch=1.2,fontsize=\footnotesize,linenos}
+\newmintinline{python}{showspaces}
+
+% amsthm
+\newtheorem{theorem}{Теорема}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Визначення}[section]
+
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \begin{center}%
+    {\scshape
+    Міністерство освіти і науки України \\
+    Дніпровський національний університет імені Олеся Гончара \\
+    Факультет прикладної математики \\
+    Кафедра комп'ютерних технологій \par}
+    \let \footnote \thanks
+    {\LARGE \@title \par}%
+  \end{center}%
+  \begin{flushright}
+    {\scshape
+      \begin{tabular}[t]{p{0.2\textwidth}%
+        >{\raggedright\arraybackslash}p{0.3\textwidth}}%
+        Виконавець: & \@author \\
+        & \@date
+      \end{tabular}\par}%
+  \end{flushright}}
+\makeatother
+
+\makeatletter
+%\renewcommand{\[}{\begin{dmath*}[compact]}
+%\renewcommand{\]}{\end{dmath*}}
+%\newcommand{\bdg}{\begin{dgroup*}}
+%\newcommand{\edg}{\end{dgroup*}}
+%\newcommand{\bdg}{}
+%\newcommand{\edg}{}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\sep}{ , \ \allowbreak }
+\newcommand{\ivr}{\rule[-2.25ex]{0pt}{6ex}}
+\newcommand\fr[2]{\dfrac{#1}{#2}}
+\newcommand{\sigmalgebra}{\text{\textcircled{$\sigma$}}}
+\newcommand\eeq[1][]{\stackrel{\mathclap{\normalfont\mbox{#1}}}{=}}
+\makeatother
+
+\title{%
+  \MakeUppercase{\textbf{Лабораторна робота №2}}\\
+  \large з курсу ``Математичні основи інформатики''\\
+  Тема: ``Чисельні методи розв'язання задач одновимірної оптимізації''\\
+  Варіант 47}
+\author{Панасенко Єгор Сергійович \newline студент групи ПА-17-2}
+\date{}
+
+\begin{document}
+\sloppy % Stretches spaces to correct align of text
+\allowdisplaybreaks % Breaks equations between pages
+
+\maketitle
+\thispagestyle{empty}
+
+\section{Постановка задачі}
+
+\textbf{Тема:} Чисельні методи одновимірної оптимізації.
+
+\textbf{Мета:} Познайомитись практично з ітераційними методами розв'язання задач
+одновимірної оптимізації.
+
+\textbf{Постановка завдання}
+\begin{enumerate}
+\item Розробити програму знаходження мінімуму (максимуму) функції $f(x)$ відрізку
+$[a,b]$ з точністю $\epsilon=10^{-3}$ методами ділення навпіл, золотого перерізу, Фібоначчі.
+Цільова функція $f(x)$ та відрізок $[a, b]$ визначаються номером індивідуального завдання.
+
+\item Скласти звіт. Зміст звіту:
+\begin{enumerate}
+\item постановка задачі, мета роботи;
+\item варіант завдання;
+\item короткі теоретичні відомості;
+\item графік функції $f(x)$ на відрізку $[a,b]$;
+\item результати аналітичного розрахунку мінімуму функції $f(x)$;
+\item результати роботи програми знаходження мінімуму функції $f(x)$ кожного методу у вигляді таблиці;
+\item висновки;
+\item додаток: лістинг програми обчислення мінімуму функції $f(x)$ методами ділення навпіл, золотого перерізу, Фібоначчі.
+\end{enumerate}
+\end{enumerate}
+Зауваження. У випадку задачі максимізації функції $f(x)$ перейти до задачі мінімізації функції $f(x)$.
+
+\section{Варіант завдання (47)}
+
+\[f(x)=ln(x) - 2x^2 \to max \sep x \in \left[\cfrac14, 2\right]\]
+
+\section{Короткі теоретичні відомості}
+
+\subsection{Алгоритм методу ділення відрізка навпіл (методу дихотомії)}
+
+\textbf{Початковий етап.} Нехай $[a_1, b_1]$ --– відрізок, на якому визначена функція $f(x)$. Вибрати $\delta > 0$ та задати точність $\epsilon > 0$ , причому $\epsilon$. Покласти $k=1$ і перейти до основного етапу.
+
+\textbf{Основний етап}
+
+\textbf{Крок 1.} Якщо $b_k-a_k< \epsilon$, то зупинитися; точка мінімуму $x_*$ належить інтервалу $[a_k, b_k]$. За $x_*$ прийняти $\cfrac{a_{k+1}+b_{k+1}}2$. Інакше, обчислити
+\[\lambda_k = \cfrac{a_k+b_k - \delta}2 \sep
+\mu_k= \cfrac{a_k+b_k+\delta}2 = a_k+b_k-\lambda_k\]
+і перейти до кроку 2.
+
+\textbf{Крок 2.} Обчислити значення цільової функції $f(\lambda_k)$ та $f(\mu_k)$. Якщо $f(\lambda_k) \leq f(\mu_k)$, то покладаємо $a_{k+1} = a_k \sep b_{k+1}=\mu_k$, інакше $a_{k+1}=\lambda_k \sep b_{k+1}=b_k$.
+Замінити $k$ на $k+1$ і перейти до кроку 1.
+Опис алгоритму закінчено.
+
+\subsection{Алгоритм методу золотого перерізу}
+
+\textbf{Початковий етап.} Нехай $[a_1, b_1]$ --– відрізок, на якому визначена функція $f(x)$. Задати точність $\epsilon > 0$. Обчислити
+\[\lambda_1 = a_1+\cfrac{2-\sqrt{5}}2(b_1-a_1) \sep \mu_1=a_1+\cfrac{\sqrt{5}-1}2(b_1-a_1),\]
+значення цільової функції $f(\lambda_1)$ та $f(\mu_1)$, покласти $n=1$ і перейти до основного етапу.
+
+\textbf{Основний етап}
+
+\textbf{Крок 1.} Якщо $b_n-a_n< \epsilon$, то зупинитися; точка мінімуму $x_*$ належить інтервалу $[a_n,b_n]$. За $x_*$ прийняти $v_n=\cfrac{a_n+b_n}2$. Інакше, якщо $f(\lambda_n) > f(\mu_n)$, то перейти до кроку 2, а якщо $f(\lambda_n) <= f(\mu_n)$, то перейти до кроку 3.
+
+\textbf{Крок 2.} Покласти
+\[a_{n+1}= \lambda_n \sep b_{n+1} = b_n \sep \lambda_{n+1}=\mu_n,
+\mu_{n+1} = a_{n+1}+\cfrac{\sqrt{5}-1}2(b_{n+1}-a_{n+1})\]
+Обчислити значення цільової функції $f(\mu_{n+1})$ і перейти до кроку 4.
+
+\textbf{Крок 3.} Покласти
+\[a_{n+1}= a_n \sep b_{n+1} = \mu_n \sep \mu_{n+1}=\lambda_n,
+\lambda_{n+1} = a_{n+1}+\cfrac{3-\sqrt{5}}2(b_{n+1}-a_{n+1}).\]
+Обчислити значення цільової функції $f(m_{n+1})$ і перейти до кроку 4.
+
+\textbf{Крок 4.} Замінити $n$ на $n + 1$ і перейти до кроку 1.
+
+Опис алгоритму закінчений.
+
+\subsection{Алгоритм методу Фібоначчі}
+
+\textbf{Початковий етап.}
+
+\textbf{Крок 1.} Задати точність $\epsilon > 0$ обчислення точки мінімуму цільової функції $f(x)$ на відрізку $[a,b]$, покласти $F_1=F_2=1$.
+
+\textbf{Крок 2.} Покласти $j=1$.
+
+\textbf{Крок 3.} Обчислити $F_{j+2} = F_{j+1} + F_j$.
+
+\textbf{Крок 4.} Якщо $F_{j+1} \leq \cfrac{b-a}\epsilon \leq F_{j+2}$, то покласти $n=j$, перейти до кроку 5, інакше покласти $j=j+1$ і перейти до кроку 3.
+
+\textbf{Крок 5.} Обчислити точки
+\[\lambda_1=a+\cfrac{F_n}{F_{n+2}}(b-a) \sep \mu_1=a+\cfrac{F_{n+1}}{F_{n+2}}(b-a).\]
+
+\textbf{Крок 6.} Обчислити значення цільової функції $f(\lambda_1)$ та $f(\mu_1)$. Якщо $f(\lambda_1) \leq f(\mu_1)$, то покласти $a_2=a \sep b_2=\mu_1$ і перейти до кроку 7, інакше $a_2=\lambda_1 \sep b_2=b$ і перейти до кроку 7.
+
+\textbf{Крок 7.} Покласти $k=2$.
+
+\textbf{Основний етап.}
+
+{Крок 8.} Якщо $f(\lambda_{k-1}) \leq f(\mu_{k-1})$, то обчислити точку
+\[\lambda_k=a_k+\cfrac{F_{n-k+1}}{F_{n+2}}(b-a),\]
+обчислити значення цільової функції $f(\lambda_k)$ і перейти до кроку 9, інакше покласти $\lambda_k = \mu_{k-1} \sep f(\lambda_{k-1}) = f(\mu_{k-1}) \sep a_k = \lambda_{k-1}$ і перейти до кроку 10.
+
+\textbf{Крок 9.} Покласти $\mu_k=\lambda_{k-1} \sep f(\mu_k) = f(\lambda_{k-1})$ і перейти до кроку 11.
+
+\textbf{Крок 10.} Обчислити точку
+\[\mu_k = a_k+\cfrac{F_{n-k+2}}{F_{n+2}}(b-a),\]
+обчислити значення цільової функції $f(\mu_k)$ і перейти до кроку 11.
+
+\textbf{Крок 11.} Якщо $f(\lambda_{k}) \leq f(\mu_{k})$, то покласти $a_{k+1}=a_k \sep b_{k+1}=\mu_k$, і перейти до кроку 12, інакше покласти $a_{k+1}=\lambda_k \sep b_{k+1} = b_k$, і перейти до кроку 12.
+
+\textbf{Крок 12.} Якщо $k < n$, то покласти $k=k+1$ і перейти до кроку 8, інакше покласти $t_n=\cfrac{a_n+b_n}2$ і закінчити обчислення.
+
+Алгоритм описаний.
+
+\section{Графік функції}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}
+\addplot[domain=1/4:2,color=red]{ln(x) - 2*x^2};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+%\section{Результати аналітичного розрахунку}
+
+\section{Результати роботи програми}
+
+\subsection{Метод ділення навпіл}
+
+\begin{center}
+\begin{longtable}{| l |*6{ c |}}\hline
+Номер &$\lambda_k$&$\mu_k$&$a_{k+1}$&$b_{k+1}$&$\bar{x}_n$\\
+ітерації $K$&$f(\lambda_k)$&$f(\mu_k)$&$f(a_{k+1})$&$f(b_{k+1})$&$f(\bar{x}_n)$\\\hline
+\endfirsthead
+\endlastfoot
+  1 &  0.25000 &  2.00000 &  1.56235 &  1.56255 &  1.12500 \\*
+    & -1.51129 & -7.30685 & -4.43568 & -4.43681 & -2.41347 \\\hline
+  2 &  1.12490 &  2.00000 &  1.78107 &  1.78127 &  1.12510 \\*
+    & -2.41311 & -7.30685 & -5.76724 & -5.76855 & -2.41383 \\\hline
+  3 &  1.56235 &  2.00000 &  1.89044 &  1.89064 &  1.56255 \\*
+    & -4.43568 & -7.30685 & -6.51070 & -6.51211 & -4.43681 \\\hline
+  4 &  1.78107 &  2.00000 &  1.94512 &  1.94532 &  1.78127 \\*
+    & -5.76724 & -7.30685 & -6.90165 & -6.90310 & -5.76855 \\\hline
+  5 &  1.89044 &  2.00000 &  1.97246 &  1.97266 &  1.89064 \\*
+    & -6.51070 & -7.30685 & -7.10191 & -7.10339 & -6.51211 \\\hline
+  6 &  1.94512 &  2.00000 &  1.98613 &  1.98633 &  1.94532 \\*
+    & -6.90165 & -7.30685 & -7.20323 & -7.20472 & -6.90310 \\\hline
+  7 &  1.97246 &  2.00000 &  1.99296 &  1.99316 &  1.97266 \\*
+    & -7.10191 & -7.30685 & -7.25419 & -7.25569 & -7.10339 \\\hline
+  8 &  1.98613 &  2.00000 &  1.99638 &  1.99658 &  1.98633 \\*
+    & -7.20323 & -7.30685 & -7.27975 & -7.28125 & -7.20472 \\\hline
+  9 &  1.99296 &  2.00000 &  1.99809 &  1.99829 &  1.99316 \\*
+    & -7.25419 & -7.30685 & -7.29254 & -7.29404 & -7.25569 \\\hline
+ 10 &  1.99638 &  2.00000 &  1.99895 &  1.99915 &  1.99658 \\*
+    & -7.27975 & -7.30685 & -7.29895 & -7.30045 & -7.28125 \\\hline
+ 11 &  1.99809 &  2.00000 &  1.99937 &  1.99957 &  1.99829 \\*
+    & -7.29254 & -7.30685 & -7.30215 & -7.30365 & -7.29404 \\\hline
+ 12 &  1.99895 &  2.00000 &  1.99937 &  1.99957 &  1.99915 \\*
+    & -7.29895 & -7.30685 & -7.30215 & -7.30365 & -7.30045 \\\hline
+
+\end{longtable}
+\end{center}
+
+\subsection{Метод золотого перерізу}
+
+\begin{center}
+\begin{longtable}{| l |*6{ c |}}\hline
+Номер &$\lambda_k$&$\mu_k$&$a_{k+1}$&$b_{k+1}$&$\bar{x}_n$\\
+ітерації $K$&$f(\lambda_k)$&$f(\mu_k)$&$f(a_{k+1})$&$f(b_{k+1})$&$f(\bar{x}_n)$\\\hline
+\endfirsthead
+\endlastfoot
+  1 &  0.25000 &  2.00000 &  1.33156 &  1.58688 &  1.12500 \\*
+    & -1.51129 & -7.30685 & -3.25975 & -4.57461 & -2.41347 \\\hline
+  2 &  0.91844 &  2.00000 &  1.58688 &  1.74468 &  1.33156 \\*
+    & -1.77214 & -7.30685 & -4.57461 & -5.53124 & -3.25975 \\\hline
+  3 &  1.33156 &  2.00000 &  1.74468 &  1.84220 &  1.58688 \\*
+    & -3.25975 & -7.30685 & -5.53124 & -6.17646 & -4.57461 \\\hline
+  4 &  1.58688 &  2.00000 &  1.84220 &  1.90248 &  1.74468 \\*
+    & -4.57461 & -7.30685 & -6.17646 & -6.59567 & -5.53124 \\\hline
+  5 &  1.74468 &  2.00000 &  1.90248 &  1.93973 &  1.84220 \\*
+    & -5.53124 & -7.30685 & -6.59567 & -6.86253 & -6.17646 \\\hline
+  6 &  1.84220 &  2.00000 &  1.93973 &  1.96275 &  1.90248 \\*
+    & -6.17646 & -7.30685 & -6.86253 & -7.03042 & -6.59567 \\\hline
+  7 &  1.90248 &  2.00000 &  1.96275 &  1.97698 &  1.93973 \\*
+    & -6.59567 & -7.30685 & -7.03042 & -7.13531 & -6.86253 \\\hline
+  8 &  1.93973 &  2.00000 &  1.97698 &  1.98577 &  1.96275 \\*
+    & -6.86253 & -7.30685 & -7.13531 & -7.20057 & -7.03042 \\\hline
+  9 &  1.96275 &  2.00000 &  1.98577 &  1.99121 &  1.97698 \\*
+    & -7.03042 & -7.30685 & -7.20057 & -7.24106 & -7.13531 \\\hline
+ 10 &  1.97698 &  2.00000 &  1.99121 &  1.99457 &  1.98577 \\*
+    & -7.13531 & -7.30685 & -7.24106 & -7.26615 & -7.20057 \\\hline
+ 11 &  1.98577 &  2.00000 &  1.99457 &  1.99664 &  1.99121 \\*
+    & -7.20057 & -7.30685 & -7.26615 & -7.28168 & -7.24106 \\\hline
+ 12 &  1.99121 &  2.00000 &  1.99664 &  1.99792 &  1.99457 \\*
+    & -7.24106 & -7.30685 & -7.28168 & -7.29129 & -7.26615 \\\hline
+ 13 &  1.99457 &  2.00000 &  1.99792 &  1.99872 &  1.99664 \\*
+    & -7.26615 & -7.30685 & -7.29129 & -7.29723 & -7.28168 \\\hline
+ 14 &  1.99664 &  2.00000 &  1.99792 &  1.99872 &  1.99792 \\*
+    & -7.28168 & -7.30685 & -7.29129 & -7.29723 & -7.29129 \\\hline
+\end{longtable}
+\end{center}
+
+\subsection{Метод Фібоначчі}
+
+\begin{center}
+\begin{longtable}{| l |*6{ c |}}\hline
+Номер &$\lambda_k$&$\mu_k$&$a_{k+1}$&$b_{k+1}$&$\bar{x}_n$\\
+ітерації $K$&$f(\lambda_k)$&$f(\mu_k)$&$f(a_{k+1})$&$f(b_{k+1})$&$f(\bar{x}_n)$\\\hline
+\endfirsthead
+\endlastfoot
+  1 &  0.25000 &  2.00000 &  1.33156 &  1.58688 &  1.12500 \\*
+    & -1.51129 & -7.30685 & -3.25975 & -4.57461 & -2.41347 \\\hline
+  2 &  0.91844 &  2.00000 &  1.58688 &  1.74468 &  1.33156 \\*
+    & -1.77214 & -7.30685 & -4.57461 & -5.53124 & -3.25975 \\\hline
+  3 &  1.33156 &  2.00000 &  1.74468 &  1.84220 &  1.58688 \\*
+    & -3.25975 & -7.30685 & -5.53124 & -6.17645 & -4.57461 \\\hline
+  4 &  1.58688 &  2.00000 &  1.84220 &  1.90248 &  1.74468 \\*
+    & -4.57461 & -7.30685 & -6.17645 & -6.59568 & -5.53124 \\\hline
+  5 &  1.74468 &  2.00000 &  1.90248 &  1.93973 &  1.84220 \\*
+    & -5.53124 & -7.30685 & -6.59568 & -6.86252 & -6.17645 \\\hline
+  6 &  1.84220 &  2.00000 &  1.93973 &  1.96275 &  1.90248 \\*
+    & -6.17645 & -7.30685 & -6.86252 & -7.03044 & -6.59568 \\\hline
+  7 &  1.90248 &  2.00000 &  1.96275 &  1.97697 &  1.93973 \\*
+    & -6.59568 & -7.30685 & -7.03044 & -7.13528 & -6.86252 \\\hline
+  8 &  1.93973 &  2.00000 &  1.97697 &  1.98578 &  1.96275 \\*
+    & -6.86252 & -7.30685 & -7.13528 & -7.20062 & -7.03044 \\\hline
+  9 &  1.96275 &  2.00000 &  1.98578 &  1.99120 &  1.97697 \\*
+    & -7.03044 & -7.30685 & -7.20062 & -7.24099 & -7.13528 \\\hline
+ 10 &  1.97697 &  2.00000 &  1.99120 &  1.99458 &  1.98578 \\*
+    & -7.13528 & -7.30685 & -7.24099 & -7.26628 & -7.20062 \\\hline
+ 11 &  1.98578 &  2.00000 &  1.99458 &  1.99661 &  1.99120 \\*
+    & -7.20062 & -7.30685 & -7.26628 & -7.28148 & -7.24099 \\\hline
+ 12 &  1.99120 &  2.00000 &  1.99661 &  1.99797 &  1.99458 \\*
+    & -7.24099 & -7.30685 & -7.28148 & -7.29162 & -7.26628 \\\hline
+ 13 &  1.99458 &  2.00000 &  1.99797 &  1.99865 &  1.99661 \\*
+    & -7.26628 & -7.30685 & -7.29162 & -7.29670 & -7.28148 \\\hline
+ 14 &  1.99661 &  2.00000 &  1.99865 &  1.99932 &  1.99797 \\*
+    & -7.28148 & -7.30685 & -7.29670 & -7.30177 & -7.29162 \\\hline
+ 15 &  1.99797 &  2.00000 &  1.99932 &  1.99932 &  1.99865 \\*
+    & -7.29162 & -7.30685 & -7.30177 & -7.30177 & -7.29670 \\\hline
+\end{longtable}
+\end{center}
+
+\section{Висновки}
+В роботі ознайомилися і застосували три методи одновимірної оптимізації для знаходження мінімуму функції, крім того знайшли мінімум аналітично. Розглянуті методи можна було застосувати, так як функція є строго квазівипуклой.
+
+Перевага методів золотого перетину і Фібоначчі над методом дихотомії є те, що в них на кожній ітерації (крім першої) один раз обчислюється значення цільової функції, тоді як в методі дихотомії два.
+
+Метод ділення навпіл:  $x_{12} = 1.99915 \sep f(x_{12}) = -7.30045$.
+
+Метод золотого перерізу: $x_{14} = 1.99792 \sep f(x_{14}) = -7.29129$.
+
+Метод Фібоначчі: $x_{15} = 1.99865 \sep f(x_{15}) = -7.29670$.
+
+\section{Лістинг програми}
+
+\begin{pythoncode}
+#!/usr/bin/env python
+
+# Вариант 47
+
+import sys
+from decimal import Decimal, getcontext
+# Decimal - Дозволяє робити операції з float числами більш точно
+import math
+
+def func(x: Decimal) -> Decimal:
+    return x.ln() - 2 * (x ** 2) # -> max
+
+# Метод ділення навпіл
+
+def half_divide(f, a, b, eps, delta):
+    k = 1
+    lamb = (a + b) / 2 - delta
+    mu = (a + b) / 2 + delta
+    x = (a + b) / 2
+    while True:
+        if b - a < eps:
+            x = (a + b) / 2
+            yield a, b, lamb, mu, x
+            return
+        lamb = (a + b) / 2 - delta
+        mu = (a + b) / 2 + delta
+        yield a, b, lamb, mu, x
+        if f(lamb) <= f(mu):
+            a, b, x = a, mu, lamb
+        else:
+            a, b, x = lamb, b, mu
+
+# Метод золотого перерізу
+
+GR1 = (3 - Decimal(5).sqrt()) / 2
+GR2 = (Decimal(5).sqrt() - 1) / 2
+
+def golden_section(f, a, b, eps, _):
+    x = (a + b) / 2
+    while True:
+        lamb = a + (b - a) * GR1
+        mu = a + (b - a) * GR2
+        yield a, b, lamb, mu, x
+
+        if abs(lamb - mu) < eps:
+            x = (a + b) / 2
+            yield a, b, lamb, mu, x
+            return
+
+        if f(lamb) <= f(mu):
+            b, x = mu, lamb
+        else:
+            a, x = lamb, mu
+
+# Метод Фібоначчі
+
+def fibonacci(f, a, b, eps, _):
+    fib = [Decimal(1), Decimal(1)]
+    j = 1
+    diff = b - a
+    x = diff / eps
+    while fib[-2] > x or x > fib[-1]:
+        fib.append(fib[-2] + fib[-1])
+    n = len(fib) - 3
+    x = (a + b) / 2
+    for i in range(n):
+        if i == 0:
+            lamb = a + (fib[n] / fib[n + 2]) * diff
+            mu = a + (fib[n + 1] / fib[n + 2]) * diff
+        yield a, b, lamb, mu, x
+        if f(lamb) <= f(mu):
+            b, mu, x = mu, lamb, lamb
+            lamb = a + (fib[n - i - 1] / fib[n + 2]) * diff
+        else:
+            a, lamb, x = lamb, mu, mu
+            mu = a + (fib[n - i] / fib[n + 2]) * diff
+    x = (a + b) / 2
+    yield a, b, lamb, mu, x
+
+
+def main(args):
+    a = Decimal(1) / Decimal(4)
+    b = Decimal(2)
+    margs = func, a, b, Decimal(10) ** -3, Decimal(10) ** -4
+    methods = (half_divide, golden_section, fibonacci)
+    data = []
+    for i in methods:
+        dat = []
+        data.append(dat)
+        for j in i(*margs):
+            dat.append(j)
+    out_data = []
+    for i in data.copy():
+        data_i = []
+        out_data.append(data_i)
+        for j in range(len(i) - 1):
+            data_j1, data_j2 = [], []
+            data_i.append((data_j1, data_j2))
+            for k, v in enumerate((0, 0, 1, 1, 0)):
+                val = i[j + v][k]
+                data_j1.append(val)
+                data_j2.append(func(val))
+    for i in out_data:
+        for j, v in enumerate(i):
+            print(" & ".join(["%3i" % (j + 1)] + ["%8.5f" % k for k in v[0]]), "\\\\*")
+            print(" & ".join(["   "] + ["%8.5f" % k for k in v[1]]), "\\\\\\hline")
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
+\end{pythoncode}
+
+\end{document}

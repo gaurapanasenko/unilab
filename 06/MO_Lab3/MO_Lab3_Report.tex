@@ -1,0 +1,683 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[14pt,a4paper]{extarticle}
+
+\usepackage{mathtools} % Mathematical tools to use with amsmath
+\usepackage{amsfonts} % TeX fonts from the American Mathematical Society
+\usepackage{ifxetex}
+\usepackage{indentfirst} % Indent first paragraph after section header
+\ifxetex
+  \usepackage{mathspec} % Specify arbitrary fonts for mathematics in XeTeX
+  \usepackage{fontspec} % Advanced font selection in XeLaTeX and LuaLaTeX
+  \usepackage{polyglossia} % Multilingual support for XeLaTeX
+\else
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8x]{inputenc}
+  \usepackage[ukrainian]{babel}
+\fi
+\usepackage{breqn} % Automatic line breaking of displayed equations !slow
+\usepackage[
+  left=2cm,right=2cm,top=2cm,bottom=2cm,headheight=5mm,headsep=5mm,includehead
+]{geometry} % Flexible and complete interface to document dimensions
+\usepackage{makeidx} % Standard LaTeX package for creating indexes
+\usepackage[
+  colorlinks=true, allcolors=blue,
+]{hyperref} % Extensive support for hypertext in LaTeX
+\usepackage{titlesec} % Select alternative section titles
+\usepackage{array} % Extending the array and tabular environments
+\usepackage{amsthm} % Typesetting theorems (AMS style)
+%\usepackage{mathrsfs} % Support for using RSFS fonts in maths
+\usepackage{amssymb}
+
+\usepackage{listings} % Typeset source code listings using LaTeX
+\usepackage{minted}
+\usepackage{longtable}
+\usepackage{pgfplots} % Create normal/logarithmic plots !slow
+
+% latex
+\pagestyle{myheadings}
+
+\ifxetex
+  % mathspec
+  \setmathsfont(Digits,Latin,Greek){Times New Roman}
+
+  % fontspec
+  \defaultfontfeatures{Mapping=tex-text}
+  \setmainfont{Times New Roman}
+  \setmonofont[Mapping=tex-text]{Fantasque Sans Mono}
+  \newfontfamily\cyrillicfont{Times New Roman}
+  \newfontfamily\cyrillicfontsf[Script=Cyrillic]{Fantasque Sans Mono}
+  \newfontfamily\cyrillicfonttt[Script=Cyrillic]{Fantasque Sans Mono}
+
+  % polyglossia
+  \setdefaultlanguage{russian}
+\fi
+
+% titlesec
+\titleformat{\section}
+  {\normalfont\Large\bfseries\centering}{\thesection. }{0pt}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\centering}{\thesubsection. }{0pt}{}
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries\centering}{\thesubsubsection. }{0pt}{}
+
+% array
+\def\arraystretch{1.5}
+
+% listed
+\lstset{language=C++,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  commentstyle=\color{green}\ttfamily,
+  morecomment=[l][\color{magenta}]{\#}
+}
+
+% minted
+\newminted{cpp}{baselinestretch=1.2,fontsize=\footnotesize,linenos}
+\newmintinline{cpp}{showspaces}
+\newminted{python}{baselinestretch=1.2,fontsize=\footnotesize,linenos,breaklines}
+\newmintinline{python}{showspaces}
+
+% amsthm
+\newtheorem{theorem}{Теорема}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Визначення}[section]
+
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \begin{center}%
+    {
+    Міністерство освіти і науки України \\
+    Дніпровський національний університет імені Олеся Гончара \\
+    Факультет прикладної математики \\
+    Кафедра комп'ютерних технологій \par}
+    \let \footnote \thanks
+    {\LARGE \@title \par}%
+  \end{center}%
+  \begin{flushright}
+    {
+      \begin{tabular}[t]{p{0.2\textwidth}%
+        >{\raggedright\arraybackslash}p{0.3\textwidth}}%
+        Виконавець: & \@author \\
+        & \@date
+      \end{tabular}\par}%
+  \end{flushright}}
+\makeatother
+
+\makeatletter
+\renewcommand{\[}{\begin{dmath*}[compact]}
+\renewcommand{\]}{\end{dmath*}}
+%\newcommand{\bdg}{\begin{dgroup*}}
+%\newcommand{\edg}{\end{dgroup*}}
+%\newcommand{\bdg}{}
+%\newcommand{\edg}{}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\sep}{ , \ \allowbreak }
+\newcommand{\ivr}{\rule[-2.25ex]{0pt}{6ex}}
+\newcommand\fr[2]{\dfrac{#1}{#2}}
+\newcommand{\sigmalgebra}{\text{\textcircled{$\sigma$}}}
+\newcommand\eeq[1][]{\stackrel{\mathclap{\normalfont\mbox{#1}}}{=}}
+\makeatother
+
+\title{%
+  \textbf{Лабораторна робота №3}\\
+  \large з курсу ``Математичні основи інформатики''\\
+  Тема: ``Чисельні методи розв’язання задач безумовної оптимізації''\\
+  Варіант 47}
+\author{Панасенко Єгор Сергійович \newline студент групи ПА-17-2}
+\date{}
+
+\begin{document}
+\sloppy % Stretches spaces to correct align of text
+\allowdisplaybreaks % Breaks equations between pages
+
+\maketitle
+\thispagestyle{empty}
+
+\section{Постановка задачі}
+
+\textbf{Тема:} Чисельні методи безумовної оптимізації.
+
+\textbf{Мета:} Познайомитись практично з ітераційними методами розв'язання задач
+безумовної оптимізації.
+
+\textbf{Постановка завдання}
+
+Розв'язати задачу безумовної оптимізації:
+\begin{equation}
+    f(x) \to min
+\end{equation}
+\begin{equation}
+    x \in E^n
+\end{equation}
+
+Цільові функції мають вигляд:
+
+\begin{enumerate}
+\item $f(x)=ax_1^2+bx_1x_2+cx_2^2+dx_1+ex_2$,
+\item функція Розенброка: $g(x)=100(x_2-x_1^2)^2+(1-x_1)^2$.
+\end{enumerate}
+
+Коефіцієнти цільової функції $f(x)$ визначаються номером індивідуального завдання і наведені в таблиці 1.
+
+\begin{enumerate}
+    \item Знайти точку мінімуму функції $f(x)$ класичним методом.
+
+    \item Зробити кілька кроків (не менше двох) методом найшвидшого спуску для функції $f(x)$.
+
+    \item Розробити програму знаходження оптимального розв'язку задачі безумовної оптимізації градієнтним методом з дробленням кроку.
+    Застосувати її для знаходження оптимального розв'язку для функцій $f(x)$ та $g(x)$ із заданою точністю $\epsilon$.
+
+    \item Розробити програму знаходження оптимального розв'язку задачі безумовної оптимізації методом Ньютона.
+    Застосувати її для знаходження оптимального розв'язку для функцій $f(x)$ та $g(x)$ із заданою точністю $\epsilon$.
+
+    \item Виконати геометричну інтерпретацію отриманих результатів за трьома методами для цільової функції $f(x)$.
+    Для цього побудувати на площині лінії рівня, траєкторію наближення до точки мінімуму, зобразивши напрямки спуску різними кольорами.
+
+    \item Скласти звіт.
+\end{enumerate}
+
+\[\begin{array}{*6{|c}|}\hline
+    \text{№} & a & b & c & d & e \\\hline
+    47 & 2 & 1 & 1 & -2 & -5  \\\hline
+\end{array}\]
+
+\section{Результати роботи програми}
+
+\subsection{Класичний метод}
+
+\subsubsection{Функція $f(x)$}
+
+Знайдемо точку мінімуму функції $f(x)$ класичним методом.
+Градієнт цієї функції має вигляд:\[f'(x)=\left\{\begin{array}{l}4 x_{1} + x_{2} - 2\\x_{1} + 2 x_{2} - 5\end{array}\right.\]
+
+За необхідної умови мінімуму маємо:
+\[\left\{\begin{array}{l}4 x_{1} + x_{2} - 2=0\\x_{1} + 2 x_{2} - 5\end{array}\right.\to\left\{\begin{array}{l}x_{1}=-1/7\\x_{2}=18/7\\\end{array}\right.\]
+
+Будуємо матрицю других похідних (гесіан):
+\[f''(x)=\left(\begin{matrix}4 & 1\\1 & 2\end{matrix}\right).\]
+
+Кутові мінори $M_1 = \left|\begin{matrix}4\end{matrix}\right| = 4 > 0$,$M_2 = \left|\begin{matrix}4 & 1\\1 & 2\end{matrix}\right| = 7 > 0$. Отже, гесіан є додатно визначений, тобто точка $x^* = \left(-1/7,18/7\right)$ є точкою мінімуму і $f(x^*) = -44/7$.
+
+
+\subsubsection{Функція $g(x)$}
+
+Знайдемо точку мінімуму функції $g(x)$ класичним методом.
+Градієнт цієї функції має вигляд:\[g'(x)=\left\{\begin{array}{l}- 400 x_{1} \left(- x_{1}^{2} + x_{2}\right) + 2 x_{1} - 2\\- 200 x_{1}^{2} + 200 x_{2}\end{array}\right.\]
+
+За необхідної умови мінімуму маємо:
+\[\left\{\begin{array}{l}- 400 x_{1} \left(- x_{1}^{2} + x_{2}\right) + 2 x_{1} - 2=0\\- 200 x_{1}^{2} + 200 x_{2}\end{array}\right.\to\left\{\begin{array}{l}x_{1}=1\\x_{2}=1\\\end{array}\right.\]
+
+Будуємо матрицю других похідних (гесіан):
+\[g''(x)=\left(\begin{matrix}1200 x_{1}^{2} - 400 x_{2} + 2 & - 400 x_{1}\\- 400 x_{1} & 200\end{matrix}\right).\]
+
+Кутові мінори $M_1 = \left|\begin{matrix}802\end{matrix}\right| = 802 > 0$,$M_2 = \left|\begin{matrix}802 & -400\\-400 & 200\end{matrix}\right| = 400 > 0$. Отже, гесіан є додатно визначений, тобто точка $x^* = \left(1,1\right)$ є точкою мінімуму і $f(x^*) = 0$.
+
+\subsection{Метод найшвидшого спуску}
+
+\subsubsection{Функція $f(x)$}
+
+Знайдемо наближення до точки мінімуму функції $f(x)$ за методом найшвидшого градієнтного спуску.
+За початкове наближення візьмемо точку $x^{(0)}=(0,0)^T$.
+
+Ітерація 1.
+
+\[x_{1} = \left(\begin{matrix}0\\0\end{matrix}\right) - \alpha_0 \left(\begin{matrix}-2\\-5\end{matrix}\right) = \left(\begin{matrix}2 \alpha\\5 \alpha\end{matrix}\right)\]
+
+Для визначення $\alpha_0$ побудуємо функцію $g(\alpha_0)$ і знайдемо мінімум цієї функції, тобто:
+\[g(\alpha_0)=43 \alpha^{2} - 29 \alpha \to min \sep \alpha_0 \geq 0\]
+
+Знайдемо розв'язок одновимірної задачі оптимізації класичним методом.
+\[g'(\alpha_0)=0 \sep 86 \alpha - 29=0 \sep \alpha_0=29/86\]
+
+Таким чином, $x^{(1)} = \left(\begin{matrix}\frac{29}{43}\\\frac{145}{86}\end{matrix}\right)$, $f(x^{(1)})=-841/172$.
+Умова монотонності виконується, так як $f(x^{(1)})<f(x^{(0)})$.
+
+Ітерація 2.
+
+\[x_{2} = \left(\begin{matrix}\frac{29}{43}\\\frac{145}{86}\end{matrix}\right) - \alpha_1 \left(\begin{matrix}\frac{205}{86}\\- \frac{41}{43}\end{matrix}\right) = \left(\begin{matrix}\frac{29}{43} - \frac{205 \alpha}{86}\\\frac{41 \alpha}{43} + \frac{145}{86}\end{matrix}\right)\]
+
+Для визначення $\alpha_1$ побудуємо функцію $g(\alpha_1)$ і знайдемо мінімум цієї функції, тобто:
+\[g(\alpha_1)=2 \left(\frac{29}{43} - \frac{205 \alpha}{86}\right)^{2} + \left(\frac{29}{43} - \frac{205 \alpha}{86}\right) \left(\frac{41 \alpha}{43} + \frac{145}{86}\right) + \left(\frac{41 \alpha}{43} + \frac{145}{86}\right)^{2} - \frac{841}{86} \to min \sep \alpha_1 \geq 0\]
+
+Знайдемо розв'язок одновимірної задачі оптимізації класичним методом.
+\[g'(\alpha_1)=0 \sep \frac{36982 \alpha}{1849} - \frac{48749}{7396}=0 \sep \alpha_1=29/88\]
+
+Таким чином, $x^{(2)} = \left(\begin{matrix}- \frac{841}{7568}\\\frac{7569}{3784}\end{matrix}\right)$, $f(x^{(2)})=-7778409/1301696$.
+Умова монотонності виконується, так як $f(x^{(2)})<f(x^{(1)})$.
+
+Ітерація 3.
+
+\[x_{3} = \left(\begin{matrix}- \frac{841}{7568}\\\frac{7569}{3784}\end{matrix}\right) - \alpha_2 \left(\begin{matrix}- \frac{1681}{3784}\\- \frac{8405}{7568}\end{matrix}\right) = \left(\begin{matrix}\frac{1681 \alpha}{3784} - \frac{841}{7568}\\\frac{8405 \alpha}{7568} + \frac{7569}{3784}\end{matrix}\right)\]
+
+Для визначення $\alpha_2$ побудуємо функцію $g(\alpha_2)$ і знайдемо мінімум цієї функції, тобто:
+\[g(\alpha_2)=- \frac{48749 \alpha}{7568} + 2 \left(\frac{1681 \alpha}{3784} - \frac{841}{7568}\right)^{2} + \left(\frac{1681 \alpha}{3784} - \frac{841}{7568}\right) \left(\frac{8405 \alpha}{7568} + \frac{7569}{3784}\right) + \left(\frac{8405 \alpha}{7568} + \frac{7569}{3784}\right)^{2} - \frac{841}{86} \to min \sep \alpha_2 \geq 0\]
+
+Знайдемо розв'язок одновимірної задачі оптимізації класичним методом.
+\[g'(\alpha_2)=0 \sep \frac{2825761 \alpha}{665984} - \frac{81947069}{57274624}=0 \sep \alpha_2=29/86\]
+
+Таким чином, $x^{(3)} = \left(\begin{matrix}\frac{6293}{162712}\\\frac{1545613}{650848}\end{matrix}\right)$, $f(x^{(3)})=-61243464313/9851235328$.
+Умова монотонності виконується, так як $f(x^{(3)})<f(x^{(2)})$.
+
+Ітерація 4.
+
+\[x_{4} = \left(\begin{matrix}\frac{6293}{162712}\\\frac{1545613}{650848}\end{matrix}\right) - \alpha_3 \left(\begin{matrix}\frac{344605}{650848}\\- \frac{68921}{325424}\end{matrix}\right) = \left(\begin{matrix}\frac{6293}{162712} - \frac{344605 \alpha}{650848}\\\frac{68921 \alpha}{325424} + \frac{1545613}{650848}\end{matrix}\right)\]
+
+Для визначення $\alpha_3$ побудуємо функцію $g(\alpha_3)$ і знайдемо мінімум цієї функції, тобто:
+\[g(\alpha_3)=2 \left(\frac{6293}{162712} - \frac{344605 \alpha}{650848}\right)^{2} + \left(\frac{6293}{162712} - \frac{344605 \alpha}{650848}\right) \left(\frac{68921 \alpha}{325424} + \frac{1545613}{650848}\right) + \left(\frac{68921 \alpha}{325424} + \frac{1545613}{650848}\right)^{2} - \frac{7778409}{650848} \to min \sep \alpha_3 \geq 0\]
+
+Знайдемо розв'язок одновимірної задачі оптимізації класичним методом.
+\[g'(\alpha_3)=0 \sep \frac{4750104241 \alpha}{4813671808} - \frac{137753022989}{423603119104}=0 \sep \alpha_3=29/88\]
+
+Таким чином, $x^{(4)} = \left(\begin{matrix}- \frac{7778409}{57274624}\\\frac{70005681}{28637312}\end{matrix}\right)$, $f(x^{(4)})=-467485375587465/74554148962304$.
+Умова монотонності виконується, так як $f(x^{(4)})<f(x^{(3)})$.
+\subsection{Метод з дробленням кроку}
+
+\subsubsection{Функція $f(x)$}
+
+Знайдемо наближення до точки мінімуму функції $f(x)$ за градієнтним методом с дробленням кроку.
+Результати чисельного експерименту наведено у таблиці при початковому наближенні $x^{(0)}=(0,0)^T \sep \lambda = \cfrac15 \sep \beta = 1$.
+Ітераційна процедура була зупинена при виконанні умови $\vert x^{(k+1)} - x^{k}\vert \leq \epsilon \ (\epsilon = 10^{-3})$.
+
+\[\begin{array}{*5{|c}|}\hline
+   k & x^{(k)} & f(x^{(k)}) & -f'(x^{k}) & \vert x^{(k+1)} - x^{k}\vert \\\hline   1 & \left(\begin{array}{c}    1.0000\\    2.5000\end{array}\right) &    -3.7500 & \left(\begin{array}{c}   -4.5000\\   -1.0000\end{array}\right) &     2.6926 \\\hline
+   2 & \left(\begin{array}{c}   -0.1250\\    2.2500\end{array}\right) &    -6.1875 & \left(\begin{array}{c}    0.2500\\    0.6250\end{array}\right) &     1.1524 \\\hline
+   3 & \left(\begin{array}{c}   -0.0625\\    2.4062\end{array}\right) &    -6.2588 & \left(\begin{array}{c}   -0.1562\\    0.2500\end{array}\right) &     0.1683 \\\hline
+   4 & \left(\begin{array}{c}   -0.1016\\    2.4688\end{array}\right) &    -6.2760 & \left(\begin{array}{c}   -0.0625\\    0.1641\end{array}\right) &     0.0737 \\\hline
+   5 & \left(\begin{array}{c}   -0.1172\\    2.5098\end{array}\right) &    -6.2822 & \left(\begin{array}{c}   -0.0410\\    0.0977\end{array}\right) &     0.0439 \\\hline
+   6 & \left(\begin{array}{c}   -0.1274\\    2.5342\end{array}\right) &    -6.2844 & \left(\begin{array}{c}   -0.0244\\    0.0591\end{array}\right) &     0.0265 \\\hline
+   7 & \left(\begin{array}{c}   -0.1335\\    2.5490\end{array}\right) &    -6.2852 & \left(\begin{array}{c}   -0.0148\\    0.0356\end{array}\right) &     0.0160 \\\hline
+   8 & \left(\begin{array}{c}   -0.1372\\    2.5579\end{array}\right) &    -6.2855 & \left(\begin{array}{c}   -0.0089\\    0.0215\end{array}\right) &     0.0096 \\\hline
+   9 & \left(\begin{array}{c}   -0.1395\\    2.5632\end{array}\right) &    -6.2857 & \left(\begin{array}{c}   -0.0054\\    0.0130\end{array}\right) &     0.0058 \\\hline
+  10 & \left(\begin{array}{c}   -0.1408\\    2.5665\end{array}\right) &    -6.2857 & \left(\begin{array}{c}   -0.0032\\    0.0078\end{array}\right) &     0.0035 \\\hline
+  11 & \left(\begin{array}{c}   -0.1416\\    2.5684\end{array}\right) &    -6.2857 & \left(\begin{array}{c}   -0.0020\\    0.0047\end{array}\right) &     0.0021 \\\hline
+  12 & \left(\begin{array}{c}   -0.1421\\    2.5696\end{array}\right) &    -6.2857 & \left(\begin{array}{c}   -0.0012\\    0.0029\end{array}\right) &     0.0013 \\\hline
+  13 & \left(\begin{array}{c}   -0.1424\\    2.5703\end{array}\right) &    -6.2857 & \left(\begin{array}{c}   -0.0007\\    0.0017\end{array}\right) &     0.0008 \\\hline
+\end{array}\]
+
+
+\subsubsection{Функція $g(x)$}
+
+Знайдемо наближення до точки мінімуму функції $g(x)$ за градієнтним методом с дробленням кроку.
+Результати чисельного експерименту наведено у таблиці при початковому наближенні $x^{(0)}=(0,0)^T \sep \lambda = \cfrac15 \sep \beta = 1$.
+Ітераційна процедура була зупинена при виконанні умови $\vert x^{(k+1)} - x^{k}\vert \leq \epsilon \ (\epsilon = 10^{-2})$.
+
+\[\begin{array}{*5{|c}|}\hline
+   k & x^{(k)} & f(x^{(k)}) & -f'(x^{k}) & \vert x^{(k+1)} - x^{k}\vert \\\hline   1 & \left(\begin{array}{c}    0.2500\\    0.0000\end{array}\right) &     0.9531 & \left(\begin{array}{c}   -4.7500\\   12.5000\end{array}\right) &     0.2500 \\\hline
+   2 & \left(\begin{array}{c}    0.2129\\    0.0977\end{array}\right) &     0.8934 & \left(\begin{array}{c}    6.0308\\  -10.4668\end{array}\right) &     0.1045 \\\hline
+   3 & \left(\begin{array}{c}    0.2600\\    0.0159\end{array}\right) &     0.8151 & \left(\begin{array}{c}   -3.8989\\   10.3437\end{array}\right) &     0.0944 \\\hline
+   4 & \left(\begin{array}{c}    0.2295\\    0.0967\end{array}\right) &     0.7872 & \left(\begin{array}{c}    5.5812\\   -8.8007\end{array}\right) &     0.0864 \\\hline
+   5 & \left(\begin{array}{c}    0.2731\\    0.0279\end{array}\right) &     0.7461 & \left(\begin{array}{c}   -3.6456\\    9.3342\end{array}\right) &     0.0814 \\\hline
+   6 & \left(\begin{array}{c}    0.2447\\    0.1009\end{array}\right) &     0.7386 & \left(\begin{array}{c}    5.5233\\   -8.2001\end{array}\right) &     0.0783 \\\hline
+   7 & \left(\begin{array}{c}    0.2878\\    0.0368\end{array}\right) &     0.7192 & \left(\begin{array}{c}   -3.8761\\    9.2080\end{array}\right) &     0.0772 \\\hline
+   8 & \left(\begin{array}{c}    0.2727\\    0.0728\end{array}\right) &     0.5292 & \left(\begin{array}{c}    1.2818\\    0.3169\end{array}\right) &     0.0390 \\\hline
+   9 & \left(\begin{array}{c}    0.2777\\    0.0740\end{array}\right) &     0.5227 & \left(\begin{array}{c}    1.1000\\    0.6205\end{array}\right) &     0.0052 \\\hline
+\end{array}\]
+
+\subsection{Метод Ньютона}
+
+\subsubsection{Функція $f(x)$}
+
+Знайдемо наближення до точки мінімуму функції $f(x)$ за методом Ньютона.
+За початкове наближення візьмемо точку $x^{(0)}=(0,0)^T$.
+Ітераційна процедура була зупинена при виконанні умови $\vert x^{(k+1)} - x^{k}\vert \leq \epsilon \ (\epsilon = 10^{-4})$.
+Матриця других похідних для квадратичної функції є постійною і для заданої функції має вигляд:
+\[f''(x)=\left(\begin{matrix}4 & 1\\1 & 2\end{matrix}\right).\]
+
+Обернена до матриці Гессе $f''(x)$ матриця є
+\[(f''(x))^{-1}=\left(\begin{matrix}\frac{2}{7} & - \frac{1}{7}\\- \frac{1}{7} & \frac{4}{7}\end{matrix}\right).\]
+
+Ітерація 1.
+
+\[x_{1} = \left(\begin{matrix}0\\0\end{matrix}\right) - \left(\begin{matrix}\frac{2}{7} & - \frac{1}{7}\\- \frac{1}{7} & \frac{4}{7}\end{matrix}\right) \left(\begin{matrix}-2\\-5\end{matrix}\right) = \left(\begin{matrix}- \frac{1}{7}\\\frac{18}{7}\end{matrix}\right)\]
+
+\subsubsection{Функція $g(x)$}
+
+Знайдемо наближення до точки мінімуму функції $g(x)$ за методом Ньютона.
+За початкове наближення візьмемо точку $x^{(0)}=(0,0)^T$.
+Ітераційна процедура була зупинена при виконанні умови $\vert x^{(k+1)} - x^{k}\vert \leq \epsilon \ (\epsilon = 10^{-4})$.
+Матриця других похідних для квадратичної функції є постійною і для заданої функції має вигляд:
+\[g''(x)=\left(\begin{matrix}2 \left(600 x_{1}^{2} - 200 x_{2} + 1\right) & - 400 x_{1}\\- 400 x_{1} & 200\end{matrix}\right).\]
+
+Обернена до матриці Гессе $f''(x)$ матриця є
+\[(f''(x))^{-1}=\left(\begin{matrix}\frac{1}{400 x_{1}^{2} - 400 x_{2} + 2} & \frac{x_{1}}{200 x_{1}^{2} - 200 x_{2} + 1}\\\frac{x_{1}}{200 x_{1}^{2} - 200 x_{2} + 1} & \frac{600 x_{1}^{2} - 200 x_{2} + 1}{40000 x_{1}^{2} - 40000 x_{2} + 200}\end{matrix}\right).\]
+
+Ітерація 1.
+
+\[x_{1} = \left(\begin{matrix}0\\0\end{matrix}\right) - \left(\begin{matrix}\frac{1}{2} & 0\\0 & \frac{1}{200}\end{matrix}\right) \left(\begin{matrix}-2\\0\end{matrix}\right) = \left(\begin{matrix}1\\0\end{matrix}\right)\]
+
+Ітерація 2.
+
+\[x_{2} = \left(\begin{matrix}1\\0\end{matrix}\right) - \left(\begin{matrix}\frac{1}{402} & \frac{1}{201}\\\frac{1}{201} & \frac{601}{40200}\end{matrix}\right) \left(\begin{matrix}400\\-200\end{matrix}\right) = \left(\begin{matrix}1\\1\end{matrix}\right)\]
+\section{Геометрична інтерпретація}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[view={0}{90}]
+\addplot3 [
+    very thick,
+    contour gnuplot={
+        levels={-3,-4,-5,-6},
+        draw color=black
+    },
+    samples=60
+] {2*x^2 + x*y + y^2 - 2*x - 5*y};
+\addplot3[color=red] coordinates {
+    (29/43,145/86,-841/172)
+    (-841/7568,7569/3784,-7778409/1301696)
+    (6293/162712,1545613/650848,-61243464313/9851235328)
+    (-7778409/57274624,70005681/28637312,-467485375587465/74554148962304)
+};
+\addplot3[color=green] coordinates {
+    (1.00000000000000,2.50000000000000,-3.75000000000000)
+    (-0.125000000000000,2.25000000000000,-6.18750000000000)
+    (-0.0625000000000000,2.40625000000000,-6.25878906250000)
+    (-0.101562500000000,2.46875000000000,-6.27600097656250)
+    (-0.117187500000000,2.50976562500000,-6.28217697143555)
+    (-0.127441406250000,2.53417968750000,-6.28442573547363)
+    (-0.133544921875000,2.54895019531250,-6.28524489700794)
+    (-0.137237548828125,2.55786132812500,-6.28554329834878)
+    (-0.139465332031250,2.56324005126953,-6.28565199900186)
+    (-0.140810012817383,2.56648635864258,-6.28569159611652)
+    (-0.141621589660645,2.56844568252563,-6.28570602042259)
+    (-0.142111420631409,2.56962823867798,-6.28571127486114)
+    (-0.142407059669495,2.57034197449684,-6.28571318893065)
+};
+\addplot3[color=blue] coordinates {
+    (-1/7,18/7,-44/7)
+};
+\legend{$f(x)$,швид.,дроб.,ньют.};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\section{Лістинг програми}
+
+\begin{pythoncode}
+#!/usr/bin/env python3
+
+# Вариант 47
+
+import sys
+from sympy import symbols, diff, Matrix, Rational, nonlinsolve, latex
+
+ZERO = Rational(0)
+ONE = Rational(1)
+MAX_SIZE = 2
+
+def my_mult(a, b):
+    if isinstance(a, Polinomial):
+        return a * b
+    return b * a
+
+def to_mat(itr):
+    return Matrix(list(itr))
+
+X1, X2, ALP = symbols('x1 x2 alpha')
+VARS = (X1, X2)
+
+def calc(f, x):
+    return f.subs(list(zip(VARS, x)))
+
+def check_posneg_def(arr):
+    pos_def = True
+    neg_def = True
+    minors = []
+    for i in range(1, len(arr[0,:]) + 1):
+        minor = arr[:i,:i]
+        det = minor.det()
+        minors.append((minor, det, ">" if det > 0 else "<"))
+        if det <= 0:
+            pos_def = False
+        if (i % 2 == 0 and det <= 0) or (i % 2 == 1 and det >= 0):
+            neg_def = False
+    return minors, pos_def, neg_def # pos_def is min, neg_def is max
+
+
+def classic_method(f):
+    df = [diff(f, i) for i in VARS]
+    sol = nonlinsolve(df, VARS)
+    gesian = to_mat([diff(i, j) for j in VARS] for i in df)
+    full_gesian = calc(gesian, list(sol)[0])
+    minors, pos_def, neg_def = check_posneg_def(full_gesian)
+    return df, sol, gesian, full_gesian, minors, pos_def, neg_def, calc(f, list(sol)[0])
+
+
+def fast_fall(pol, x_0):
+    x_prev = x_i = x_0
+    f_prev = f_i = calc(pol, x_i)
+    grad = to_mat(diff(pol, i) for i in VARS)
+    for i in range(1, 5):
+        df_i = calc(grad, x_i)
+        x_i_pol = x_i - ALP * df_i
+        g_i = calc(pol, x_i_pol)
+        dg_i = diff(g_i, ALP)
+        alp_i = - dg_i.subs(ALP, 0) / dg_i.coeff(ALP)
+        f_prev, x_prev = f_i, x_i
+        x_i = x_i_pol.subs(ALP, alp_i)
+        f_i = calc(pol, x_i)
+        yield i, grad, df_i, x_i_pol, g_i, dg_i, alp_i, x_i, f_i, f_prev, x_prev
+        if f_i >= f_prev:
+            return x_prev, f_prev
+
+def split_step(f, x_0, eps, lamb=0.5, beta=1):
+    x_prev = x_k = x_0
+    f_prev = f_k = calc(f, x_k)
+    grad = to_mat(diff(f, i) for i in VARS)
+    alp = beta
+    k = 0
+    while True:
+        x_k_f = x_k - ALP * calc(grad, x_k)
+        while True:
+            f_x = x_k_f.subs(ALP, alp)
+            # print(alp, lamb, f_x)
+            if calc(f, f_x) < calc(f, x_k):
+                break
+            alp = lamb * alp
+        f_prev, x_prev = f_k, x_k
+        x_k = f_x
+        f_k = calc(f, x_k)
+        k += 1
+        norm = (x_k - x_prev).norm()
+        yield k, x_k, f_k, -calc(grad, x_k), norm
+        if norm < eps:
+            break
+
+
+def newton(f, x_0, eps):
+    x_prev = x_k = x_0
+    f_prev = f_k = calc(f, x_k)
+    grad = to_mat(diff(f, i) for i in VARS)
+    gesian = to_mat([diff(f, i, j) for j in VARS] for i in VARS)
+    gesian_inv = gesian.inv()
+    k = 0
+    while True:
+        f_prev, x_prev = f_k, x_k
+        alp_k = calc(gesian_inv, x_k)
+        f_prev, x_prev = f_k, x_k
+        df_k = calc(grad, x_k)
+        x_k = x_k - alp_k * df_k
+        f_k = calc(f, x_k)
+        k += 1
+        norm = (x_k - x_prev).norm()
+        if norm < eps:
+            break
+        yield gesian, gesian_inv, k, alp_k, f_prev, x_prev, x_k, f_k, df_k, norm
+
+def vec_to_str(vec):
+    return "\\left(\\begin{array}{c}%s\\end{array}\\right)" % "\\\\".join("%10.4f" % float(i) for i in vec)
+
+def classic_latex(f, name):
+    df, sol, gesian, full_gesian, minors, pos_def, neg_def, f_sol = classic_method(f)
+    if pos_def:
+        type_def = "додатно"
+        min_or_max = "мінімуму"
+    else:
+        type_def = "негативно"
+        min_or_max = "максимуму"
+    latdf = [latex(i) for i in df]
+    return (r"""
+\subsubsection{Функція $""" + name + """(x)$}
+
+Знайдемо точку мінімуму функції $""" + name + r"""(x)$ класичним методом.
+Градієнт цієї функції має вигляд:""" +
+    r"\[" + name + r"'(x)=\left\{\begin{array}{l}" + r"\\".join(latdf) + r"""\end{array}\right.\]
+
+За необхідної умови мінімуму маємо:
+\[\left\{\begin{array}{l}""" + r"=0\\".join(latdf) + r"""\end{array}\right.\to\left\{\begin{array}{l}""" +
+    r"".join([r"%s=%s\\" % (latex(i[0]), i[1]) for i in zip(VARS, tuple(sol)[0])]) +
+    r"""\end{array}\right.\]
+
+Будуємо матрицю других похідних (гесіан):
+\[""" + name + r"''(x)=" + latex(gesian, mat_delim="(") + r""".\]
+
+Кутові мінори """ +
+    r",".join(r"$M_%s = \left|%s\right| = %s %s 0$" % (i + 1, latex(minor[0], mat_delim=""), minor[1], minor[2]) for i, minor in enumerate(minors)) +
+    f". Отже, гесіан є {type_def} визначений, тобто точка $x^* = \left(" + ",".join(str(i) for i in list(sol)[0]) +
+    r"\right)$ є точкою " + min_or_max + " і $f(x^*) = " + str(f_sol) + "$.\n")
+
+
+def fast_fall_latex(f, name, x_0, eps, data):
+    return (r"""
+\subsubsection{Функція $""" + name + r"""(x)$}
+
+Знайдемо наближення до точки мінімуму функції $""" + name + r"""(x)$ за методом найшвидшого градієнтного спуску.
+За початкове наближення візьмемо точку $x^{(0)}=(0,0)^T$.""" +
+    "".join(r"""
+
+Ітерація %s.
+
+\[x_{%s} = %s - \alpha_%s %s = %s\]
+
+Для визначення $\alpha_%s$ побудуємо функцію $g(\alpha_%s)$ і знайдемо мінімум цієї функції, тобто:
+\[g(\alpha_%s)=%s \to min \sep \alpha_%s \geq 0\]
+
+Знайдемо розв'язок одновимірної задачі оптимізації класичним методом.
+\[g'(\alpha_%s)=0 \sep %s=0 \sep \alpha_%s=%s\]
+
+Таким чином, $x^{(%s)} = %s$, $f(x^{(%s)})=%s$.
+Умова монотонності виконується, так як $f(x^{(%s)})<f(x^{(%s)})$."""
+% (i, i, latex(x_prev, mat_delim="("), i - 1, latex(df_i, mat_delim="("),
+latex(x_i_pol, mat_delim="("), i - 1, i - 1, i - 1, latex(g_i, mat_delim="("), i - 1, i - 1,
+latex(dg_i, mat_delim="("), i - 1, alp_i, i,
+latex(x_i, mat_delim="("), i, f_i, i, i - 1)
+for i, grad, df_i, x_i_pol, g_i, dg_i, alp_i, x_i, f_i, f_prev, x_prev in data))
+
+
+def split_step_latex(f, name, x_0, eps, data):
+    return (r"""
+\subsubsection{Функція $""" + name + r"""(x)$}
+
+Знайдемо наближення до точки мінімуму функції $""" + name + r"""(x)$ за градієнтним методом с дробленням кроку.
+Результати чисельного експерименту наведено у таблиці при початковому наближенні $x^{(0)}=(0,0)^T \sep \lambda = \cfrac15 \sep \beta = 1$.
+Ітераційна процедура була зупинена при виконанні умови $\vert x^{(k+1)} - x^{k}\vert \leq \epsilon \ (\epsilon = 10^{""" + str(eps) + r"""})$.
+
+\[\begin{array}{*5{|c}|}\hline
+   k & x^{(k)} & f(x^{(k)}) & -f'(x^{k}) & \vert x^{(k+1)} - x^{k}\vert \\\hline""" +
+    "\n".join([r"%4s & %s & %10.4f & %s & %10.4f \\\hline" %
+    (k, vec_to_str(x_k), float(f_k), vec_to_str(ff_k), norm) for k, x_k, f_k, ff_k, norm in data]) +
+    r"""
+\end{array}\]
+""")
+
+
+def newton_latex(f, name, x_0, eps, data):
+    return (r"""
+\subsubsection{Функція $""" + name + r"""(x)$}
+
+Знайдемо наближення до точки мінімуму функції $""" + name + r"""(x)$ за методом Ньютона.
+За початкове наближення візьмемо точку $x^{(0)}=(0,0)^T$.
+Ітераційна процедура була зупинена при виконанні умови $\vert x^{(k+1)} - x^{k}\vert \leq \epsilon \ (\epsilon = 10^{""" + str(eps) + r"""})$.
+Матриця других похідних для квадратичної функції є постійною і для заданої функції має вигляд:
+\[""" + name + r"''(x)=" + latex(data[0][0], mat_delim="(") + r""".\]
+
+Обернена до матриці Гессе $f''(x)$ матриця є
+\[(f''(x))^{-1}=""" + latex(data[0][1], mat_delim="(") + r""".\]""" +
+    "".join(r"""
+
+Ітерація %s.
+
+\[x_{%s} = %s - %s %s = %s\]"""
+% (k, k, latex(x_prev, mat_delim="("), latex(alp_k, mat_delim="("), latex(df_k, mat_delim="("), latex(x_k, mat_delim="("))
+for gesian, gesian_inv, k, alp_k, f_prev, x_prev, x_k, f_k, df_k, norm in data))
+
+
+def fast_fall_plot(data):
+    return "\n".join([r"    (%s,%s)" % (",".join(str(j) for j in i[-4]), i[-3]) for i in data])
+
+
+def split_step_plot(data):
+    return "\n".join([r"    (%s,%s)" % (",".join(str(i) for i in x_k), f_k) for k, x_k, f_k, ff_k, norm in data])
+
+
+def newton_plot(data):
+    return "\n".join([r"    (%s,%s)" % (",".join(str(i) for i in x_k), f_k) for gesian, gesian_inv, k, alp_k, f_prev, x_prev, x_k, f_k, df_k, norm in data])
+
+
+def geom_inter_latex(fff, ssf, nf):
+    return (r"""\section{Геометрична інтерпретація}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[view={0}{90}]
+\addplot3 [
+    very thick,
+    contour gnuplot={
+        levels={-3,-4,-5,-6},
+        draw color=black
+    },
+    samples=60
+] {2*x^2 + x*y + y^2 - 2*x - 5*y};
+\addplot3[color=red] coordinates {
+""" + fast_fall_plot(fff) + r"""
+};
+\addplot3[color=green] coordinates {
+""" + split_step_plot(ssf) + r"""
+};
+\addplot3[color=blue] coordinates {
+""" + newton_plot(nf) + r"""
+};
+\legend{$f(x)$,швид.,дроб.,ньют.};
+\end{axis}
+\end{tikzpicture}
+\end{center}""")
+
+def main(args):
+    exm = 7 * X1**2 + 4 * X1 * X2 + 2 * X2 ** 2 - 10 * X1
+    f = 2 * X1**2 + X1 * X2 + X2**2 - 2 * X1 - 5 * X2
+    g = 100 * (X2 - X1**2)**2 + (- X1 + 1)**2
+    x_0 = Matrix([0, 0])
+    fff = list(fast_fall(f, x_0))
+    ssf = list(split_step(f, x_0, 10**-3))
+    ssg = list(split_step(g, x_0, 10**-2))
+    nf = list(newton(f, x_0, 10**-4))
+    ng = list(newton(g, x_0, 10**-4))
+
+
+    print(r"\subsection{Класичний метод}")
+    print(classic_latex(f, "f"))
+    print(classic_latex(g, "g"))
+
+    print(r"\subsection{Метод найшвидшого спуску}")
+    print(fast_fall_latex(f, "f", x_0, -4, fff))
+
+    print(r"\subsection{Метод з дробленням кроку}")
+    print(split_step_latex(f, "f", x_0, -3, ssf))
+    print(split_step_latex(g, "g", x_0, -2, ssg))
+
+    print(r"\subsection{Метод Ньютона}")
+    print(newton_latex(f, "f", x_0, -4, nf))
+    print(newton_latex(g, "g", x_0, -4, ng))
+
+    print(geom_inter_latex(fff, ssf, nf))
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
+\end{pythoncode}
+
+\end{document}
