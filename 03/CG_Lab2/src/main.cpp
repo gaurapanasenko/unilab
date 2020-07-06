@@ -200,6 +200,7 @@ int main() {
 
         // camera/view transformation
         sh->setMat4("view", view);
+        sh->setMat4("camera_rotation", camera_rotation);
 
         // render the loaded model
         basis[1].animate(deltaTime);
@@ -215,6 +216,7 @@ int main() {
 
 		lightlessShader.use();
         lightlessShader.setMat4("projection", projection);
+        lightlessShader.setMat4("camera_rotation", camera_rotation);
         lightlessShader.setMat4("view", view);
         lightlessShader.setMat4("rotation", mat4(1.0));
         lightlessShader.setMat4
