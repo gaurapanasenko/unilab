@@ -12,13 +12,14 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "shader.h"
-#include "camera.h"
 #include "model.h"
+#include "basis.h"
 
 /* For testing propose use the local (not installed) ui file */
 /* #define RES_DIR PACKAGE_DATA_DIR"/res/" */
 #define RES_DIR "resources/"
 
+void reset();
 void processInput(GLFWwindow *window);
 void framebuffer_size_callback(GLFWwindow* window, GLint width,
                                GLint height);
@@ -32,7 +33,7 @@ unsigned int SCR_WIDTH = 1366;
 unsigned int SCR_HEIGHT = 700;
 
 // camera
-Camera camera;
+Basis basis[3];
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -40,14 +41,6 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
-
-// letters data
-glm::vec3 EPos(  0.6f,   0.0f,   0.0f);
-glm::vec3 EDeg(  0.0f,   0.0f,  -5.0f);
-glm::vec3 EAni(  0.0f,   0.0f,   0.0f);
-glm::vec3 PPos( -0.6f,   0.0f,   0.0f);
-glm::vec3 PDeg(  0.0f,   0.0f,   5.0f);
-glm::vec3 PAni(  0.0f,   0.0f,   0.0f);
 
 // active element
 int active = 0;
@@ -60,9 +53,7 @@ bool pointLight1On = 1;
 bool pointLight2On = 1;
 bool spotLightOn = 1;
 
-const float MOVE_SPEED    = 0.5f;
-const float ROTATE_SPEED  = 64.0f;
-const float ANIMATE_SPEED = 256.0f;
+float ZOOM =  45.0f;
 
 int main() {
     // glfw: initialize and configure
@@ -121,6 +112,8 @@ int main() {
 		glm::vec3(5.0f, 0.0f, 5.0f),
 		glm::vec3(-1.0f, 0.0f, 1.0f)
 	};
+
+    reset();
 	
     // render loop
     // -----------
@@ -141,10 +134,9 @@ int main() {
 		glClearDepth(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 model;
-        glm::mat4 view = camera.GetViewMatrix();
-		glm::vec3 campos = camera.get_position();
-		glm::vec3 camdir = camera.get_direction();
+        glm::mat4 view = basis[0].view;
+        glm::vec3 campos = basis[0].get_camera_position();
+        glm::vec3 camdir = basis[0].get_camera_direction();
 
         // activate shader
 		if (light) {
@@ -199,41 +191,21 @@ int main() {
 
         // pass projection matrix to shader
         glm::mat4 projection = glm::perspective
-			(glm::radians(camera.Zoom),
+            (glm::radians(ZOOM),
 			 (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         sh->setMat4("projection", projection);
 
         // camera/view transformation
         sh->setMat4("view", view);
 
-		// render the loaded model
-        model = glm::mat4(1.0);
-		model = glm::translate(model, EPos);
-		model = glm::rotate(model,
-		                    glm::radians(EDeg.y += deltaTime * EAni.y),
-		                    glm::vec3(0.0, 1.0, 0.0));
-		model = glm::rotate(model,
-		                    glm::radians(EDeg.x += deltaTime * EAni.x),
-		                    glm::vec3(1.0, 0.0, 0.0));
-		model = glm::rotate(model,
-		                    glm::radians(EDeg.z += deltaTime * EAni.z),
-		                    glm::vec3(0.0, 0.0, 1.0));
-		sh->setMat4("model", model);
+        // render the loaded model
+        basis[1].animate(deltaTime);
+        sh->setMat4("model", basis[1].view);
         EModel.Draw(*sh);
 		
-		// render the loaded model
-        model = glm::mat4(1.0);
-		model = glm::translate(model, PPos);
-		model = glm::rotate(model,
-		                    glm::radians(PDeg.y += deltaTime * PAni.y),
-		                    glm::vec3(0.0, 1.0, 0.0));
-		model = glm::rotate(model,
-		                    glm::radians(PDeg.x += deltaTime * PAni.x),
-		                    glm::vec3(1.0, 0.0, 0.0));
-		model = glm::rotate(model,
-		                    glm::radians(PDeg.z += deltaTime * PAni.z),
-		                    glm::vec3(0.0, 0.0, 1.0));
-		sh->setMat4("model", model);
+        // render the loaded model
+        basis[2].animate(deltaTime);
+        sh->setMat4("model", basis[2].view);
         PModel.Draw(*sh);
 
 		lightlessShader.use();
@@ -258,6 +230,24 @@ int main() {
 	return 0;
 }
 
+void reset() {
+    glm::vec3 empty(0.0f, 0.0f, 0.0f);
+    basis[0].animation = empty;
+    basis[1].animation = empty;
+    basis[2].animation = empty;
+
+    basis[0].view = glm::translate(glm::mat4(1.0),
+                                   glm::vec3(0.0f, 0.0f, -3.0f));
+
+    basis[1].view = glm::rotate(
+                glm::translate(glm::mat4(1.0), glm::vec3(-0.8f, 0.0f, 0.0f)),
+                 0.2f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    basis[2].view = glm::rotate(
+                glm::translate(glm::mat4(1.0), glm::vec3( 0.8f, 0.0f, 0.0f)),
+                -0.2f, glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
 // process all input
 // -----------------
 void processInput(GLFWwindow *window)
@@ -265,90 +255,60 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-	if (active == 0) {
-		bool ctrl = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)==GLFW_PRESS;
-		float s = (ctrl)? 10.0f : 1.0f;
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			camera.move(FORWARD, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			camera.move(BACKWARD, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-			camera.move(LEFT, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			camera.rotate(LEFT, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-			camera.move(RIGHT, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			camera.rotate(RIGHT, s * deltaTime);
-		
-		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-			camera.move(UP, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
-			camera.move(DOWN, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-			camera.rotate(FORWARD, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-			camera.rotate(BACKWARD, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-			camera.rotate(UP, s * deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-			camera.rotate(DOWN, s * deltaTime);
-	} else {
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-			*((active == 1)?&EPos.x:&PPos.x) += MOVE_SPEED   *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			*((active == 1)?&EPos.x:&PPos.x) -= MOVE_SPEED   *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			*((active == 1)?&EPos.y:&PPos.y) += MOVE_SPEED   *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			*((active == 1)?&EPos.y:&PPos.y) -= MOVE_SPEED   *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-			*((active == 1)?&EPos.z:&PPos.z) += MOVE_SPEED   *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			*((active == 1)?&EPos.z:&PPos.z) -= MOVE_SPEED   *deltaTime;
+    bool ctrl = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)==GLFW_PRESS;
+    float s = (ctrl)? 10.0f : 1.0f;
+    float a = active ? -1.0f : 1.0f;
 
-		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-			*((active == 1)?&EDeg.x:&PDeg.x) -= ROTATE_SPEED *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-			*((active == 1)?&EDeg.x:&PDeg.x) += ROTATE_SPEED *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-			*((active == 1)?&EDeg.y:&PDeg.y) -= ROTATE_SPEED *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-			*((active == 1)?&EDeg.y:&PDeg.y) += ROTATE_SPEED *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
-			*((active == 1)?&EDeg.z:&PDeg.z) -= ROTATE_SPEED *deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-			*((active == 1)?&EDeg.z:&PDeg.z) += ROTATE_SPEED *deltaTime;
-		
-		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-			*((active == 1)?&EAni.x:&PAni.x) -= ANIMATE_SPEED*deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-			*((active == 1)?&EAni.x:&PAni.x) += ANIMATE_SPEED*deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-			*((active == 1)?&EAni.y:&PAni.y) -= ANIMATE_SPEED*deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-			*((active == 1)?&EAni.y:&PAni.y) += ANIMATE_SPEED*deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
-			*((active == 1)?&EAni.z:&PAni.z) -= ANIMATE_SPEED*deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
-			*((active == 1)?&EAni.z:&PAni.z) += ANIMATE_SPEED*deltaTime;
-	}
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        basis[active].move(Y * a, s * deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        basis[active].move(X * a, s * deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        basis[active].move(Z * a, s * deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        basis[active].move(-Z * a, s * deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        basis[active].move(-Y * a, s * deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        basis[active].move(-X * a, s * deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+        basis[active].rotate(-Z * a, s * deltaTime, active);
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+        basis[active].rotate(-Y * a, s * deltaTime, active);
+
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+        basis[active].rotate(-X * a, s * deltaTime, active);
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+        basis[active].rotate(X * a, s * deltaTime, active);
+
+    if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+        basis[active].rotate(Z * a, s * deltaTime, active);
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+        basis[active].rotate(Y * a, s * deltaTime, active);
+
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        basis[active].animation += -Z * s * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+        basis[active].animation += -Y * s * deltaTime;
+
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+        basis[active].animation += -X * s * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+        basis[active].animation += X * s * deltaTime;
+
+    if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
+        basis[active].animation += Z * s * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+        basis[active].animation += Y * s * deltaTime;
 	
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
-		camera.reset();
-	}
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
-		EAni = glm::vec3(  0.0f,   0.0f,   0.0f);
-		PAni = glm::vec3(  0.0f,   0.0f,   0.0f);
-	}
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
-		EPos = glm::vec3(  0.6f,   0.0f,   0.0f);
-		EDeg = glm::vec3(  0.0f,   0.0f,  -5.0f);
-		EAni = glm::vec3(  0.0f,   0.0f,   0.0f);
-		PPos = glm::vec3( -0.6f,   0.0f,   0.0f);
-		PDeg = glm::vec3(  0.0f,   0.0f,   5.0f);
-		PAni = glm::vec3(  0.0f,   0.0f,   0.0f);
-	}
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+        basis[0].reset();
+
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+        reset();
 }
 
 // glfw: when the window size changed this callback function executes
@@ -366,7 +326,12 @@ void framebuffer_size_callback(GLFWwindow* window, GLint width,
 // ------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, GLdouble xoffset,
                      GLdouble yoffset) {
-    camera.ProcessMouseScroll(yoffset);
+    if (ZOOM >= 1.0f && ZOOM <= 45.0f)
+        ZOOM -= yoffset;
+    if (ZOOM <= 1.0f)
+        ZOOM = 1.0f;
+    if (ZOOM >= 45.0f)
+        ZOOM = 45.0f;
 }
 
 // glfw: when the keyboard was used, this callback is called

@@ -18,7 +18,7 @@
 #include <vector>
 using namespace std;
 
-class Model 
+class Model
 {
 public:
     /*  Model Data */
