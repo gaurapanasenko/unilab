@@ -303,9 +303,6 @@ void processInput(GLFWwindow *window)
         basis[active].animation += Z * s * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
         basis[active].animation += Y * s * deltaTime;
-	
-    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-        basis[0].reset();
 
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
         reset();

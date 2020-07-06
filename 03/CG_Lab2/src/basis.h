@@ -21,7 +21,6 @@ public:
     void move(glm::vec3 direction, float deltaTime);
     void rotate(glm::vec3 direction, float deltaTime,
                 bool fromPosition = false);
-    void reset();
 
     glm::vec4 get_camera_position();
     glm::vec4 get_camera_direction();

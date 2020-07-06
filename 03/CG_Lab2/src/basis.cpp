@@ -1,9 +1,7 @@
 #include "basis.h"
 #include "stdio.h"
 
-Basis::Basis() : view(1.0) {
-    reset();
-}
+Basis::Basis() : view(1.0) {}
 
 void Basis::move(glm::vec3 direction, float deltaTime) {
     glm::vec3 vec = direction * BASIS_MOVE_SPEED * deltaTime;
@@ -23,9 +21,6 @@ void Basis::rotate(glm::vec3 direction, float deltaTime,
         transform = glm::rotate(transform, -velocity, direction);
     }
     view = transform * view;
-}
-
-void Basis::reset() {
 }
 
 glm::vec4 Basis::get_camera_position() {
