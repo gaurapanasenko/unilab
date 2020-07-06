@@ -9,7 +9,9 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "shader.h"
 #include "model.h"
@@ -33,7 +35,7 @@ unsigned int SCR_WIDTH = 1366;
 unsigned int SCR_HEIGHT = 700;
 
 // camera
-Basis basis[3];
+Basis basis[3] = {Basis(true)};
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -108,9 +110,9 @@ int main() {
 
     // lamp positions
     // --------------
-	glm::vec3 lampPositions[] = {
-		glm::vec3(5.0f, 0.0f, 5.0f),
-		glm::vec3(-1.0f, 0.0f, 1.0f)
+    vec3 lampPositions[] = {
+        vec3(5.0f, 0.0f, 5.0f),
+        vec3(-1.0f, 0.0f, 1.0f)
 	};
 
     reset();
@@ -134,9 +136,10 @@ int main() {
 		glClearDepth(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 view = basis[0].view;
-        glm::vec3 campos = basis[0].get_camera_position();
-        glm::vec3 camdir = basis[0].get_camera_direction();
+        mat4& view = basis[0].view;
+        mat4 camera_rotation = toMat4(basis[0].rotation);
+        vec3 campos = basis[0].get_camera_position();
+        vec3 camdir = basis[0].get_camera_direction();
 
         // activate shader
 		if (light) {
@@ -181,17 +184,17 @@ int main() {
 			sh->setFloat("spotLight.linear", 0.09);
 			sh->setFloat("spotLight.quadratic", 0.032);
 			sh->setFloat("spotLight.cutOff",
-			             glm::cos(glm::radians(12.5f)));
+                         cos(radians(12.5f)));
 			sh->setFloat("spotLight.outerCutOff",
-			             glm::cos(glm::radians(15.0f)));     
+                         cos(radians(15.0f)));
 		} else {
 			sh = &lightlessShader;
 			sh->use();
 		}
 
         // pass projection matrix to shader
-        glm::mat4 projection = glm::perspective
-            (glm::radians(ZOOM),
+        mat4 projection = perspective
+            (radians(ZOOM),
 			 (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         sh->setMat4("projection", projection);
 
@@ -201,21 +204,24 @@ int main() {
         // render the loaded model
         basis[1].animate(deltaTime);
         sh->setMat4("model", basis[1].view);
+        sh->setMat4("rotation", toMat4(basis[1].rotation));
         EModel.Draw(*sh);
 		
         // render the loaded model
         basis[2].animate(deltaTime);
         sh->setMat4("model", basis[2].view);
+        sh->setMat4("rotation", toMat4(basis[2].rotation));
         PModel.Draw(*sh);
 
 		lightlessShader.use();
         lightlessShader.setMat4("projection", projection);
         lightlessShader.setMat4("view", view);
+        lightlessShader.setMat4("rotation", mat4(1.0));
         lightlessShader.setMat4
-			("model", glm::translate(glm::mat4(1.0), lampPositions[0]));
+            ("model", translate(mat4(1.0), lampPositions[0]));
         CubeModel.Draw(lightlessShader);
         lightlessShader.setMat4
-			("model", glm::translate(glm::mat4(1.0), lampPositions[1]));
+            ("model", translate(mat4(1.0), lampPositions[1]));
         CubeModel.Draw(lightlessShader);
 
         // glfw: swap buffers and poll IO events
@@ -231,21 +237,27 @@ int main() {
 }
 
 void reset() {
-    glm::vec3 empty(0.0f, 0.0f, 0.0f);
+    vec3 empty(0.0f, 0.0f, 0.0f);
     basis[0].animation = empty;
     basis[1].animation = empty;
     basis[2].animation = empty;
 
-    basis[0].view = glm::translate(glm::mat4(1.0),
-                                   glm::vec3(0.0f, 0.0f, -3.0f));
+    basis[0].view = translate(mat4(1.0),
+                                   vec3(0.0f, 0.0f, -3.0f));
 
-    basis[1].view = glm::rotate(
-                glm::translate(glm::mat4(1.0), glm::vec3(-0.8f, 0.0f, 0.0f)),
-                 0.2f, glm::vec3(0.0f, 0.0f, 1.0f));
+    /*basis[1].view = rotate(
+                translate(mat4(1.0), vec3(-0.8f, 0.0f, 0.0f)),
+                 0.2f, vec3(0.0f, 0.0f, 1.0f));
 
-    basis[2].view = glm::rotate(
-                glm::translate(glm::mat4(1.0), glm::vec3( 0.8f, 0.0f, 0.0f)),
-                -0.2f, glm::vec3(0.0f, 0.0f, 1.0f));
+    basis[2].view = rotate(
+                translate(mat4(1.0), vec3( 0.8f, 0.0f, 0.0f)),
+                -0.2f, vec3(0.0f, 0.0f, 1.0f));*/
+
+    basis[1].view = translate(mat4(1.0), vec3(-0.8f, 0.0f, 0.0f));
+    basis[1].rotation = quat(vec3(0.0f, 0.0f,  0.2f));
+
+    basis[2].view = translate(mat4(1.0), vec3( 0.8f, 0.0f, 0.0f));
+    basis[2].rotation = quat(vec3(0.0f, 0.0f, -0.2f));
 }
 
 // process all input
@@ -260,34 +272,34 @@ void processInput(GLFWwindow *window)
     float a = active ? -1.0f : 1.0f;
 
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        basis[active].move(Y * a, s * deltaTime);
+        basis[active].move(Y * a * s * deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        basis[active].move(X * a, s * deltaTime);
+        basis[active].move(X * a * s * deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        basis[active].move(Z * a, s * deltaTime);
+        basis[active].move(Z * a * s * deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        basis[active].move(-Z * a, s * deltaTime);
+        basis[active].move(-Z * a * s * deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        basis[active].move(-Y * a, s * deltaTime);
+        basis[active].move(-Y * a * s * deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        basis[active].move(-X * a, s * deltaTime);
+        basis[active].move(-X * a * s * deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-        basis[active].rotate(-Z * a, s * deltaTime, active);
+        basis[active].rotate(-Z * s * deltaTime);
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-        basis[active].rotate(-Y * a, s * deltaTime, active);
+        basis[active].rotate(-Y * s * deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-        basis[active].rotate(-X * a, s * deltaTime, active);
+        basis[active].rotate(-X * s * deltaTime);
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-        basis[active].rotate(X * a, s * deltaTime, active);
+        basis[active].rotate(X * s * deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
-        basis[active].rotate(Z * a, s * deltaTime, active);
+        basis[active].rotate(Z * s * deltaTime);
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-        basis[active].rotate(Y * a, s * deltaTime, active);
+        basis[active].rotate(Y * s * deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
         basis[active].animation += -Z * s * deltaTime;

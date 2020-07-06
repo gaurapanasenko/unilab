@@ -1,46 +1,39 @@
+#include <glm/gtx/quaternion.hpp>
+
 #include "basis.h"
 #include "stdio.h"
 
-Basis::Basis() : view(1.0) {}
+Basis::Basis(bool camera) : view(1.0), rotation(vec3()), camera(camera) {}
 
-void Basis::move(glm::vec3 direction, float deltaTime) {
-    glm::vec3 vec = direction * BASIS_MOVE_SPEED * deltaTime;
-    view = glm::translate(glm::mat4(1.0), vec) * view;
+void Basis::move(vec3 distances) {
+    view = translate(mat4(1.0), distances * BASIS_MOVE_SPEED) * view;
 }
 
-void Basis::rotate(glm::vec3 direction, float deltaTime,
-                   bool fromPosition) {
-    float velocity = BASIS_ROTATE_SPEED * deltaTime;
-    glm::mat4 transform = glm::mat4(1.0);
-    if (fromPosition) {
-        glm::vec3 position = get_position();
-        transform = glm::translate(transform, position);
-        transform = glm::rotate(transform, -velocity, direction);
-        transform = glm::translate(transform, -position);
-    } else {
-        transform = glm::rotate(transform, -velocity, direction);
-    }
-    view = transform * view;
+void Basis::rotate(vec3 angles) {
+    if (camera) {
+        for (int i = 0; i < 3; i++) {
+            if (angles[i]) {
+                vec3 direction;
+                direction[i] = 1.0;
+                view = glm::rotate(mat4(1.0), angles[i] * BASIS_MOVE_SPEED, direction) * view;
+            }
+        }
+    } else
+        rotation = quat(BASIS_ROTATE_SPEED * angles) * rotation;
 }
 
-glm::vec4 Basis::get_camera_position() {
-    return glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+vec4 Basis::get_camera_position() {
+    return inverse(view) * vec4(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-glm::vec4 Basis::get_camera_direction() {
-    return glm::inverse(view) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+vec4 Basis::get_camera_direction() {
+    return inverse(camera ? view : toMat4(rotation)) * vec4(0.0f, 0.0f, -1.0f, 0.0f);
 }
 
-glm::vec4 Basis::get_position() {
-    return view * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+vec4 Basis::get_position() {
+    return view * vec4(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void Basis::animate(float deltaTime) {
-    float velocity = deltaTime * BASIS_ANIMATE_SPEED;
-    float x = velocity * animation.x;
-    float y = velocity * animation.y;
-    float z = velocity * animation.z;
-    rotate(X, x, true);
-    rotate(Y, y, true);
-    rotate(Z, z, true);
+    rotate(BASIS_ANIMATE_SPEED * animation * deltaTime);
 }

@@ -3,10 +3,13 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
-const glm::vec3 X = glm::vec3(1.0f, 0.0f, 0.0f);
-const glm::vec3 Y = glm::vec3(0.0f, 1.0f, 0.0f);
-const glm::vec3 Z = glm::vec3(0.0f, 0.0f, 1.0f);
+using namespace glm;
+
+const vec3 X = vec3(1.0f, 0.0f, 0.0f);
+const vec3 Y = vec3(0.0f, 1.0f, 0.0f);
+const vec3 Z = vec3(0.0f, 0.0f, 1.0f);
 
 // Default camera values
 const float BASIS_MOVE_SPEED   =  0.5f;
@@ -15,17 +18,21 @@ const float BASIS_ANIMATE_SPEED = 1.0f;
 
 class Basis {
 public:
-    glm::mat4 view;
-    glm::vec3 animation;
-    Basis();
-    void move(glm::vec3 direction, float deltaTime);
-    void rotate(glm::vec3 direction, float deltaTime,
-                bool fromPosition = false);
+    mat4 view;
+    vec3 animation;
+    quat rotation;
+    bool camera;
 
-    glm::vec4 get_camera_position();
-    glm::vec4 get_camera_direction();
+    Basis(bool camera = false);
+    void move(vec3 distances);
+    void rotate(vec3 direction);
 
-    glm::vec4 get_position();
+    vec4 get_camera_position();
+    vec4 get_camera_direction();
+
+    vec4 get_position();
+
+    mat4 get_full_view();
 
     void animate(float deltaTime);
 };
