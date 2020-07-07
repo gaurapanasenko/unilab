@@ -24,15 +24,15 @@ public:
     bool camera;
 
     Basis(bool camera = false);
-    void move(vec3 distances);
-    void rotate(vec3 direction);
+    void move(const vec3& distances);
+    void rotate(const vec3& angles);
 
-    vec4 get_camera_position();
-    vec4 get_camera_direction();
+    const vec4 get_camera_position() const;
+    const vec4 get_camera_direction() const;
 
-    vec4 get_position();
+    const vec4 get_position() const;
 
-    mat4 get_full_view();
+    mat4 get_full_view() const;
 
     void animate(float deltaTime);
 };
