@@ -1,10 +1,11 @@
+#include <sys/time.h>
 #include "common.h"
 
 int main_template(void func(size_type, type*, type*, type*))
 {
     size_type size, i, x;
     type *a, *b, dot_product = 0;
-    clock_t begin, end;
+    struct timeval begin, end;
 
     fread(&size, SIZE_OF_SIZE, 1, stdin);
 
@@ -35,12 +36,13 @@ int main_template(void func(size_type, type*, type*, type*))
     }
     fprintf(stderr, "\n");
 
-    begin = clock();
+    gettimeofday(&begin, NULL);
     func(size, a, b, &dot_product);
-    end = clock();
+    gettimeofday(&end, NULL);
 
     fprintf(stderr, "Dot product of vectors equals %lf, execution time is %lf seconds\n",
-            dot_product, (double)(end - begin) / CLOCKS_PER_SEC);
+            dot_product, (double) (end.tv_usec - begin.tv_usec) / 1000000 +
+                         (double) (end.tv_sec - begin.tv_sec));
 
     free(a);
     free(b);
