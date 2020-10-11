@@ -1,16 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-#define size_type int
-#define type double
-
-const int SIZE_OF_SIZE = sizeof(size_type);
-const int SIZE_OF_ITEM = sizeof(type);
-
-const int UNIT = 1024 * 1024; // MiB
-const int MAX_VALUE = 16;
-const int DIVIDER = RAND_MAX / MAX_VALUE;
+#include "common.h"
 
 int main(int argc, char **argv)
 {
