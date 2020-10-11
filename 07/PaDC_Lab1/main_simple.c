@@ -44,8 +44,8 @@ int main()
     }
 
     begin = clock();
-    for (i = 0; i < size; i++) {
-        dot_product += a[i] * b[i];
+    for (int j = 0; j < size; j++) {
+        dot_product += a[j] * b[j];
     }
     end = clock();
     fprintf(stderr, "\nFirst 8 elements of second vector:\n");

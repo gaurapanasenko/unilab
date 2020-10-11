@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 
     begin = clock();
 #pragma omp parallel for reduction (+:dot_product)
-    for (i = 0; i < size; i++) {
-        dot_product += a[i] * b[i];
+    for (int j = 0; j < size; j++) {
+        dot_product += a[j] * b[j];
     }
     end = clock();
     fprintf(stderr, "\nFirst 8 elements of second vector:\n");
