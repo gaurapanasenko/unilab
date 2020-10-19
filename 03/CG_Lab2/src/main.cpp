@@ -30,6 +30,10 @@ void scroll_callback(GLFWwindow* window, GLdouble xoffset,
 void key_callback(GLFWwindow* window, int key, int scancode,
                      int action, int mods);
 
+double lastTime = glfwGetTime();
+int nbFrames = 0;
+
+
 // settings
 unsigned int SCR_WIDTH = 1366;
 unsigned int SCR_HEIGHT = 700;
@@ -120,6 +124,15 @@ int main() {
     // render loop
     // -----------
     while(!glfwWindowShouldClose(window)) {
+        double currentTime = glfwGetTime();
+        nbFrames++;
+        if ( currentTime - lastTime >= 1.0 ){
+            // printf and reset timer
+            printf("%i FPS\n", nbFrames);
+            nbFrames = 0;
+            lastTime += 1.0;
+        }
+
         // per-frame time logic
         // --------------------
         float currentFrame = glfwGetTime();
