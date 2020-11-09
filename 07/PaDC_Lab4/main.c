@@ -21,11 +21,9 @@ int worker(int argc, char* argv[], int rank, int size, char *hostname, int host_
             data[i] = i;
         }
         MPI_Send(data, 32, MPI_INT, 1, 10, MPI_COMM_WORLD);
-        MPI_Recv(&sum, 32, MPI_INT, 1, 11, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        printf("Sum: %i\n", sum);
-    break;
     default:
         MPI_Recv(&sum, 32, MPI_INT, 1, 11, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        printf("Sum: %i, Rank: %i\n", sum, rank);
     }
     return 0;
 }
