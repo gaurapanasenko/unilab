@@ -49,6 +49,23 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 ## packaging ##################################################################
 ###############################################################################
 
+set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+include(InstallRequiredSystemLibraries)
+
+install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+        DESTINATION share/${PROJECT_NAME})
+
+install(CODE "set(PROJECT_NAME \"${PROJECT_NAME}\")")
+
+install(CODE [[
+  file(GET_RUNTIME_DEPENDENCIES
+       RESOLVED_DEPENDENCIES_VAR _r_deps
+       UNRESOLVED_DEPENDENCIES_VAR _u_deps
+       EXECUTABLES ${PROJECT_NAME})
+  file(COPY ${_r_deps}
+       DESTINATION "${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}" FOLLOW_SYMLINK_CHAIN)
+  ]])
+
 # All install commands get the same destination. this allows us to use paths
 # relative to the executable.
 install(TARGETS ${PROJECT_NAME} DESTINATION share/${PROJECT_NAME})
