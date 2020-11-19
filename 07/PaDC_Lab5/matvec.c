@@ -9,10 +9,12 @@
 const int BUFF_SIZE = 2048;
 
 int gen_array(int size, int k, int (*matrix)[size]) {
-    int min_size = size < 16 ? size : 16, i, j;
+    int min_size = size < 16 ? size : 16, i, j, a;
     for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
-            matrix[i][j] = rand() % 16;
+        for (j = 0; j < size; j++) {
+            a = i * size + j;
+            matrix[a%k + a/(size*k)*k][a%(size*k)/k] = rand() % 16;
+        }
 
     printf("Matrix <=16x16:\n");
     for (i = 0; i < min_size; i++) {
