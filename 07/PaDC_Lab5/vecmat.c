@@ -12,7 +12,7 @@ int gen_array(int size, int k, int (*matrix)[size]) {
     int min_size = size < 16 ? size : 16, i, j;
     for (i = 0; i < size; i++)
         for (j = 0; j < size; j++)
-            matrix[i][j] = rand() % 16;
+            matrix[j / (size / k) + i / k * k][i % k + j % (size / k) * k] = rand() % 16;
 
     printf("Matrix in memory <=16x16:\n");
     for (i = 0; i < min_size; i++) {
