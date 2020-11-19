@@ -29,7 +29,7 @@
 ```cmake
 cmake_minimum_required(VERSION 3.5)
 
-project(PaDC_Lab3 LANGUAGES C)
+project(PaDC_Lab5 LANGUAGES C)
 
 find_package(MPI REQUIRED)
 

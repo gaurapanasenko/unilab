@@ -14,7 +14,7 @@ int gen_array(int size, int k, int (*matrix)[size]) {
         for (j = 0; j < size; j++)
             matrix[i][j] = rand() % 16;
 
-    printf("Matrix <=16x16:\n");
+    printf("Matrix in memory <=16x16:\n");
     for (i = 0; i < min_size; i++) {
         for (j = 0; j < min_size; j++) {
             printf("%5i ", matrix[i][j]);
@@ -22,9 +22,19 @@ int gen_array(int size, int k, int (*matrix)[size]) {
         printf("\n");
     }
     printf("\n");
+
+    printf("Matrix <=16x16:\n");
+    for (i = 0; i < min_size; i++) {
+        for (j = 0; j < min_size; j++) {
+            // I do not know how I did it, but it works as I want
+            printf("%5i ", matrix[i / (size / k) + j / k * k][j % k + i % (size / k) * k]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
-int gen_and_broadcast_array(int comm_rank, int comm_size, int k, int (*matrix_part)[comm_size * k], int * vector) {
+int gen_and_broadcast_array(int comm_rank, int comm_size, int k, int (*matrix_part)[k], int * vector) {
     // Calculate sizes
     int size = comm_size * k;
     int part_size = k * size;
@@ -70,11 +80,11 @@ int worker(int argc, char* argv[], int comm_rank, int comm_size) {
     int part_size = comm_size * size;
 
     // Initialize needed variables
-    int (*matrix_part)[size], *vector, *res_vector;
+    int (*matrix_part)[k], *vector, *res_vector;
     double start, end;
 
     // Allocate memory for matrix and vectors
-    matrix_part = (int (*)[size])malloc(k * size * sizeof(int));
+    matrix_part = (int (*)[size])malloc(size * k * sizeof(int));
     vector = (int *)malloc(size * sizeof(int));
     res_vector = (int *)calloc(size, sizeof(int));
 
@@ -85,7 +95,7 @@ int worker(int argc, char* argv[], int comm_rank, int comm_size) {
     start = MPI_Wtime();
     for (int i = 0; i < k; i++)
         for (int j = 0; j < size; j++)
-            res_vector[i + comm_rank * k] += matrix_part[i][j] * vector[j];
+            res_vector[i + comm_rank * k] += vector[j] * matrix_part[j][i];
     end = MPI_Wtime();
 
     // Sync rest of result vector with other processes
