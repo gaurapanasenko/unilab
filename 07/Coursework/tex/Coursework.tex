@@ -1,0 +1,317 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[14pt,a4paper]{extarticle}
+
+\usepackage{mathtools} % Mathematical tools to use with amsmath
+%\usepackage{amsfonts} % TeX fonts from the American Mathematical Society
+\usepackage{ifxetex}
+\usepackage{indentfirst} % Indent first paragraph after section header
+\ifxetex
+  \usepackage{mathspec} % Specify arbitrary fonts for mathematics in XeTeX
+  \usepackage{fontspec} % Advanced font selection in XeLaTeX and LuaLaTeX
+  \usepackage{polyglossia} % Multilingual support for XeLaTeX
+\else
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8x]{inputenc}
+  \usepackage[ukrainian]{babel}
+\fi
+\usepackage[
+  left=2.5cm,right=1.5cm,top=1.5cm,bottom=1.5cm,
+  headheight=5mm,headsep=5mm,includehead
+]{geometry} % Flexible and complete interface to document dimensions
+\usepackage{makeidx} % Standard LaTeX package for creating indexes
+\usepackage[
+  colorlinks=true, allcolors=black,
+]{hyperref} % Extensive support for hypertext in LaTeX
+\usepackage{titlesec} % Select alternative section titles
+\usepackage{array} % Extending the array and tabular environments
+\usepackage{amsthm} % Typesetting theorems (AMS style)
+%\usepackage{mathrsfs} % Support for using RSFS fonts in maths
+\usepackage{amssymb}
+
+\usepackage{cprotect}% http://ctan.org/pkg/cprotect
+\usepackage{listings} % Typeset source code listings using LaTeX
+\usepackage{minted}
+\usepackage{fancyhdr}
+\usepackage{ulem}
+\usepackage{multicol}
+\usepackage[nottoc]{tocbibind}
+%\usepackage{longtable}
+%\usepackage{pgfplots} % Create normal/logarithmic plots !slow
+\usepackage{titletoc}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage[section]{placeins}
+\usepackage[labelsep=period,bf,textfont=bf]{caption}
+
+
+% latex
+\pagestyle{myheadings}
+
+\ifxetex
+  % mathspec
+  \setmathsfont(Digits,Latin,Greek){Times New Roman}
+
+  % fontspec
+  \defaultfontfeatures{Mapping=tex-text}
+  \setmainfont{Times New Roman}
+  \setmonofont[Mapping=tex-text]{Fantasque Sans Mono}
+  \newfontfamily\cyrillicfont{Times New Roman}
+  \newfontfamily\cyrillicfontsf[Script=Cyrillic]{Fantasque Sans Mono}
+  \newfontfamily\cyrillicfonttt[Script=Cyrillic]{Fantasque Sans Mono}
+
+  % polyglossia
+  \setdefaultlanguage{ukrainian}
+\fi
+
+% titlesec
+\titleformat{\section}
+  {\newpage\normalfont\Large\bfseries\centering\MakeUppercase}{\thesection. }{0pt}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\centering}{\thesubsection. }{0pt}{}
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{\thesubsubsection. }{0pt}{}
+%\titlespacing\section{0pt}{0pt plus 0pt minus 0pt}{0pt plus 0pt minus 0pt}
+%\titlespacing\subsection{0pt}{0pt plus 0pt minus 0pt}{0pt plus 0pt minus 0pt}
+%\titlespacing\subsubsection{0pt}{0pt plus 0pt minus 0pt}{0pt plus 0pt minus 0pt}
+
+% array
+\def\arraystretch{1.5}
+
+% listed
+\lstset{language=C++,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  commentstyle=\color{green}\ttfamily,
+  morecomment=[l][\color{magenta}]{\#}
+}
+
+% minted
+\newminted{python}{linenos,breaklines,breakanywhere}
+\newmintinline{python}{showspaces}
+\newminted{html}{baselinestretch=0.6,fontsize=\tiny,breaklines,breakanywhere}
+\newmintinline{html}{showspaces}
+
+% amsthm
+\newtheorem{theorem}{Теорема}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Визначення}[section]
+
+\linespread{1.5}
+\setlength{\parindent}{1cm}
+\setlength{\parskip}{0.5\baselineskip}%
+\bibliographystyle{plain}
+%\dottedcontents{section}[1em]{}{1.5em}{1pc}
+%\dottedcontents{subsection}[2.5em]{}{2em}{1pc}
+\titlecontents*{section}[0cm]{\small}{\thecontentslabel. \uppercase}{\uppercase}{ \titlerule*[1pc]{.}\contentspage\\}[][]
+\titlecontents*{subsection}[0cm]{\small}{\hspace*{1cm}\thecontentslabel. }{}{ \titlerule*[1pc]{.}\contentspage\\}[][]
+
+\makeatletter
+\def\@maketitle{%
+  \newpage%
+  \linespread{1}\rmfamily%
+  \begin{center}%
+    {\bfseries ДНІПРОВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ \\%
+    ІМЕНІ ОЛЕСЯ ГОНЧАРА \\%
+    ФАКУЛЬТЕТ ПРИКЛАДНОЇ МАТЕМАТИКИ \\%
+    КАФЕДРА КОМП'ЮТЕРНИХ ТЕХНОЛОГІЙ \\}%
+  \end{center}%
+  \vspace*{5pt}%
+  {\@title \par}%
+  \hfill \break%
+  \begin{flushright}%
+    {\linespread{1}%
+      \begin{tabular}[b]{p{8cm}}%
+        \@author%
+      \end{tabular}\par}%
+  \end{flushright}
+  \vspace*{\fill}
+  {\centering м. Дніпро, 2020 р.\par}}
+\makeatother
+
+\makeatletter
+%\renewcommand{\[}{\begin{dmath*}[compact]}
+%\renewcommand{\]}{\end{dmath*}}
+%\newcommand{\bdg}{\begin{dgroup*}}
+%\newcommand{\edg}{\end{dgroup*}}
+%\newcommand{\bdg}{}
+%\newcommand{\edg}{}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\sep}{ , \ \allowbreak }
+\newcommand{\ivr}{\rule[-2.25ex]{0pt}{6ex}}
+\newcommand\fr[2]{\dfrac{#1}{#2}}
+\newcommand{\sigmalgebra}{\text{\textcircled{$\sigma$}}}
+\newcommand\uname[3]{\parbox[b][\height][b]{#1}{\tiny\underline{\normalsize\parbox[c][4mm][t]{#1}{\makebox[#1]{#2}}}\newline\makebox[#1]{(#3)}}}
+\newcommand\eeq[1][]{\stackrel{\mathclap{\normalfont\mbox{#1}}}{=}}
+\renewcommand{\@biblabel}[1]{#1.}
+\addto\captionsukrainian{\renewcommand{\refname}{СПИСОК ВИКОРИСТАНОЇ ЛІТЕРАТУРИ}}
+\addto\captionsukrainian{\renewcommand{\figurename}{Рис.}}
+\makeatother
+
+\title{\begin{center}
+    {\bfseries КУРСОВА РОБОТА\\
+    З ДИСЦИПЛІН ПРОФЕСІЙНОЇ ПІДГОТОВКИ}\\
+    \raggedright на тему: \\
+  \end{center}
+  Освітньо-професійна програма: Комп'ютерне моделювання та технології програмування\\[3mm]
+  Спеціальність: 113 Прикладна математика\\[3mm]
+  Галузь знань: 11 Математика і статистика\\[3mm]
+  Рівень вищої освіти: перший (бакалаврський)}
+\author{Cтудента 4 курсу групи ПА–17–2 \newline%
+  \uname{8cm}{Панасенко Єгор Сергійович}{прізвище та ініціали}\newline\newline
+  Керівник: \uline{доцент кафедри КТ\hfill} \newline%
+  \uname{8cm}{Степанова Наталія Іванівна}{посада, вчене звання, науковий ступінь, прізвище та ініціали} \newline\newline
+  Кількість балів: \uline{\hfill}\newline\newline
+  Національна шкала: \uline{\hfill}\newline\\
+  \bgroup
+  %\def\arraystretch{1}
+  \begin{tabular}[b]{@{}p{3cm}@{}p{5cm}@{}}
+    \multicolumn{2}{l}{Члени комісії:}\\
+    \uname{3cm}{\hfill}{підпис}
+      & \uname{5cm}{Зайцева Т.А.}{прізвище та ініціали} \\
+    \uname{3cm}{\hfill}{підпис}
+      & \uname{5cm}{Сердюк М.Є.}{прізвище та ініціали} \\
+    \uname{3cm}{\hfill}{підпис}
+      & \uname{5cm}{Дзюба П.А.}{прізвище та ініціали} \\
+  \end{tabular}\egroup\par}
+\date{}
+
+\begin{document}
+\stepcounter{tocdepth}
+\sloppy % Stretches spaces to correct align of text
+\allowdisplaybreaks % Breaks equations between pages
+\maketitle
+\thispagestyle{fancy}
+\fancyhf{}% Clear all headers/footers
+\renewcommand{\headrulewidth}{0pt}% No header rule
+\renewcommand{\footrulewidth}{0pt}% No footer rule
+
+\section*{РЕФЕРАТ}
+\addcontentsline{toc}{section}{РЕФЕРАТ}
+Курсова робота: \_\_ с., \_ рис., \_ джерел, \_ додаток.
+
+Об'єкт дослідження: динамічні гладкі об'єкти у комп'ютерній графіці.
+
+Мета роботи: Розробити програмне забезпечення для моделювання зіткнень динамічних гладких об'єктів у режимі реального часу.
+
+Одержані висновки та їх новизна: запропоновані підходи до моделювання динамічних гладких об'єктів та розроблено програмне забезпечення для відображення цих об'єктів.
+
+Результати досліджень можуть бути використані для розробки комп'ютерних ігор та симуляції бою у єдиноборствах для перевірки ефективності прийомів. 
+
+Перелік ключових слів: OPENGL, КРИВІ БЕЗЬЄ, ПОВЕРХНІ БЕЗЬЄ, C, GLM, NUKLEAR, МАТЕМАТИЧНА МОДЕЛЬ ПОВЕРХНІ.
+
+\tableofcontents
+\section*{ВСТУП}
+\addcontentsline{toc}{section}{ВСТУП}
+У сучасному світі спостерігається неймовірний приріст потужності обчислювальної техніки і розробники ігор намагаються використати цю потужність найбільш ефективно з метою отримання графіки, найбільш схожої на реальний світ.
+
+Для досягнення найбільшого задоволення розробники також намагаються створити якомога більше ігрових об'єктів та приголомшливих ефектів, що супроводжується значним споживання дискового простору й оперативної пам'яті. Тому завжди є актуальним питання розробки більш ефективних методів моделювання ігрових об'єктів, які б використовували менше обчислювальних ресурсів.
+
+Деякий час тому, коли потужність обчислювальних засобів достатньо виросла, було створено векторний формат зберігання зображень SVG, призначений для зберігання як статичної, так і анімованої двомірної графіки. Для побудови зображень SVG формат використовує криві Безьє, які у свою чергу є окремим випадком B-сплайна. Формат SVG підтримується всіма сучасними браузерами для настільних і мобільних пристроїв.
+
+Як відомо, векторним форматам притаманні гарна масштабованість й незначне використання дискового простору за умови, що зображення складається з невеликої кількості простих елементів. З іншого боку, векторні формати мають також і недоліки: у порівнянні з растровими аналогами для побудови векторних зображень використовується більше процесорного часу, а складні зображення починають використовувати більше дискового простору ніж аналогічні растрові.
+
+У трьохвимірному просторі найбільш розповсюдженим форматом є OBJ - гнучкий формат, що дозволяє створювати об'єкти за допомогою різних способів, у тому числі з використанням кривих Безьє і B-сплайнів.
+
+Таким чином вже існують формати, які дозволяють зберігати об'єкти компактно, забезпечувати їх легку масштабованість. Але у реальному ігровому процесі, де об'єкти сцени постійно взаємодіють один з одним, виникає проблема: як визначити коли об'єкти перетнулися або зіткнулися, під яким кутом це сталося?
+
+У даному дослідженні поставлено задачу розробки ефективного алгоритму, що дозволить у режимі реального часу визначати місце та кут зіткнення декількох об'єктів, побудованих за допомогою сплайн-технологій. Також потрібно виконати програмну реалізацію, яка цей алгоритм використовує.
+
+Для розробки програмного продукту обрано крос-платформовий програмний інтерфейс OpenGL, що забезпечує незалежність програмного додатку від операційної системи.
+
+\section*{ПОСТАНОВКА ЗАДАЧІ}
+\addcontentsline{toc}{section}{ПОСТАНОВКА ЗАДАЧІ}
+
+Метою цієї курсової роботи є розробка програмного забезпечення для моделювання зіткнень динамічних гладких об'єктів у режимі реального часу. У загальному випадку розглядаються динамічні об'єкти створені за допомогою поверхонь Безьє. Для досягнення поставленої мети були поставлені наступні задачі:
+
+\begin{itemize}
+\item дослідити математичні моделі динамічних гладких об'єктів та вибрати оптимальний спосіб для досягнення нашої мети,
+\item розробити програмне забезпечення для відображення динамічних об'єктів,
+\item розробити програмне забезпечення для створення або редагування динамічних об'єктів,
+\item дослідити способи для симуляції зіткнень вибраної математичної моделі динамічних гладких об'єктів,
+\item реалізувати вибраний у попередньому пункті спосіб зіткнення поверхонь.
+\end{itemize}
+
+%\section{Аналітичний огляд літературних джерел}
+
+\section{Вимоги до розробленого програмного забезпечення}
+
+Для розробки програмного забезпечення висунуто такі вимоги:
+\begin{itemize}
+\item Програмне забезпечення повинно мати відкритий вихідний код та ліцензію вільного програмного забезпечення.
+
+Це дозволить будь якому досвідченому користувачу зкомпілювати програмне забезпечення під будь яку платформу та операційну систему, або навіть дасть можливість модифікувати код під свої потреби.
+
+Також ліцензія повинна бути сумісна з ліцензіями використаних бібліотек. Загалом були використані бібліотеки CGLM, Nuklear, GLFW, uthash та прогрмний інтерфейс OpenGL. Перші біблиотеки CGLM та Nuklear використовують ліцензію MIT, бібліотека GLFW використовує ліцензію ZLib, а uthash -- ліцензію BSD. А програмний інтерфейс OpenGL має ліцензію подібну до ліцензії BSD. Усі ці ліцензії є сумісними з ліцензією LGPLv3, яка є подібною до GPL, але дозволяє використовувати програмне забезпечення у пропріетарних проектах.
+
+\item Програмне забезпечення повинно працювати у режимі реального часу.
+
+Саме таким чином було вибрано мову C та бібліотеку CGLM, які дозволяють досягти найбільшої швидкості роботи програми у порівнянні з іншими мовами програмуванні, причому практично не знижуючи швидкості розробки коду. Більш того CGLM автоматично компілюється з використанням SSE команд, якщо є така можливість, що ще дає приріст у швидкості.
+
+\item Програмне забезпечення повинно дати можливість використання бібліотеки якомога більшому колу розробників.
+
+Це ще одна причина вибору мови C, яку можна обернути у більшість мов програмування і таким чином програмне забезпечення зможуть використати і розробники, які не знають C, але знають деяку іншу мову програмування.
+
+\item Програмне забезпечення повинно бути якомога простим та легким, та залежати від простих та легких біблиотек.
+
+Програмне забезпечення повинно розроблятися по принципу KISS (акронім для ``Keep it simple, stupid''), що означає що проектування повинно бути якомога простішим. Таким чином можна уникнути багатьох помилок пов'язані з тим що неможливо розробник не може охопити структуру вихідного коду складного програмного забезпечення, а також таке програмне забезпечення має дуже малий розмір зкомпільованої програми, що підвищує легкість розповсюдження. І це третя причина чому було вибрано саме мову програмування C, яка має дуже простий синтаксис та просту структуру. А також саме тому було вибрано саме такий набір бібліотек, а загалом графічну бібліотеку Nuklear, яка має досить невеликий обсяг коду, приблизно 30 тисяч строк коду разом з коментарями.
+\end{itemize}
+
+
+\section{Дослідження математичних моделей динамічних гладких об'єктів}
+
+Серед існуючи математичних моделей поверхонь та об'єктів було вибрано саме поверхню Безьє, яка є частинним випадком B-сплайн.
+
+\subsection{Крива Безьє}
+
+\subsection{Поверхня Безьє}
+
+\subsection{Бібліотека Visualization Library}
+
+У ході роботи було знайдено таку біблиотеку, як Visualization Library. Це біблиотека написана на мові C++ і може використовуватись для графіки у 2D або 3D. Вона дозволяє моделювати різні види поверхонь, фрактали, та багато іншого.
+
+Зробимо аналіз цієї бібліотеки.
+
+\begin{itemize}
+\item Бібліотека написана на мові C++, тобто це звужує кількість мов, що можуть використовувати цю бібліотеку.
+\item Бібліотека самостійно реалізує свою матрицю та вектор, таким чином закривають можливість оптимізувати операції над матрицями. Більш того бібліотека не  використовує команди SSE, які дають приріст у швидкості, як це зроблено у бібліотеці CGLM.
+\item Бібліотека вже не підтримується розробниками, останній внесення змін у код було 20 лютого 2020 року, у порівнянні з бібліотекою CGLM, яка активно розвивається.
+\item Якщо подивитися на реалізацію кривих Безьє, то ми побачимо, що бібліотека не використовує матричний спосіб отримання вершин з поверхні Безьє, таким чином ми знову не можемо використати оптимізацію за допомогою команд SSE.
+\item Також перерірено спосіб знаходження нормалей для поверхні, біблиотека знаходить нормалі по отриманим трикутникам при будуванні поверхні, хоча для поверхні Безьє існує значно швидший та дешевший спосіб знаходження нормалі, цей спосіб будується на знаходження похідних до кривої Безьє з різних сторін.
+\end{itemize}
+
+
+%\section{Опис програмного забезпечення}
+
+%\subsection{Опис модулів програми}
+
+%\section{Огляд роботи програми}
+
+\section*{ВИСНОВКИ}
+\addcontentsline{toc}{section}{ВИСНОВКИ}
+У ході курсової роботи були досягнуті наступні результати:
+
+\begin{itemize}
+\item досліджено математичні моделі динамічних гладких об'єктів та вибрано оптимальний спосіб для досягнення нашої мети,
+\item розроблене програмне забезпечення для відображення динамічних об'єктів,
+\item частково розроблене програмне забезпечення для створення або редагування динамічних об'єктів.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{} Офіційний сайт Міністерства освіти та науки України: http://mon.gov.ua/
+\bibitem{} СТП-02066747-009-01. Стандарт Дніпропетровського національного університету. Методика виконання випускних, курсових та дипломних проектів (робіт). Структура, правила оформлення та порядок узгодження і затвердження. Затверджено ректором ДНУ 31.10.2001 р.
+\bibitem{} СТП-02066747-010-01. Стандарт Дніпропетровського національного університету. Організація та проведення дипломування. Затверджено ректором ДНУ 1.11.2001 р.
+\bibitem{} http://www.dnu.dp.ua/docs/obgovorennya/Polozhennya\_Antiplagiat\_2016.doc
+\bibitem{porev} Порев. В.Н. Компъютерная графика -- СПб: БХВ-Петербург, 2002 -- 432 c.
+\end{thebibliography}
+
+%\end{document}
+\section*{Додаток A. Лістинг програми}
+\addcontentsline{toc}{section}{Додаток A. Лістинг програми}
+\tiny
+
+\end{document}
