@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>HomeForm.ui.qml</file>
+        <file>PixyWorld.ui.qml</file>
+        <file>Page2Form.ui.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>ground.png</file>
+        <file>sky.png</file>
+        <file>sun.png</file>
+        <file>DSfMP_uk_UA.qm</file>
+    </qresource>
+</RCC>
