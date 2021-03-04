@@ -5,11 +5,9 @@
 #include <algorithm>
 
 void LoadTextureFromFile(const pixel_t* data, int width, int height,
-                         GLuint* out_texture)
+                         GLuint id)
 {
-    GLuint image_texture;
-    glGenTextures(1, &image_texture);
-    glBindTexture(GL_TEXTURE_2D, image_texture);
+    glBindTexture(GL_TEXTURE_2D, id);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -21,8 +19,6 @@ void LoadTextureFromFile(const pixel_t* data, int width, int height,
 #endif
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
-
-    *out_texture = image_texture;
 }
 
 Image::Image(std::shared_ptr<const pixel_t[]> data,
@@ -36,7 +32,7 @@ Image Image::fromFile(const char *path)
     int width = 0, height = 0;
     pixel_t *data = (pixel_t *)stbi_load(path, &width, &height, NULL, COMP);
     IM_ASSERT(data != NULL);
-    std::shared_ptr<pixel_t[]> ptr(data);
+    std::shared_ptr<pixel_t[]> ptr(data, stbi_image_free);
     return {ptr, width, height};
 }
 
@@ -94,9 +90,13 @@ std::shared_ptr<const Image> equalize_gray(std::shared_ptr<const ImageData> imag
     return std::make_shared<Image>(data, width, height);
 }
 
-Texture::Texture(const Image &image)
-    : id(create(image))
+Texture::Texture() : id(create())
 {
+}
+
+void Texture::update(const Image &image) const
+{
+    LoadTextureFromFile(image.data.get(), image.width, image.height, id);
 }
 
 Texture::~Texture()
@@ -104,15 +104,15 @@ Texture::~Texture()
     glDeleteTextures(1, &id);
 }
 
-GLuint Texture::create(const Image& image)
+GLuint Texture::create()
 {
     GLuint id = 0;
-    LoadTextureFromFile(image.data.get(), image.width, image.height, &id);
+    glGenTextures(1, &id);
     return id;
 }
 
 ImageData::ImageData(std::shared_ptr<const Image> image)
-    : image(image), texture(*image), histogramI(calcHistogram(*image)),
+    : image(image), histogramI(calcHistogram(*image)),
       maxHistogramI(*std::max_element(histogramI.get(), histogramI.get() + 256)),
       histogramF(copyHistogram(histogramI)),
       maxHistogramF(maxHistogramI)
@@ -138,4 +138,25 @@ ImageData::copyHistogram(std::shared_ptr<const int[256]> histogramI)
     std::shared_ptr<float[256]> histogram(new float[256]{0});
     std::copy(histogramI.get(), histogramI.get() + 256, histogram.get());
     return histogram;
+}
+
+shared_ptr<const Image> dissect(const Image &image, float dissection[])
+{
+    const int size = image.width * image.height;
+    std::shared_ptr<pixel_t[]> data(new pixel_t[size]);
+    const pixel_t *in_data = image.data.get();
+    color_t s[256];
+
+    for (int i = 0; i < 256; i++) {
+        s[i] = dissection[i] * i;
+    }
+
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < 3; j++) {
+            data[i][j] = s[in_data[i][j]];
+        }
+        data[i][3] = 255;
+    }
+
+    return std::make_shared<Image>(data, image.width, image.height);
 }

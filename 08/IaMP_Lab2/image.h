@@ -12,7 +12,6 @@ using namespace std;
 
 typedef unsigned char color_t;
 typedef color_t pixel_t[COMP];
-typedef basic_string<color_t> pixel_buffer;
 
 class Image
 {
@@ -37,18 +36,18 @@ class Texture {
 public:
     const GLuint id;
 
-    Texture(const Image& image);
+    Texture();
+    void update(const Image& image) const;
     ~Texture();
-
-    static GLuint create(const Image &image);
 private:
+    static GLuint create();
+
     Texture(const Texture&);
 };
 
 class ImageData {
 public:
     shared_ptr<const Image> image;
-    const Texture texture;
     shared_ptr<const int[256]> histogramI;
     int maxHistogramI;
     shared_ptr<const float[256]> histogramF;
@@ -64,5 +63,6 @@ shared_ptr<const Image>
 equalize_gray(shared_ptr<const ImageData> imageData);
 
 shared_ptr<const Image> convert_to_rgb(const Image &image);
+shared_ptr<const Image> dissect(const Image &image, float dissection[256]);
 
 #endif // IMAGE_H
