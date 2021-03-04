@@ -1,0 +1,9 @@
+[submodule "08/IaMP_Lab2/imgui"]
+	path = 08/IaMP_Lab2/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "08/IaMP_Lab2/ImGui-Addons"]
+	path = 08/IaMP_Lab2/ImGui-Addons
+	url = https://github.com/gallickgunner/ImGui-Addons
+[submodule "08/IaMP_Lab2/stb"]
+	path = 08/IaMP_Lab2/stb
+	url = https://github.com/nothings/stb
