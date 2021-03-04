@@ -46,7 +46,8 @@ void App::end_loop()
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);
-    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
+                 clear_color.z * clear_color.w, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
 
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
@@ -71,7 +72,7 @@ App::App()
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         throw "Failed to start glfw.";
-    window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL2 example", NULL, NULL);
+    window = glfwCreateWindow(1280, 720, PROJECT_NAME, NULL, NULL);
     if (window == NULL)
         throw "Failed to open window.";
     glfwMakeContextCurrent(window);

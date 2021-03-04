@@ -15,4 +15,6 @@
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
+#define PROJECT_NAME "IaMP_Lab1"
+
 #endif // COMMON_H

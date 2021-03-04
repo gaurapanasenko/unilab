@@ -17,10 +17,10 @@ int main(int, char**)
     while (!app.should_closed())
     {
         app.begin_loop();
+        auto mode = imgui_addons::ImGuiFileBrowser::DialogMode::OPEN;
 
         if (file_dialog->showFileDialog(
-                    "Open File", imgui_addons::ImGuiFileBrowser::DialogMode::OPEN,
-                    ImVec2(700, 310), ".png,.jpg,.bmp"))
+                    "Open File", mode, ImVec2(700, 310), ".png,.jpg,.bmp"))
         {
             //images.push_back(ImagePack(file_dialog->selected_path));
             string path(file_dialog->selected_path);
@@ -28,18 +28,23 @@ int main(int, char**)
             auto gray = std::make_shared<ImageData>(convert_to_rgb(*pathImage));
             {
                 stringstream ss;
-                ss << "Original Image: " << file_dialog->selected_fn << " " << file_dialog->selected_path;
-                images.insert(make_pair(ss.str(), std::make_shared<ImageData>(pathImage)));
+                ss << "Original Image: " << file_dialog->selected_fn
+                   << " " << file_dialog->selected_path;
+                auto data = std::make_shared<ImageData>(pathImage);
+                images.insert(make_pair(ss.str(), data));
             }
             {
                 stringstream ss;
-                ss << "Gray Image: " << file_dialog->selected_fn << " " << file_dialog->selected_path;
+                ss << "Gray Image: " << file_dialog->selected_fn
+                   << " " << file_dialog->selected_path;
                 images.insert(make_pair(ss.str(), gray));
             }
             {
                 stringstream ss;
-                ss << "Equalization: " << file_dialog->selected_fn << " " << file_dialog->selected_path;
-                images.insert(make_pair(ss.str(), std::make_shared<ImageData>(equalize_gray(gray))));
+                ss << "Equalization: " << file_dialog->selected_fn
+                   << " " << file_dialog->selected_path;
+                auto data = std::make_shared<ImageData>(equalize_gray(gray));
+                images.insert(make_pair(ss.str(), data));
             }
         }
 
@@ -47,22 +52,26 @@ int main(int, char**)
             bool opened = true;
             const char * name = image->first.c_str();
             auto item = image->second;
+            auto img = item->image;
+            auto texture = (ImTextureID)(intptr_t)(item->texture.id);
             ImGui::PushID(name);
 
-            ImVec2 size(item->getImage()->getWidth(), item->getImage()->getHeight());
+            ImVec2 size(img->width, img->height);
             ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
             ImGui::Begin(name, &opened);
-            ImGui::Image((void*)(intptr_t)(item->getTexture().getId()), ImGui::GetContentRegionAvail());
+            ImGui::Image(texture, ImGui::GetContentRegionAvail());
             ImGui::End();
             ImGui::PopStyleVar();
 
             char info_name[128];
             snprintf(info_name, 128, "Info %s", name);
             ImGui::Begin(info_name);
-            ImGui::Text("pointer = %u", item->getTexture().getId());
-            ImGui::Text("size = %d x %d", item->getImage()->getWidth(), item->getImage()->getHeight());
-            ImGui::PlotHistogram("##", item->getHistogramF(), 256, 0, "Histogram", 0.0f, item->getMaxHistogramF(), ImVec2(0, 100.0f));
+            ImGui::Text("pointer = %ld", (intptr_t)texture);
+            ImGui::Text("size = %d x %d", img->width, img->height);
+            ImGui::PlotHistogram(
+                        "##", item->histogramF.get(), 256, 0, "Histogram", 0.0f,
+                        item->maxHistogramF, ImVec2(0, 100.0f));
             ImGui::End();
 
             ImGui::PopID();
