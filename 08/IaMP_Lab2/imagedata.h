@@ -11,12 +11,10 @@ public:
     float maxHistogramF;
 
     ImageData(shared_ptr<const Image> image);
-    static shared_ptr<const int[256]> calcHistogram(const Image& image);
     static shared_ptr<const float[256]>
     copyHistogram(shared_ptr<const int[256]> histogramI);
-};
 
-shared_ptr<const Image>
-equalize_gray(shared_ptr<const ImageData> imageData);
+    shared_ptr<const Image> equalize() const;
+};
 
 #endif // IMAGEDATA_H

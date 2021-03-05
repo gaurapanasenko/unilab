@@ -19,9 +19,13 @@ public:
     Image(shared_ptr<const pixel_t[]> data,
           const int width, const int height);
     static Image fromFile(const char *path);
+
+    shared_ptr<const int[256]> calcHistogram() const;
+
+    shared_ptr<const Image> convert_to_gray() const;
+    shared_ptr<const Image> dissect(float dissection[256]) const;
+    shared_ptr<const Image> dilate(int params[2]) const;
 };
 
-shared_ptr<const Image> convert_to_gray(const Image &image);
-shared_ptr<const Image> dissect(const Image &image, float dissection[256]);
 
 #endif // IMAGE_H
