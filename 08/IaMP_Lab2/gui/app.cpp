@@ -1,3 +1,4 @@
+#include <GLFW/glfw3.h>
 #include "app.h"
 
 static void glfw_error_callback(int error, const char* description)
@@ -66,13 +67,13 @@ imgui_addons::ImGuiFileBrowser *App::getFile_dialog()
     return &file_dialog;
 }
 
-App::App()
+App::App(const std::string& name) : name(name)
 {
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         throw "Failed to start glfw.";
-    window = glfwCreateWindow(1280, 720, PROJECT_NAME, NULL, NULL);
+    window = glfwCreateWindow(1280, 720, name.c_str(), NULL, NULL);
     if (window == NULL)
         throw "Failed to open window.";
     glfwMakeContextCurrent(window);

@@ -29,6 +29,18 @@ list(APPEND DE_LIBRARIES ${glfw3_LIBRARY})
 
 add_executable(${PROJECT_NAME}
     main.cpp
+    image.h
+    image.cpp
+    imagedata.h
+    imagedata.cpp
+    processor.h
+    processor.cpp
+
+    gui/app.h
+    gui/app.cpp
+    gui/texture.cpp
+    gui/texture.h
+
     imgui/imgui.cpp
     imgui/imgui_draw.cpp
     imgui/imgui_demo.cpp
@@ -37,7 +49,6 @@ add_executable(${PROJECT_NAME}
     imgui/backends/imgui_impl_glfw.cpp
     imgui/backends/imgui_impl_opengl2.cpp
     ImGui-Addons/FileBrowser/ImGuiFileBrowser.cpp
-    app.cpp app.h image.cpp image.h common.h
     )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${DE_INCLUDE_DIRS})
