@@ -2,10 +2,18 @@
 #include "processor.h"
 #include "imgui.h"
 
+using std::make_shared;
+
 Processor::Processor(shared_ptr<const ImageData> input)
     : orig(input),
-      dissection_x({100, 200}),
-      data(input) {
+      data(input),
+      dissection_x{100, 200},
+      dissection_y{0, 1},
+      dissection{0},
+      dilate_params{1, 1},
+      dissected(false),
+      dilate(false)
+{
     updateDissection();
 }
 
@@ -16,10 +24,12 @@ void Processor::updateDissection() {
         int diffX = dissection_x[1] - dissection_x[0];
         float diff = diffY / diffX;
         float acc = dissection_y[0];
-        memset(dissection, 0, 256 * sizeof(float));
+        memset(dissection, 0, 256 * sizeof(channel_t));
+        memset(dissectionF, 0, 256 * sizeof(float));
         for (int i = dissection_x[0]; i < dissection_x[1]; i++) {
             acc += diff;
             dissection[i] = acc;
+            dissectionF[i] = acc;
         }
         data = make_shared<ImageData>(data->image->dissect(dissection));
     }
@@ -65,7 +75,7 @@ bool Processor::process_image(const char *name) {
             changed |= ImGui::DragFloatRange2("dissection y", val, val + 1, 0.01,
                                               0, 1, "Min: %.2f", "Max: %.2f");
         }
-        ImGui::PlotLines("Lines", dissection, 256, 0, NULL, 0, 1.0f,
+        ImGui::PlotLines("Lines", dissectionF, 256, 0, NULL, 0, 1.0f,
                          ImVec2(0, 80.0f));
     }
     ImGui::Spacing();

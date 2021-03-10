@@ -40,6 +40,10 @@ class Processor {
      */
     channel_t dissection[256];
     /**
+     * @brief New channel values for dissection for image in float type.
+     */
+    float dissectionF[256];
+    /**
      * @brief Size of max filter mask.
      */
     int dilate_params[2];

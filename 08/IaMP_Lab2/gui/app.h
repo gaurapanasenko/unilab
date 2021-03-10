@@ -14,7 +14,7 @@ private:
     const std::string name;
     GLFWwindow* window;
 
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 clear_color = ImVec4(16.f/255.f, 36.f/255.f, 14.f/255.f, 1.00f);
 
     imgui_addons::ImGuiFileBrowser file_dialog;
 
