@@ -3,6 +3,9 @@
 #include <algorithm>
 #include "image.h"
 
+using std::min;
+using std::max;
+
 Image::Image(std::shared_ptr<const pixel_t[]> data,
              const int width, const int height)
     : data(data), width(width), height(height)
@@ -30,7 +33,7 @@ std::shared_ptr<const int[256]> Image::calcHistogram() const
     return histogram;
 }
 
-std::shared_ptr<const Image> Image::convert_to_gray() const
+std::shared_ptr<const Image> Image::toGray() const
 {
     int size = width * height;
     std::shared_ptr<pixel_t[]> out_data(new pixel_t[size]);
@@ -51,20 +54,15 @@ std::shared_ptr<const Image> Image::convert_to_gray() const
     return std::make_shared<Image>(out_data, width, height);
 }
 
-shared_ptr<const Image> Image::dissect(float dissection[]) const
+shared_ptr<const Image> Image::dissect(channel_t dissection[]) const
 {
     const int size = width * height;
     std::shared_ptr<pixel_t[]> out_data(new pixel_t[size]);
     const pixel_t *in_data = data.get();
-    color_t s[256];
-
-    for (int i = 0; i < 256; i++) {
-        s[i] = dissection[i] * i;
-    }
 
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < 3; j++) {
-            out_data[i][j] = s[in_data[i][j]];
+            out_data[i][j] = dissection[in_data[i][j]];
         }
         out_data[i][3] = 255;
     }
@@ -80,7 +78,7 @@ shared_ptr<const Image> Image::dilate(int params[2]) const
 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            color_t mx = in_data[i * width + j][0];
+            channel_t mx = in_data[i * width + j][0];
             kbegin = max(i - params[1], 0);
             kend = min(i + params[1] + 1, height);
             lbegin = max(j - params[0], 0);

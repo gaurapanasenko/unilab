@@ -3,7 +3,9 @@
 #include "imgui.h"
 
 Processor::Processor(shared_ptr<const ImageData> input)
-    : orig(input), data(input) {
+    : orig(input),
+      dissection_x({100, 200}),
+      data(input) {
     updateDissection();
 }
 

@@ -28,7 +28,7 @@ int main(int, char**)
             string path(file_dialog->selected_path);
             auto img = Image::fromFile(path.c_str());
             auto pathImage = make_shared<Image>(img);
-            auto gray = make_shared<ImageData>(pathImage->convert_to_gray());
+            auto gray = make_shared<ImageData>(pathImage->toGray());
             {
                 stringstream ss;
                 ss << "Original Image: " << file_dialog->selected_fn

@@ -33,7 +33,7 @@ std::shared_ptr<const Image> ImageData::equalize() const
     }
 
     for (int i = 0; i < size; i++) {
-        color_t cur = s[in_data[i][0]];
+        channel_t cur = s[in_data[i][0]];
         data[i][0] = cur;
         data[i][1] = cur;
         data[i][2] = cur;
