@@ -7,3 +7,6 @@
 [submodule "08/IaMP_Lab2/stb"]
 	path = 08/IaMP_Lab2/stb
 	url = https://github.com/nothings/stb
+[submodule "00"]
+	path = 00
+	url = git@github.com:gaurapanasenko/unilab_opt.git

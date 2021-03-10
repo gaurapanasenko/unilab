@@ -26,6 +26,9 @@ typedef unsigned char channel_t;
  */
 typedef channel_t pixel_t[COMP];
 
+/**
+ * @brief Stores pixels, width and height.
+ */
 class Image
 {
 public:
@@ -86,7 +89,7 @@ public:
     /**
      * @brief Dilate image.
      * Applies max filter. For this filter used mask with size
-     * `2*params[0]+1`x`2*params[1]+1`
+     * (`2*params[0]+1`)x(`2*params[1]+1`)
      * @param params size of mask.
      * @return Smart pointer to dilated image.
      */
