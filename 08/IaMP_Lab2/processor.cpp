@@ -11,8 +11,10 @@ Processor::Processor(shared_ptr<const ImageData> input)
       dissection_y{0, 1},
       dissection{0},
       dilate_params{1, 1},
+      erode_params{1, 1},
       dissected(false),
-      dilate(false)
+      dilate(false),
+      erode(false)
 {
     updateDissection();
 }
@@ -28,13 +30,16 @@ void Processor::updateDissection() {
         memset(dissectionF, 0, 256 * sizeof(float));
         for (int i = dissection_x[0]; i < dissection_x[1]; i++) {
             acc += diff;
-            dissection[i] = acc;
+            dissection[i] = acc * 255;
             dissectionF[i] = acc;
         }
         data = make_shared<ImageData>(data->image->dissect(dissection));
     }
     if (dilate) {
         data = make_shared<ImageData>(data->image->dilate(dilate_params));
+    }
+    if (erode) {
+        data = make_shared<ImageData>(data->image->erode(erode_params));
     }
     texture.update(*data->image);
 }
@@ -82,6 +87,10 @@ bool Processor::process_image(const char *name) {
     changed |= ImGui::Checkbox("Dilate", &dilate);
     if (dilate) {
         changed |= ImGui::SliderInt2("dilate params", dilate_params, 0, 16);
+    }
+    changed |= ImGui::Checkbox("Erode", &erode);
+    if (erode) {
+        changed |= ImGui::SliderInt2("erode params", erode_params, 0, 16);
     }
     if (changed) updateDissection();
     ImGui::End();

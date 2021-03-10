@@ -94,6 +94,15 @@ public:
      * @return Smart pointer to dilated image.
      */
     shared_ptr<const Image> dilate(int params[2]) const;
+
+    /**
+     * @brief Erode image.
+     * Applies max filter. For this filter used mask with size
+     * (`2*params[0]+1`)x(`2*params[1]+1`)
+     * @param params size of mask.
+     * @return Smart pointer to eroded image.
+     */
+    shared_ptr<const Image> erode(int params[2]) const;
 };
 
 

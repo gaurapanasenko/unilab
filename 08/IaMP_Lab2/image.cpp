@@ -96,3 +96,30 @@ shared_ptr<const Image> Image::dilate(int params[2]) const
     }
     return std::make_shared<Image>(out_data, width, height);
 }
+
+shared_ptr<const Image> Image::erode(int params[]) const
+{
+    std::shared_ptr<pixel_t[]> out_data(new pixel_t[width * height]);
+    const pixel_t *in_data = data.get();
+    int i, j, k, l, kbegin, kend, lbegin, lend;
+
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            channel_t mx = in_data[i * width + j][0];
+            kbegin = max(i - params[1], 0);
+            kend = min(i + params[1] + 1, height);
+            lbegin = max(j - params[0], 0);
+            lend = min(j + params[0], width - 1);
+            for (k = kbegin; k != kend; k++) {
+                for (l = lbegin; l != lend; l++) {
+                    mx = min(mx, in_data[k * width + l][0]);
+                }
+            }
+            for (k = 0; k < 3; k++) {
+                out_data[i * width + j][k] = mx;
+            }
+            out_data[i * width + j][3] = 255;
+        }
+    }
+    return std::make_shared<Image>(out_data, width, height);
+}

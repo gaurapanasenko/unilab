@@ -48,6 +48,10 @@ class Processor {
      */
     int dilate_params[2];
     /**
+     * @brief Size of min filter mask.
+     */
+    int erode_params[2];
+    /**
      * @brief Flag to apply dissection to the image.
      */
     bool dissected;
@@ -55,6 +59,10 @@ class Processor {
      * @brief Flag to apply dilation to the image.
      */
     bool dilate;
+    /**
+     * @brief Flag to apply erosion to the image.
+     */
+    bool erode;
 public:
     /**
      * @brief Processor constuctor.
