@@ -10,3 +10,6 @@
 [submodule "00"]
 	path = 00
 	url = git@github.com:gaurapanasenko/unilab_opt.git
+[submodule "08/IaMP_Lab1"]
+	path = 08/IaMP_Lab1
+	url = git@github.com:gaurapanasenko/IaMP_Lab1.git
