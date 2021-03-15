@@ -38,6 +38,25 @@ void App::begin_loop()
     if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
 
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
+    ImGuiWindowFlags window_flags = 0
+        | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking
+        | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
+        | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+        | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::Begin("Main Window", NULL, window_flags);
+    ImGuiID dockMain = ImGui::GetID("MyDockspace");
+
+    ImGui::DockSpace(dockMain);
+    ImGui::End();
+    ImGui::PopStyleVar(3);
+
     showMainMenu();
 }
 
@@ -82,6 +101,7 @@ App::App(const std::string& name) : name(name)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     ImGui::StyleColorsDark();
 

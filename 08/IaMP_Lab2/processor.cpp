@@ -54,7 +54,9 @@ bool Processor::process_image(const char *name) {
     ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
     ImGui::Begin(name, &opened, ImGuiWindowFlags_NoSavedSettings);
-    ImGui::Image(tex_id, ImGui::GetContentRegionAvail());
+    ImVec2 cont_sz = ImGui::GetContentRegionAvail();
+    ImVec2 img_size(cont_sz.x, img->height * cont_sz.x / img->width);
+    ImGui::Image(tex_id, img_size);
     ImGui::End();
     ImGui::PopStyleVar();
 
@@ -63,9 +65,11 @@ bool Processor::process_image(const char *name) {
     ImGui::Begin(info_name, NULL, ImGuiWindowFlags_NoSavedSettings);
     ImGui::Text("pointer = %ld", (intptr_t)tex_id);
     ImGui::Text("size = %d x %d", img->width, img->height);
+    ImGui::PushItemWidth(-1);
     ImGui::PlotHistogram(
-                "##", data->histogramF.get(), 256, 0, "Histogram", 0.0f,
+                "##histogram", data->histogramF.get(), 256, 0, "Histogram", 0.0f,
                 data->maxHistogramF, ImVec2(0, 100.0f));
+    ImGui::PopItemWidth();
     bool changed = false;
     ImGui::Spacing();
     changed |= ImGui::Checkbox("Dissected", &dissected);
@@ -80,8 +84,10 @@ bool Processor::process_image(const char *name) {
             changed |= ImGui::DragFloatRange2("dissection y", val, val + 1, 0.01,
                                               0, 1, "Min: %.2f", "Max: %.2f");
         }
-        ImGui::PlotLines("Lines", dissectionF, 256, 0, NULL, 0, 1.0f,
+        ImGui::PushItemWidth(-1);
+        ImGui::PlotLines("##dissection", dissectionF, 256, 0, NULL, 0, 1.0f,
                          ImVec2(0, 80.0f));
+        ImGui::PopItemWidth();
     }
     ImGui::Spacing();
     changed |= ImGui::Checkbox("Dilate", &dilate);
