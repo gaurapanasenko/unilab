@@ -67,10 +67,10 @@ ApplicationWindow {
                 }
             }
             ItemDelegate {
-                text: qsTr("Page 2")
+                text: qsTr("Linux distributions database")
                 width: parent.width
                 onClicked: {
-                    stackView.push("Page2Form.ui.qml")
+                    stackView.push("Linux.qml", {"linuxModel": linuxModel})
                     drawer.close()
                 }
             }
