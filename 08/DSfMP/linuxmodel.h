@@ -41,6 +41,13 @@ public:
      */
     Q_INVOKABLE void remove(int i);
     /**
+     * @brief Оновити значення у базі даних.
+     * @param i id об'єкту.
+     * @param col Назва колонки.
+     * @param value Нове значення.
+     */
+    Q_INVOKABLE void update(int i, QString col, QString value);
+    /**
      * @brief Додає новий об'єкт до бази даних.
      * Дані необхідно передавати у вигляді json.
      * Наприклад `{"name": "Ubuntu", "family": "apt"}`

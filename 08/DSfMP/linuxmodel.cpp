@@ -16,6 +16,12 @@ const char* SQL_SELECT =
 LinuxModel::LinuxModel(QSqlDatabase &sdb, QObject *parent)
     : QSqlTableModel(parent), m_sdb(sdb)
 {
+    setTable("linux");
+    setEditStrategy(QSqlTableModel::QSqlTableModel::OnFieldChange);
+    select();
+    setHeaderData(0, Qt::Horizontal, tr("Name"));
+    setHeaderData(1, Qt::Horizontal, tr("Family"));
+
     int idx = 0;
     while(COLUMN_NAMES[idx]) {
         m_roleNames[Qt::UserRole + idx + 1] = COLUMN_NAMES[idx];
@@ -50,6 +56,20 @@ void LinuxModel::remove(int i)
     query.prepare("DELETE FROM linux WHERE id = :id;");
     query.bindValue(0, i);
     query.exec();
+    refresh();
+}
+
+void LinuxModel::update(int i, QString col, QString value)
+{
+    QSqlQuery query(m_sdb);
+    QString q = "UPDATE linux SET %1 = '%2' WHERE id = :id;";
+    query.prepare(q.arg(col).arg(value));
+    query.bindValue(":id", i);
+    bool success = query.exec();
+    if (!success) {
+        qDebug() << query.lastError().text() << value;
+        qDebug() << query.lastQuery();
+    }
     refresh();
 }
 

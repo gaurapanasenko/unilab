@@ -37,7 +37,7 @@ ListView {
                 anchors.rightMargin: 5
                 anchors.leftMargin: 0
                 color: "white"
-                onEditingFinished: name = text
+                onEditingFinished: linuxModel.update(linux_id, "name", text)
             }
             TextField {
                 id: familyEdit
@@ -49,7 +49,7 @@ ListView {
                 anchors.leftMargin: 5
                 anchors.rightMargin: 0
                 color: "white"
-                onEditingFinished: family = text
+                onEditingFinished: linuxModel.update(linux_id, "family", text)
             }
         }
     }
