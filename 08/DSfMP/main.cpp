@@ -7,7 +7,6 @@
 #include <QFile>
 #include "qmltranslator.h"
 #include "linuxmodel.h"
-#include "linux.h"
 
 #define DATABASE "db_name.sqlite"
 

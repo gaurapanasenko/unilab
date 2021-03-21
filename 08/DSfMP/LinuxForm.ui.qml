@@ -7,28 +7,11 @@ Page {
     width: 600
     height: 400
     anchors.fill: parent
-    property alias model: model
     property alias addButton: addButton
     property alias familyEdit: familyEdit
     property alias nameEdit: nameEdit
 
     title: qsTr("Linux distributions database")
-
-    ListModel {
-        id: model
-        ListElement {
-            name: "Bill Smith"
-            family: "555 3264"
-        }
-        ListElement {
-            name: "John Brown"
-            family: "555 8426"
-        }
-        ListElement {
-            name: "Sam Wise"
-            family: "555 0473"
-        }
-    }
 
     Item {
         id: addRow

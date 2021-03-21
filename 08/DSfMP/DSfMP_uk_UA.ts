@@ -15,16 +15,22 @@
     </message>
 </context>
 <context>
+    <name>LinuxForm.ui</name>
+    <message>
+        <location filename="LinuxForm.ui.qml" line="14"/>
+        <source>Linux distributions database</source>
+        <translation>База даних дистрибутивів Linux</translation>
+    </message>
+</context>
+<context>
     <name>Page2Form.ui</name>
     <message>
-        <location filename="Page2Form.ui.qml" line="9"/>
         <source>Page 2</source>
-        <translation>Сторінка 2</translation>
+        <translation type="vanished">Сторінка 2</translation>
     </message>
     <message>
-        <location filename="Page2Form.ui.qml" line="12"/>
         <source>You are on Page 2.</source>
-        <translation>Ви на сторінці 2.</translation>
+        <translation type="vanished">Ви на сторінці 2.</translation>
     </message>
 </context>
 <context>
@@ -44,8 +50,12 @@
     </message>
     <message>
         <location filename="main.qml" line="70"/>
+        <source>Linux distributions database</source>
+        <translation>База даних дистрибутивів Linux</translation>
+    </message>
+    <message>
         <source>Page 2</source>
-        <translation>Сторінка 2</translation>
+        <translation type="vanished">Сторінка 2</translation>
     </message>
 </context>
 </TS>
