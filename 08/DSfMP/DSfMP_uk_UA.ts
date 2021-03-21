@@ -17,12 +17,12 @@
 <context>
     <name>Page2Form.ui</name>
     <message>
-        <location filename="Page2Form.ui.qml" line="8"/>
+        <location filename="Page2Form.ui.qml" line="9"/>
         <source>Page 2</source>
         <translation>Сторінка 2</translation>
     </message>
     <message>
-        <location filename="Page2Form.ui.qml" line="11"/>
+        <location filename="Page2Form.ui.qml" line="12"/>
         <source>You are on Page 2.</source>
         <translation>Ви на сторінці 2.</translation>
     </message>
@@ -38,12 +38,12 @@
 <context>
     <name>main</name>
     <message>
-        <location filename="main.qml" line="56"/>
+        <location filename="main.qml" line="62"/>
         <source>PixyWorld</source>
         <translation>ПіксіСвіт</translation>
     </message>
     <message>
-        <location filename="main.qml" line="64"/>
+        <location filename="main.qml" line="70"/>
         <source>Page 2</source>
         <translation>Сторінка 2</translation>
     </message>
