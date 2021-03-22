@@ -1,0 +1,435 @@
+/*!
+@mainpage Звіт з лабораторної роботи 1
+за дисципліною "Інтелектуальні інформаційні системи"  
+студента групи ПА-17-2  
+Панасенка Єгора Сергійовича  
+Кафедра комп'ютерних технологій  
+ФПМ, ДНУ, 2017-2018 навч.р.  
+
+Звіт доступний за посиланням   
+[https://gaurapanasenko.github.io/unilab_opt/IIS_Lab1/html/index.html](https://gaurapanasenko.github.io/unilab_opt/IIS_Lab1/html/index.html).  
+Вихідний код доступний за посиланням  
+[https://github.com/gaurapanasenko/unilab/tree/master/08/IIS_Lab1](https://github.com/gaurapanasenko/unilab/tree/master/08/IIS_Lab1)
+
+# Постановка задачі
+
+Використовуючи предикати parent(string parent, string son-daughter), women(symbol) і man(symbol), розробити предикати, що визначають такі поняття:
+
+1. Правнучка
+2. Двоюрідний брат.
+3. Внук
+4. Дівер
+5. Зять
+6. Тесть
+7. Свекруха
+8. Теща
+9. Свекор
+10. Прадідусь
+11. Племінник
+12. Прабабуся
+13. Племінниця
+14. Свояк
+15. Тітка
+16. Своячка
+17. Дядько
+18. Дідусь
+19. Правнук
+20. Внучка
+21. Бабуся
+    
+Написати програму для пошуку і видачі на екран відповідного родича в базі даних.
+
+# Побудова сімейного дерева
+
+Побудуємо деяке сімейне дерево.
+
+@dot
+digraph family {
+  a [ label="Andrew (male)" ];
+  b [ label="Sarah (female)" ];
+  c [ label="Adam (male)"];
+  d [ label="Sam (male)" ];
+  e [ label="Eva (female)" ];
+  f [ label="Liam (male)" ];
+  g [ label="Olivia (female)" ];
+  h [ label="Noah (male)" ];
+  i [ label="Ava (female)" ];
+  j [ label="William (male)" ];
+  //k [ label="Sophia (female)" ];
+  l [ label="Elijah (male)" ];
+  m [ label="Isabella (female)" ];
+  n [ label="Charlotte (female)" ];
+  o [ label="James (male)" ];
+  p [ label="Benjamin (male)" ];
+  b -> a;
+  c -> a;
+  b -> e;
+  c -> e;
+  d -> c;
+  g -> c;
+  f -> d;
+  i -> d;
+  d -> h;
+  h -> j;
+  //g -> k;
+  l -> b;
+  m -> b;
+  b -> c [constraint=false, style=dashed, arrowhead=none];
+  d -> g [constraint=false, style=dashed, arrowhead=none];
+  l -> m [constraint=false, style=dashed, arrowhead=none];
+  f -> i [constraint=false, style=dashed, arrowhead=none];
+  m -> n;
+  n -> o;
+  p -> o;
+  n -> p [constraint=false, style=dashed, arrowhead=none];
+}
+@enddot
+
+Тепер розглянемо деякі приклади по списку.
+Номер | Назва | Код | Запит | Відповідь | Додаткова інформація
+----- | ----- | --- | ----- | --------- | --------------------
+1 | Правнучка | great_granddaughter | Ava | Eva | -
+2 | Двоюрідний брат | cousin | Andrew | William | -
+3 | Внук | grandson | Sam | Andrew | -
+4 | Дівер | brother_in_law | Sarah | Noah | брат чоловіка
+5 | Зять | son_in_law | Elijah | Adam | чоловік дочки
+6 | Тесть | father_in_law1 | Adam | Elijah | батько дружини
+7 | Свекруха | mother_in_law1 | Sarah | Olivia | мати чоловіка
+8 | Теща | mother_in_law2 | Adam | Isabella | мати дружини
+9 | Свекор | father_in_law2 | Sarah | Sam | батько чоловіка
+10 | Прадідусь | great_grandfather | Andrew | Liam | -
+11 | Племінник | nephew | Noah | Andrew | -
+12 | Прабабуся | great_grandmother | Andrew | Ava | -
+13 | Племінниця | niece | Noah | Eva | -
+14 | Свояк | sibling_in_law | Benjamin | Adam | чоловік сестри дружини
+15 | Тітка | aunt | Eva | Charlotte | -
+16 | Своячка | sister_in_law | Adam | Charlotte | сестра дружини
+17 | Дядько | uncle | Eva | Noah | -
+18 | Дідусь | grandfather | Andrew | Sam | -
+19 | Правнук | great_grandson | Liam | Andrew | -
+20 | Внучка | granddaughter | Sam | Eva | -
+21 | Бабуся | grandmother | Andrew | Olivia | -
+
+# Результат роботи програми
+
+Використаємо компілятор `swipl`, для початку зкомпілюємо нашу програму.
+```
+[gaura@gauramid IIS_Lab1]$ swipl -c main.pl
+% autoloading prolog_codewalk:must_be/2 from /usr/lib64/swipl-7.6.4/library/error
+% autoloading prolog_debug:backtrace/1 from /usr/lib64/swipl-7.6.4/library/prolog_stack
+% autoloading prolog_codewalk:portray_clause/1 from /usr/lib64/swipl-7.6.4/library/listing
+% autoloading prolog_codewalk:clause_info/4 from /usr/lib64/swipl-7.6.4/library/prolog_clause
+% autoloading prolog_codewalk:initialization_layout/4 from /usr/lib64/swipl-7.6.4/library/prolog_clause
+% autoloading qsave:current_foreign_library/2 from /usr/lib64/swipl-7.6.4/library/shlib
+% autoloading oset:reverse/2 from /usr/lib64/swipl-7.6.4/library/lists
+% autoloading record:member/2 from /usr/lib64/swipl-7.6.4/library/lists
+% autoloading plunit:prolog_stack_frame_property/2 from /usr/lib64/swipl-7.6.4/library/prolog_stack
+% autoloading plunit:get_prolog_backtrace/2 from /usr/lib64/swipl-7.6.4/library/prolog_stack
+% autoloading error:assertion/1 from /usr/lib64/swipl-7.6.4/library/debug
+% autoloading prolog_codewalk:clause_name/2 from /usr/lib64/swipl-7.6.4/library/prolog_clause
+% Autoloader: iteration 1 resolved 10 predicates and loaded 12 files in 0.274 seconds.  Restarting ...
+% Autoloader: loaded 10 files in 2 iterations in 0.389 seconds
+```
+
+Тепер запустимо програму та перевіримо відповідність предикатів із прикладами навединими у таблиці.
+```
+[gaura@gauramid IIS_Lab1]$ ./a.out
+Welcome to SWI-Prolog (threaded, 64 bits, version 7.6.4)
+SWI-Prolog comes with ABSOLUTELY NO WARRANTY. This is free software.
+Please run ?- license. for legal details.
+
+For online help and background, visit http://www.swi-prolog.org
+For built-in help, use ?- help(Topic). or ?- apropos(Word).
+
+?- run_tests.
+% PL-Unit: main
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:164:
+        PL-Unit: Test x: Test succeeded with choicepoint
+.
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:168:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:170:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:172:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:174:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:176:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:178:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:180:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:182:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:184:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:186:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:188:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:190:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:192:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:194:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:196:
+        PL-Unit: Test x: Test succeeded with choicepoint
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:198:
+        PL-Unit: Test x: Test succeeded with choicepoint
+.
+Warning: /home/gaura/git/gaurapanasenko/unilab/08/IIS_Lab1/main.pl:202:
+        PL-Unit: Test x: Test succeeded with choicepoint
+. done
+% All 21 tests passed
+true.
+
+?- halt.
+```
+
+Тепер запустимо усі предикати.
+```
+[gaura@gauramid IIS_Lab1]$ ./a.out
+Welcome to SWI-Prolog (threaded, 64 bits, version 7.6.4)
+SWI-Prolog comes with ABSOLUTELY NO WARRANTY. This is free software.
+Please run ?- license. for legal details.
+
+For online help and background, visit http://www.swi-prolog.org
+For built-in help, use ?- help(Topic). or ?- apropos(Word).
+
+?- great_granddaughter(A,B).
+A = "Liam",
+B = "Eva" ;
+A = "Ava",
+B = "Eva" ;
+false.
+
+?- cousin(A,B).
+A = "Eva",
+B = "James" ;
+A = "Andrew",
+B = "James" ;
+A = "James",
+B = "Andrew" ;
+A = "William",
+B = "Andrew" ;
+A = "Eva",
+B = "William" ;
+A = "Andrew",
+B = "William" ;
+false.
+
+?- grandson(A,B).
+A = "Liam",
+B = "Adam" ;
+A = "Liam",
+B = "Noah" ;
+A = "Ava",
+B = "Adam" ;
+A = "Ava",
+B = "Noah" ;
+A = "Isabella",
+B = "James" ;
+A = "Isabella",
+B = "Andrew" ;
+A = "Elijah",
+B = "Andrew" ;
+A = "Olivia",
+B = "Andrew" ;
+A = "Sam",
+B = "Andrew" ;
+A = "Sam",
+B = "William" ;
+false.
+
+?- brother_in_law(A,B).
+A = "Sarah",
+B = "Noah" ;
+A = "Sarah",
+B = "Noah" ;
+false.
+
+?- son_in_law(A,B).
+A = "Isabella",
+B = "Benjamin" ;
+A = "Isabella",
+B = "Adam" ;
+A = "Isabella",
+B = "Adam" ;
+A = "Elijah",
+B = "Adam" ;
+A = "Elijah",
+B = "Adam" ;
+false.
+
+?- father_in_law1(A,B).
+A = "Adam",
+B = "Elijah" ;
+A = "Adam",
+B = "Elijah" ;
+false.
+
+?- mother_in_law1(A,B).
+A = "Olivia",
+B = "Ava" ;
+A = "Sarah",
+B = "Olivia" ;
+A = "Sarah",
+B = "Olivia" ;
+false.
+
+?- mother_in_law2(A,B).
+A = "Benjamin",
+B = "Isabella" ;
+A = "Adam",
+B = "Isabella" ;
+A = "Adam",
+B = "Isabella" ;
+false.
+
+?- father_in_law2(A,B).
+A = "Olivia",
+B = "Liam" ;
+A = "Sarah",
+B = "Sam" ;
+A = "Sarah",
+B = "Sam" ;
+false.
+
+?- great_grandfather(A,B).
+A = "Eva",
+B = "Liam" ;
+A = "Andrew",
+B = "Liam" ;
+A = "William",
+B = "Liam" ;
+false.
+
+?- nephew(A,B).
+A = "Sarah",
+B = "James" ;
+A = "Charlotte",
+B = "Andrew" ;
+A = "Noah",
+B = "Andrew" ;
+A = "Adam",
+B = "William" ;
+false.
+
+?- great_grandmother(A,B).
+A = "Eva",
+B = "Ava" ;
+A = "Andrew",
+B = "Ava" ;
+A = "William",
+B = "Ava" ;
+false.
+
+?- niece(A,B).
+A = "Charlotte",
+B = "Eva" ;
+A = "Noah",
+B = "Eva" ;
+false.
+
+?- sibling_in_law(A,B).
+A = "Adam",
+B = "Benjamin" ;
+A = "Adam",
+B = "Benjamin" ;
+A = "Benjamin",
+B = "Adam" ;
+A = "Benjamin",
+B = "Adam" ;
+false.
+
+?- aunt(A,B).
+A = "Eva",
+B = "Charlotte" ;
+A = "Andrew",
+B = "Charlotte" ;
+A = "James",
+B = "Sarah" ;
+false.
+
+?- sister_in_law(A,B).
+A = "Adam",
+B = "Charlotte" ;
+A = "Adam",
+B = "Charlotte" ;
+A = "Benjamin",
+B = "Sarah" ;
+false.
+
+?- uncle(A,B).
+A = "William",
+B = "Adam" ;
+A = "Eva",
+B = "Noah" ;
+A = "Andrew",
+B = "Noah" ;
+false.
+
+?- grandfather(A,B).
+A = "Adam",
+B = "Liam" ;
+A = "Noah",
+B = "Liam" ;
+A = "Eva",
+B = "Elijah" ;
+A = "Andrew",
+B = "Elijah" ;
+A = "Eva",
+B = "Sam" ;
+A = "Andrew",
+B = "Sam" ;
+A = "William",
+B = "Sam" ;
+false.
+
+?- great_grandson(A,B).
+A = "Liam",
+B = "Andrew" ;
+A = "Ava",
+B = "Andrew" ;
+A = "Liam",
+B = "William" ;
+A = "Ava",
+B = "William".
+
+?- granddaughter(A,B).
+A = "Isabella",
+B = "Eva" ;
+A = "Elijah",
+B = "Eva" ;
+A = "Olivia",
+B = "Eva" ;
+A = "Sam",
+B = "Eva".
+
+?- grandmother(A,B).
+A = "Adam",
+B = "Ava" ;
+A = "Noah",
+B = "Ava" ;
+A = "James",
+B = "Isabella" ;
+A = "Eva",
+B = "Isabella" ;
+A = "Andrew",
+B = "Isabella" ;
+A = "Eva",
+B = "Olivia" ;
+A = "Andrew",
+B = "Olivia" ;
+false.
+
+?- halt.
+```
+
+# Висновки
+
+Було розроблено пролог програму та перевірено деяке сімейне дерево за допомогою цієї програми, також було выведено на экран усі перелічені варіанти сімених зв'язків перелічених у постановці задачі. 
+
+*/
