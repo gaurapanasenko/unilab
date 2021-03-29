@@ -1,21 +1,40 @@
 #!/usr/bin/env python3
 
-from sympy import *
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import odeint
 
-t, l = symbols("t l")
-x1, x2 = symbols('x1 x2', cls=Function)
+xx1 = np.linspace(-3.0, 3.0, 20)
+xx2 = np.linspace(-3.0, 3.0, 20)
+XX1, XX2 = np.meshgrid(xx1, xx2)
+u, v = np.zeros(XX1.shape), np.zeros(XX2.shape)
+NI, NJ = XX1.shape
 
-f1=x1(t)**2-2*x1(t)*x2(t)+x2(t)**2-9
-f2=4*x1(t)**2+x1(t)*x2(t)+4*x2(t)**2-18
+def calc(X, t=0):
+    x1, x2 = X[0], X[1]
+    return np.array([
+        x1**2-2*x1*x2+x2**2-9,
+        4*x1**2+x1*x2+4*x2**2-18,
+    ])
 
-sys= [
-    Eq(diff(x1(t), t), f1),
-    Eq(diff(x2(t), t), f2),
+for i in range(NI):
+    for j in range(NJ):
+        u[i,j], v[i,j] = calc([XX1[i, j], XX2[i, j]])
+
+starts = [
+    ([0, 0], 0.6),
+    ([2, -1.585], 100),
+    ([-2.0, 1.0], 100),
+    ([1, -2], 100),
+    ([-1, 2], 100),
 ]
 
-I = Matrix([[diff(f1,x1(t)), diff(f1,x2(t))],
-[diff(f2,x1(t)), diff(f2,x2(t))]])
-
-print(I)
-m = I - Matrix([[1,0],[0,1]])*l
-print(m.det())
+for y, t in starts:
+    tspan = np.linspace(0, t, 2000)
+    ys = odeint(calc, y, tspan)
+    plt.plot(ys[:,0], ys[:,1])
+    plt.plot([ys[0,0]], [ys[0,1]], 'o')
+    plt.plot([ys[-1,0]], [ys[-1,1]], 's')
+        
+Q = plt.quiver(XX1, XX2, u, v, color='r')
+plt.show()
