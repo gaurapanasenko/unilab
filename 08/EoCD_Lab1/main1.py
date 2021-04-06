@@ -46,10 +46,10 @@ def plot_fractal(shape, t, iterations):
     s = [shape]
     for i in range(iterations + 1):
         for j in s:
-            plt.plot([k[0] for k in j], [k[1] for k in j], color="black")
+            plt.plot(j[:,0], j[:,1], color="black")
         if i < iterations:
-            s = [[l[0].dot(k) + l[1] for k in j] for l in t for j in s]
+            s = [arr([l[0].dot(k) + l[1] for k in j]) for l in t for j in s]
     plt.show()
 
 for t, s, i in fractals:
-    plot_fractal([arr(j) for j in s], [(arr(a), arr(b)) for a, b in t], i);
+    plot_fractal(arr(s), [(arr(a), arr(b)) for a, b in t], i)
