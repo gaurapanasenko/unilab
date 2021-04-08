@@ -3,6 +3,8 @@
 #include "julia.h"
 
 Julia::Julia()
+    : minValue{-2, -2}, maxValue{2, 2},
+      maxIterations(50), infinityBorder(10), z{0, 0}
 {
 
 }
@@ -27,6 +29,10 @@ float Julia::getInfinityBorder() const
     return infinityBorder;
 }
 
+const float *Julia::getZ() const {
+    return z;
+}
+
 std::pair<float, float> Julia::getCoords(int x, int y, const int size[]) const
 {
     std::pair<float, float> out(0, 0);
@@ -41,5 +47,6 @@ bool Julia::imConfig()
     changed |= ImGui::DragFloatRange2("X", minValue, maxValue+1, 0.01, -3, 3);
     changed |= ImGui::DragFloatRange2("Y", minValue+1, maxValue, 0.01, -3, 3);
     changed |= ImGui::SliderInt("Max iterations", &maxIterations, 1, 400);
+    changed |= ImGui::DragFloat2("Z", z, 0.01, -3, 3);
     return changed;
 }

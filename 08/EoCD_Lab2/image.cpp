@@ -13,7 +13,7 @@ Image Image::julia(const int size[], const Julia &jul)
     const int width = size[0], height = size[1];
     std::shared_ptr<pixel_t[]> out_data(new pixel_t[size[0] * size[1]]);
     std::pair<float, float> coord;
-    std::complex<float> z, c;
+    std::complex<float> z(jul.getZ()[0], jul.getZ()[1]), c;
     int maxIters = jul.getMaxIterations();
     float inf = jul.getInfinityBorder();
     int i, j, k, cur = 0;
@@ -21,7 +21,7 @@ Image Image::julia(const int size[], const Julia &jul)
         for (j = 0; j < height; j++) {
             coord = jul.getCoords(i, j, size);
             cur = 0;
-            z = 0;
+            z = std::complex<float>(jul.getZ()[0], jul.getZ()[1]);
             c = std::complex<float>(coord.first, coord.second);
             for (k = 0; k < maxIters; k++) {
                 z = pow(z, 2) + c;

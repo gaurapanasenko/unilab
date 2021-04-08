@@ -1,0 +1,49 @@
+/*!
+@mainpage Звіт з лабораторної роботи №2
+за дисципліною "Элементи хаотичної динаміки"  
+студента групи ПА-17-2  
+Панасенка Єгора Сергійовича  
+Кафедра комп'ютерних технологій  
+ФПМ, ДНУ, 2020-2021 навч.р.  
+Варіант 17
+
+Звіт доступний за посиланням   
+[https://gaurapanasenko.github.io/unilab_opt/EoCD_Lab2/html/index.html](https://gaurapanasenko.github.io/unilab_opt/EoCD_Lab2/html/index.html).  
+Вихідний код доступний за посиланням  
+[https://github.com/gaurapanasenko/unilab/tree/master/08/EoCD_Lab2](https://github.com/gaurapanasenko/unilab/tree/master/08/EoCD_Lab2)
+
+# Постановка задачі
+
+Написати алгоритм побудови заповнуючуої множини Жуліа для функцій \f$f(z)=z^2+c_i\f$, де \f$c_i\f$ будь-яке комплексне число, яке задовільняє умові \f$|c_i|<2\f$.
+
+# Теоретичні відомості
+
+У голоморфній динаміці, множина Жуліа \f$J(f)\f$ раціонального відображення \f$f:{C} P^{1}\to {C} P^{1}\f$ — множина точок, динаміка в околиці яких у певному сенсі нестійка відносно малих збурень початкового положення. У випадку, якщо \f$f\f$ — поліном, розглядають також заповнену множину Жуліа — множину точок, що не прямують до нескінченності. Звичайна множина Жуліа при цьому є її межею. 
+
+# Результат роботи програми
+
+Програма дозволяє в інтерактивному режимі генерувати картинку на основі заповнуючуої множини жуліа. На при запуску програми отримаємо таке вікно.
+\image html Screenshot_2021-04-08_13-15-08.png
+\image latex Screenshot_2021-04-08_13-15-08.png
+
+Тут генерується зображення 200x200 пікселів. Тепер збільшимо якість зображення до 500x500 пікселів.
+\image html Screenshot_2021-04-08_13-15-31.png
+\image latex Screenshot_2021-04-08_13-15-31.png
+
+Тепер спробуємо задати деякі початкові значення `z`, наприклад `z=0.68`, `z=-0.04-1.1`, `z=-0.14-0.34`.
+\image html Screenshot_2021-04-08_13-15-44.png
+\image latex Screenshot_2021-04-08_13-15-44.png
+\image html Screenshot_2021-04-08_13-16-32.png
+\image latex Screenshot_2021-04-08_13-16-32.png
+\image html Screenshot_2021-04-08_13-17-04.png
+\image latex Screenshot_2021-04-08_13-17-04.png
+
+Також можна побачити відео демонстрацію програми перейшовши за посиланням:  
+[https://youtu.be/LXtTFXJbMHg](https://youtu.be/LXtTFXJbMHg)  
+Або можна побачити відео перейшовши на [HTML версію звіту](https://gaurapanasenko.github.io/unilab_opt/EoCD_Lab2/html/index.html).
+
+\htmlonly
+<iframe width="560" height="315" src="https://www.youtube.com/embed/LXtTFXJbMHg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+\endhtmlonly
+
+ */

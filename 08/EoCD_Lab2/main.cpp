@@ -28,12 +28,13 @@ int main(int, char**)
     {
         app.begin_loop();
 
-        ImVec2 sz(200, 200);
+        ImVec2 sz(image->size[0], image->size[1]);
         ImGui::SetNextWindowSize(sz, ImGuiCond_FirstUseEver);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Julia");
-        ImVec2 new_sz = ImGui::GetContentRegionAvail();
-        ImGui::Image(tex_id, new_sz);
+        ImVec2 cont_sz = ImGui::GetContentRegionAvail();
+        ImVec2 img_size(cont_sz.x, image->size[1] * cont_sz.x / image->size[0]);
+        ImGui::Image(tex_id, img_size);
         ImGui::End();
         ImGui::PopStyleVar();
 
