@@ -20,11 +20,11 @@ startPoint = [50, 2, 2]
 
 
 ## @brief Обчислює похідну для системи.
-# \f[\begin{cases}
+# \f[\left\{\begin{array}{l}
 # x'(t)=3x(t)-y(t)^2+z^2(t)\\
 # y'(t)=-y(t)-700z(t)+10x(t)y(t)\\
 # z'(t)=x(t)+700y(t)-z(t)-15x(t)z(t)
-# \end{cases}\f]
+# \end{array}\right.\f]
 # @param X точка системи
 # @param t час
 # @return вектор похідної

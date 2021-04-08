@@ -34,9 +34,9 @@ from sympy import *
 import numpy as np
 
 ## @brief Обчислює похідну системи по її значенням.
-#  \f[\begin{cases}x_1'(t)=x_1(t)^2-2x_1(t)x_2(t)+x2(t)^2-9\\
+#  \f[\left\{\begin{array}{l}x_1'(t)=x_1(t)^2-2x_1(t)x_2(t)+x2(t)^2-9\\
 #  x_2'(t)=4x_1(t)^2+x_1x_2(t)+4x_2(t)^2-18
-#  \end{cases}\f]
+#  \end{array}\right.\f]
 # @param X точка системи
 # @param t час
 # @return вектор похідної
