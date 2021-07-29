@@ -40,7 +40,7 @@ int main(int, char**)
 
         ImGui::Begin("Julia Config", NULL, ImGuiWindowFlags_AlwaysAutoResize);
         changed = jul.imConfig();
-        changed |= ImGui::SliderInt2("Size", size, 0, 500);
+        changed |= ImGui::SliderInt2("Size", size, 0, 1000);
         if (changed) {
             image = make_shared<Image>(Image::julia(size, jul));
             texture.update(*image);
