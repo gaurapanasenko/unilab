@@ -21,12 +21,12 @@ Image Image::julia(const int size[], const Julia &jul)
         for (j = 0; j < height; j++) {
             coord = jul.getCoords(i, j, size);
             cur = 0;
-            z = std::complex<float>(jul.getZ()[0], jul.getZ()[1]);
-            c = std::complex<float>(coord.first, coord.second);
+            c = std::complex<float>(jul.getZ()[0], jul.getZ()[1]);
+            z = std::complex<float>(coord.first, coord.second);
             for (k = 0; k < maxIters; k++) {
                 z = pow(z, 2) + c;
                 if (abs(z) > inf) {
-                    cur = k * 255 / maxIters;
+                    cur = 46 * log(1+k * 255 / maxIters);
                     break;
                 }
             }
