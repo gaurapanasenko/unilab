@@ -2,6 +2,7 @@
 
 from sympy import *
 import numpy as np
+init_printing()
 
 def calc(X, t: int = 0) -> np.ndarray:
     x1, x2 = X[0], X[1]
@@ -18,20 +19,20 @@ def analyze() -> None:
     f = calc(x, t)
     
     # ~ I = Matrix([[i.diff(j) for j in x] for i in f])
-    print(f)
+    pprint(Matrix(f))
     I = Matrix(f).jacobian(x)
-    print("Якобіан:")
-    print(I)
+    pprint("Якобіан:")
+    pprint(I)
     
     solutions = [(-3.5624684928397796, -7.126450252682265), (0, 0), (3.5624684928397796, 7.126450252682265)]
-    print("Особливі точки:")
-    print(solutions)
+    pprint("Особливі точки:")
+    pprint(solutions)
 
     for X, Y in solutions:
         print()
         print("Точка:", X, Y)
-        print(I.subs(x[0], X).subs(x[1], Y).eigenvals())
-        eigenvals = list(I.subs(x[0], X).subs(x[1], Y).eigenvals().keys())
+        pprint(lambdify(x, I, modules="sympy")(X, Y).eigenvals())
+        eigenvals = list(lambdify(x, I, modules="sympy")(X, Y).eigenvals().keys())
         eigenvals = [complex(i) for i in eigenvals]
         print("Власні числа:", eigenvals)
         if all([i.imag != 0 for i in eigenvals]):
