@@ -1,0 +1,81 @@
+/*!
+@mainpage Звіт з лабораторних робіт №1-3
+за дисципліною "Big Data Application and Analytics"  
+студента групи ПК-21m-1  
+Панасенка Єгора Сергійовича  
+Кафедра комп'ютерних технологій  
+ФПМ, ДНУ, 2021-2022 навч.р.  
+Варіант 13
+
+Звіт доступний за посиланням   
+[https://gaurapanasenko.github.io/unilab_opt/BDAnA_Labs/html/index.html](https://gaurapanasenko.github.io/unilab_opt/BDAnA_Labs/html/index.html).  
+Вихідний код доступний за посиланням  
+[https://github.com/gaurapanasenko/unilab/tree/master/09/BDAnA_Labs](https://github.com/gaurapanasenko/unilab/tree/master/09/BDAnA_Labs)
+
+# Постановка задачі
+
+\image html Task.png
+\image latex Task.png
+
+# Отримані результати
+
+## Лабораторна робота 1
+
+```
+[     -x1(t) + 2*x2(t)     ]
+[                          ]
+[         -2*x2(t)         ]
+[                          ]
+[-2*x1(t) - 2*x2(t) - x3(t)]
+Якобіан:
+[-1  2   0 ]
+[          ]
+[0   -2  0 ]
+[          ]
+[-2  -2  -1]
+Особливі точки:
+[[0, 0, 0]]
+
+Точка: 0 0 0
+{-2: 1, -1: 2}
+Власні числа: [(-2+0j), (-1+0j)]
+Стійкий вузол
+```
+
+\image html Figure_1.png
+\image latex Figure_1.png width=400px
+\image html Figure_2.png
+\image latex Figure_2.png width=400px
+\image html Figure_3.png
+\image latex Figure_3.png width=400px
+
+## Лабораторна робота 2
+\image html Figure_2_1.png
+\image latex Figure_2_1.png width=400px
+\image html Figure_2_2.png
+\image latex Figure_2_2.png width=400px
+\image html Figure_2_3.png
+\image latex Figure_2_3.png width=400px
+\image html Figure_2_4.png
+\image latex Figure_2_4.png width=400px
+
+## Лабораторна робота 3
+\image html Figure_3_1.png
+\image latex Figure_3_1.png width=400px
+\image html Figure_3_2.png
+\image latex Figure_3_2.png width=400px
+\image html Figure_3_3.png
+\image latex Figure_3_3.png width=400px
+\image html Figure_3_4.png
+\image latex Figure_3_4.png width=400px
+\image html Figure_3_5.png
+\image latex Figure_3_5.png width=400px
+\image html Figure_3_6.png
+\image latex Figure_3_6.png width=400px
+\image html Figure_3_7.png
+\image latex Figure_3_7.png width=400px
+\image html Figure_3_8.png
+\image latex Figure_3_8.png width=400px
+
+
+ */

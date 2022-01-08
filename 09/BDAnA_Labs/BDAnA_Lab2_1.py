@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
-## @package lab4
-#  @brief Лабораторна робота 4
-#  \image html Lab4.png
-#  \image latex Lab4.png
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 ## @brief Скільки перших ітерацій пропустити
 firstIters = 1024
 ## @brief Скільки останніх ітерацій відобразити на діаграмі
-lastIters = 256
+lastIters = 50
 ## @brief Скільки значень \f$\alpha\f$ побудувати для діаграми.
 aIters = 2000
 ## @brief Діапазон значень \f$\alpha\f$ [2.8, 3.8]
-alphaRange = [2.8, 4]
+alphaRange = [-3, 3]
 ## @brief Стартове значення \f$x_0\f$.
 #  Яке обчислено за допомогою рівняння:
 #  \f[f'(x_0,\alpha)=0\f]
@@ -26,7 +21,8 @@ xStart = 0.5
 #  @param x значення \f$x_n\f$
 #  @param a значення \f$\alpha\f$ 
 def f(x: float, a: float) -> None:
-    return a*x*(1-x)
+    return 1+a*x**2-3*a*x
+    # ~ return a*x*(1-x)
 
 ## @brief Друкує діаграму.
 def draw_diagram() -> None:
