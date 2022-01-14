@@ -12,22 +12,40 @@ def mf(x, b, c):
 
 data = (
     (15,  0, 4),
-    (25, 10, 3),
-    (25, 10, 3),
-    (25, 20, 1),
-    (40, 30, 4),
-    (15, 30, 0),
+    (15,  5, 2),
+    (15, 10, 0),
+    (15, 20, 0),
+    (15, 40, 0),
+    
+    (20,  0, 4),
+    (20,  5, 2),
+    (20, 10, 0),
+    (20, 20, 0),
+    (20, 40, 0),
+    
+    (25,  0, 9),
+    (25,  5, 6),
+    (25, 10, 4),
+    (25, 20, 2),
+    (25, 40, 0),
+    
+    (32,  0, 9),
+    (32,  5, 9),
+    (32, 10, 6),
+    (32, 20, 4),
+    (32, 40, 2),
+    
+    (40,  0, 9),
+    (40,  5, 9),
+    (40, 10, 9),
+    (40, 20, 6),
+    (40, 40, 4),
+    
 )
 
-x3_ = 0
-x31 = 2
-x3m = 4
-x32 = 7
-x33 = 9
-
-x_temp = np.arange(15, 40, 1)
-x_expr = np.arange(0, 30, 1)
-x_powr = np.arange(0, 10, 1)
+x_temp = np.linspace(15, 40, 200)
+x_expr = np.linspace(0, 30, 200)
+x_powr = np.linspace(0, 10, 200)
 
 consts = np.array([15, 2, 25, 4, 40, 2, 0, 1, 10, 4, 30, 6, 0, 1, 4, 1, 9, 1], dtype="float32")
 
@@ -40,16 +58,6 @@ expr_ln_f = lambda x, c: mf(x, c[10], c[11])
 powr_lo_f = lambda x, c: mf(x, c[12], c[13])
 powr_md_f = lambda x, c: mf(x, c[14], c[15])
 powr_hi_f = lambda x, c: mf(x, c[16], c[17])
-
-temp_lo = temp_lo_f(x_temp, consts)
-temp_md = temp_md_f(x_temp, consts)
-temp_hi = temp_hi_f(x_temp, consts)
-expr_sh = expr_sh_f(x_expr, consts)
-expr_md = expr_md_f(x_expr, consts)
-expr_ln = expr_ln_f(x_expr, consts)
-powr_lo = powr_lo_f(x_powr, consts)
-powr_md = powr_md_f(x_powr, consts)
-powr_hi = powr_hi_f(x_powr, consts)
 
 def mu_lo(x, c):
     return max([
@@ -75,7 +83,7 @@ def mu_hi(x, c):
     
 def defuzz(x, c):
     # ~ print(mu_lo(x), mu_md(x), mu_hi(x))
-    return (x3_*mu_lo(x, c)+x3m*mu_md(x, c)+x33*mu_hi(x, c))/(mu_lo(x, c)+mu_md(x, c)+mu_hi(x, c))
+    return (c[12]*mu_lo(x, c)+c[14]*mu_md(x, c)+c[16]*mu_hi(x, c))/(mu_lo(x, c)+mu_md(x, c)+mu_hi(x, c))
 
 def solve(x, c):
     print("%2.f and %2.f -> %0.3f" % (x[0], x[1], defuzz(x, c)))
@@ -88,14 +96,28 @@ fin_consts = res.x
 print(fin_consts)
 
 def show_result(c):
-    solve((15, 0), c)
-    solve((25, 10), c)
-    solve((25, 10), c)
-    solve((25, 20), c)
-    solve((40, 30), c)
-    solve((15, 30), c)
+    print()
+    for x1, x2, y in data:
+        to = temp_lo_f(x1,c)
+        tm = temp_md_f(x1,c)
+        th = temp_hi_f(x1,c)
+        eo = expr_sh_f(x2,c)
+        em = expr_md_f(x2,c)
+        eh = expr_ln_f(x2,c)
+        s = defuzz((x1, x2), c)
+        print("%2i,%2i,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f" % (x1, x2, to, tm, th, eo, em, eh, s))
 
     fig, (ax0, ax1, ax2) = plt.subplots(nrows=3, figsize=(8, 9))
+
+    temp_lo = temp_lo_f(x_temp, c)
+    temp_md = temp_md_f(x_temp, c)
+    temp_hi = temp_hi_f(x_temp, c)
+    expr_sh = expr_sh_f(x_expr, c)
+    expr_md = expr_md_f(x_expr, c)
+    expr_ln = expr_ln_f(x_expr, c)
+    powr_lo = powr_lo_f(x_powr, c)
+    powr_md = powr_md_f(x_powr, c)
+    powr_hi = powr_hi_f(x_powr, c)
 
     ax0.plot(x_temp, temp_lo, 'b', linewidth=1.5, label='Low')
     ax0.plot(x_temp, temp_md, 'g', linewidth=1.5, label='Medium')
