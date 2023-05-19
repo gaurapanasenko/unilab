@@ -4,7 +4,9 @@ from sympy import *
 import numpy as np
 from scipy.optimize import fsolve
 from scipy import linalg
-init_printing()
+init_printing(use_latex='mathjax')
+from IPython.display import display
+pprint = display
 
 def calc(X, t: int = 0) -> np.ndarray:
     x1, x2, x3 = X
@@ -38,21 +40,15 @@ def analyze() -> None:
         print()
         print("Точка:", X, Y, Z)
         syst = lambdify(x, I, modules="sympy")(X, Y, Z)
-        #eigenvals = syst.eigenvals()
-        #eigenvals = list(eigenvals.keys())
         systl = lambdify(k, syst, modules="numpy")
         def eigenvals(k):
             ev = linalg.eigvals(systl(*k))
             return [i.real+1 for i in ev]
-        pprint(eigenvals((-1,-1,-1)))
         sol = fsolve(eigenvals, (-1, -1, -1))
-        print(sol, eigenvals(sol))
-        #eigenvals = [complex(i) for i in eigenvals]
-        #mat = Matrix(eigenvals)
-        #pprint(mat)
-        #ll = lambdify((k,), mat, modules="numpy")
-        #rint(ll((1,1,1)), ll((2,2,2)))
-        #sol = fsolve(ll, (1, 1, 1))
-        #print(sol)
+        pprint("Коефіцієнти k")
+        pprint(Matrix(sol))
+        pprint("Власні числа при заданих коефіцієнтах")
+        pprint(Matrix(linalg.eigvals(systl(*sol))))
+
 
 analyze()

@@ -2,7 +2,9 @@
 
 from sympy import *
 import numpy as np
-init_printing(use_unicode=False)
+init_printing(use_latex='mathjax')
+from IPython.display import display
+pprint = display
 
 def calc(X, t, k, K) -> np.ndarray:
     x, y, z = X
@@ -27,47 +29,11 @@ def analyze() -> None:
     # ~ I = Matrix([[i.diff(j) for j in x] for i in f])
     pprint(Matrix(f))
     I = Matrix(f).jacobian(x)
-    pprint("Якобіан:")
-    pprint(I)
+    print("Якобіан:")
+    pprint(Matrix(I))
     
     solutions = [list(i.values()) for i in solve(f)]
-    pprint("Особливі точки:")
-    pprint(solutions)
-    solutions = [(0,0,0)]
-
-    for X, Y, Z in solutions:
-        print()
-        print("Точка:", (X, Y, Z))
-        res = lambdify(x, I, modules="sympy")(X, Y, Z).eigenvals()
-        pprint(res)
-        eigenvals = list(res.keys())
-        pprint(eigenvals)
-        eigenvals = [complex(i) for i in eigenvals]
-        print("Власні числа:", eigenvals)
-        if all([i.imag != 0 for i in eigenvals]):
-            if all([i.real == 0 for i in eigenvals]):
-                print("Центр")
-                print("Мабуть я у планетарії...")
-            elif all([i.real < 0 for i in eigenvals]):
-                print("Стійкий фокус")
-                print("Голова паморочиться... Але рівновагу не втрачаю і голова на місці.")
-            elif all([i.real > 0 for i in eigenvals]):
-                print("Нестійкий фокус")
-                print("Голова паморочиться... Зовсім рівновагу втрачаю! Ловіть мене!")
-            else:
-                print("Щось якось обертається, але не знаю як. Розповіси як зустрінимося.")
-        elif all([i.imag == 0 for i in eigenvals]):
-            if all([i.real < 0 for i in eigenvals]):
-                print("Стійкий вузол")
-                print("Очі розлазяться, але десь на одній лінії зустрічаються.")
-            elif all([i.real > 0 for i in eigenvals]):
-                print("Нестійкий вузол")
-                print("Очі розлазяться у різні боки.")
-            else:
-                print("Сідло")
-                print("Звичайне кінське сідло. Наскільки комфортне не пробував.")
-        else:
-            print("А що, так можна було? Комплексні числа у парі зазвичай.")
-            print("Негайно передзвони та розповіси про такий випадок!")
+    print("Особливі точки:")
+    pprint(Matrix(solutions))
 
 analyze()
